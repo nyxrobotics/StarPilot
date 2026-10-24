@@ -153,6 +153,25 @@ class NavigationHttpTest(unittest.TestCase):
                                   cookie=self.remote_cookie, origin='https://wrong.example')[0], 403)
     self.assertFalse(self.navigation.snapshot()['enabled'])
 
+  def test_companion_guidance_is_authenticated_small_and_current(self):
+    self.assertEqual(self.request('/api/navigation/guidance')[0], 401)
+    self.assertEqual(self.request('/api/navigation/guidance', remote=True)[0], 401)
+    state = {'status': 'guiding', 'destination': PLACE, 'isMetric': True,
+             'instruction': {'text': 'Turn right', 'distanceMeters': 120.0},
+             'route': [['private', 'geometry']], 'token': 'must-stay-private'}
+    with patch.object(self.navigation, 'snapshot', return_value=state):
+      status, result, headers = self.request('/api/navigation/guidance', cookie=self.local_cookie)
+      self.assertEqual(status, 200)
+      self.assertEqual(result, {'status': 'guiding', 'destination': 'Library', 'isMetric': True,
+                                'instruction': {'text': 'Turn right', 'distanceMeters': 120.0}})
+      self.assertLess(len(json.dumps(result)), 300)
+      self.assertEqual(headers['Cache-Control'], 'no-store')
+      state['status'] = 'waitingForLocation'
+      self.assertIsNone(self.request('/api/navigation/guidance', cookie=self.local_cookie)[1]['instruction'])
+      state['status'] = 'guiding'
+      state['instruction']['distanceMeters'] = float('nan')
+      self.assertIsNone(self.request('/api/navigation/guidance', cookie=self.local_cookie)[1]['instruction'])
+
   def test_keys_require_parked_but_destinations_do_not(self):
     self.parked = False
     self.assertEqual(self.action('configure', patch={'token': 'pk.new-key'})[0], 409)

@@ -33,6 +33,7 @@
         </receiver>
         <service android:name=".UplinkService" android:exported="false" android:foregroundServiceType="connectedDevice" />
         <service android:name=".PhoneGpsService" android:exported="false" android:foregroundServiceType="location" />
+        <service android:name=".NavigationGuidanceService" android:exported="false" android:foregroundServiceType="connectedDevice" />
         <service android:name=".AppUpdateJob" android:exported="true" android:permission="android.permission.BIND_JOB_SERVICE" />
     </application>
 </manifest>

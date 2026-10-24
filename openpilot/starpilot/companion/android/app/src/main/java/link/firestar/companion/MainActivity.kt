@@ -80,6 +80,7 @@ class MainActivity : Activity() {
         if (PhoneGpsService.enabled(prefs) && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             startForegroundService(Intent(this, PhoneGpsService::class.java))
         }
+        if (NavigationGuidanceService.enabled(prefs)) startForegroundService(Intent(this, NavigationGuidanceService::class.java))
     }
     private fun idle() = resumed && !isFinishing && web == null && ble == null && discovery == null && lanPicker == null && screen?.busy() == false
     override fun onNewIntent(intent: Intent) {
@@ -328,9 +329,13 @@ class MainActivity : Activity() {
             .group("Bluetooth pairing") {
                 action("Add Bluetooth Phone Pairing", "First open Pair phone on comma (Settings > Bluetooth), then tap here") { pairPhone() }
                 action("Forget pairing on this phone") {
-                    pairing.forget(); ble?.close(); disconnected()
+                    setNavigationGuidance(false); pairing.forget(); ble?.close(); disconnected()
                     message("Pairing removed from this phone.\n\n$ALSO_FORGET_ON_COMMA")
                 }
+            }
+            .group("Android Auto guidance") {
+                if (NavigationGuidanceService.enabled(prefs)) action("Stop StarPilot guidance") { setNavigationGuidance(false) }
+                else action("Show StarPilot guidance", "Send the next turn to Android Auto over Bluetooth") { setNavigationGuidance(true) }
             }
             .group("Phone GPS") {
                 if (PhoneGpsService.enabled(prefs)) action("Stop sharing phone GPS") { setPhoneGps(false) }
@@ -738,6 +743,21 @@ class MainActivity : Activity() {
         startForegroundService(Intent(this, PhoneGpsService::class.java))
         message("Sharing phone GPS. Keep this app's notification while driving; comma uses it only when its own GPS has no fix.")
     }
+    private fun setNavigationGuidance(enabled: Boolean) {
+        if (!enabled) {
+            prefs.edit().putBoolean("androidAutoGuidance", false).apply()
+            stopService(Intent(this, NavigationGuidanceService::class.java))
+            return
+        }
+        if (pairing.load() == null) { message("Pair comma over Bluetooth first, then turn on StarPilot guidance here."); return }
+        val permissions = (if (Build.VERSION.SDK_INT >= 31) arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
+            else arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)) +
+            (if (Build.VERSION.SDK_INT >= 33) arrayOf(Manifest.permission.POST_NOTIFICATIONS) else emptyArray())
+        val missing = permissions.filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }
+        if (missing.isNotEmpty()) { requestPermissions(missing.toTypedArray(), 8); return }
+        prefs.edit().putBoolean("androidAutoGuidance", true).apply()
+        startForegroundService(Intent(this, NavigationGuidanceService::class.java))
+    }
     private fun pairingNotice(text: String, paired: Boolean) {
         val s = screen ?: return message(text)
         s.detail(text)
@@ -823,6 +843,10 @@ class MainActivity : Activity() {
                 prefs.edit().putBoolean("phoneGps", true).apply()
                 startForegroundService(Intent(this, PhoneGpsService::class.java))
             } else message("Allow precise location to share phone GPS with comma.")
+        }
+        if (code == 8) {
+            if (results.isNotEmpty() && results.all { it == PackageManager.PERMISSION_GRANTED }) setNavigationGuidance(true)
+            else message("Allow Nearby devices and notifications to show StarPilot guidance on Android Auto.")
         }
         if (code == 2) { if (results.isNotEmpty() && results.all { it == PackageManager.PERMISSION_GRANTED }) connectBluetooth(bluetoothAttemptAutomatic)
             else disconnected().apply {

@@ -12,5 +12,8 @@ class BootReceiver : BroadcastReceiver() {
         if (prefs.getBoolean("autoStart", false) && prefs.getBoolean("enabled", false)) {
             context.startForegroundService(Intent(context, UplinkService::class.java))
         }
+        if (NavigationGuidanceService.enabled(prefs)) {
+            context.startForegroundService(Intent(context, NavigationGuidanceService::class.java))
+        }
     }
 }

@@ -7,8 +7,8 @@ android {
         applicationId = "link.firestar.companion"
         minSdk = 26
         targetSdk = 35
-        versionCode = 32
-        versionName = "1.1.30"
+        versionCode = 33
+        versionName = "1.1.31"
     }
     signingConfigs {
         create("companion") {
@@ -23,5 +23,8 @@ android {
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
 }
 
-dependencies { testImplementation("junit:junit:4.13.2") }
+dependencies {
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20180813")
+}
 

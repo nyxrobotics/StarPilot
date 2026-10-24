@@ -602,6 +602,37 @@ def make_server(*, port=8082, host='127.0.0.1', monitor=None, owner=None, crashe
       else:
         self.json(401, {'message': 'Sidecar navigation unavailable'})
 
+    def companion_guidance_status(self):
+      """Small current maneuver for the paired phone's encrypted Bluetooth bridge."""
+      if not self.require_session():
+        return
+      try:
+        state = navigation_owner().snapshot()
+        status = state['status']
+        selected = state.get('destination')
+        name = selected.get('name') if type(selected) is dict else None
+        if type(name) is not str or not name.strip() or len(name) > 160 or not name.isprintable():
+          name = None
+        instruction = state.get('instruction') if status in ('guiding', 'arrived') and name is not None else None
+        if type(instruction) is dict:
+          label = instruction.get('text')
+          distance = instruction.get('distanceMeters')
+          if (type(label) is str and 0 < len(label) <= 256 and label.isprintable() and
+              type(distance) in (int, float) and math.isfinite(distance) and 0 <= distance <= 1_000_000_000):
+            instruction = {'text': label, 'distanceMeters': distance}
+          else:
+            instruction = None
+        else:
+          instruction = None
+        result = {'status': status if type(status) is str and len(status) <= 40 else 'unavailable',
+                  'destination': name, 'isMetric': state['isMetric'] if type(state.get('isMetric')) is bool else True,
+                  'instruction': instruction}
+      except (OSError, ValueError, KeyError, TypeError, RuntimeError):
+        self.json(503, {'error': 'Navigation guidance unavailable'})
+        return
+      if self.require_session():
+        self.json(200, result)
+
     def sidecar_bridge_change(self, *, clear=False):
       token = self.sidecar_bridge_token()
       if token is None:
@@ -1089,6 +1120,8 @@ def make_server(*, port=8082, host='127.0.0.1', monitor=None, owner=None, crashe
         else:
           if self.require_session():
             self.json(200, result)
+      elif path == '/api/navigation/guidance':
+        self.companion_guidance_status()
       elif path == '/api/software/status':
         identity = self.settings_session()
         if identity is None:
