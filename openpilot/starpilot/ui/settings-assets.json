@@ -81,6 +81,11 @@
       "file": "icons_mici/settings/comma_icon.png",
       "bytes": 1388,
       "sha256": "7ad4ee47ec6470f788a026f95ed86bf344f64f9cf3186c9c78927233d2694a1d"
+    },
+    {
+      "file": "icons_mici/settings/network/tethering.png",
+      "bytes": 2752,
+      "sha256": "b1e322ea6e57b05b3515fcd4e9100f890e6ff80607c11360b7927fa5a9765beb"
     }
   ]
 }

@@ -56,7 +56,7 @@ class TestCompactSettingsNavigation(unittest.TestCase):
   def test_compact_main_menu_includes_shared_driving_controls(self):
     self.assertEqual([label.lower() for _, label, _, _, _ in COMPACT_MENU],
                      ["toggles", "network", "bluetooth", "force drive state", "vehicle", "device", "software",
-                      "driving model", "driving controls", "visuals", "galaxy", "pair to connect", "developer"])
+                      "driving model", "driving controls", "visuals", "galaxy", "x10 sidecar", "pair to connect", "developer"])
 
   def test_compact_driving_controls_opens_the_shared_feature_editor(self):
     from openpilot.starpilot.ui.runtime_app import StarMiciMainLayout

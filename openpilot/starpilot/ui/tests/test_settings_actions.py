@@ -9,7 +9,8 @@ from openpilot.starpilot.ui.presentation import Profile
 from openpilot.starpilot.ui.preview_home import reference_state
 from openpilot.starpilot.ui.preview_settings import SettingsPreviewInput
 from openpilot.starpilot.ui.settings_state import (
-  Destination, PreviewRouter, SettingsAction, SettingsActionKind, SettingsInput, SettingsState, TILES, tile_rects,
+  COMPACT_MENU, Destination, DestinationAvailability, PreviewRouter, SettingsAction, SettingsActionKind, SettingsInput, SettingsState, TILES,
+  compact_availability, tile_rects,
 )
 from openpilot.starpilot.ui.software_state import SoftwareRequest
 
@@ -229,6 +230,25 @@ class TestSettingsActions(unittest.TestCase):
     for target, attribute, value in ((state, "sidebar_expanded", False), (state.availability[0], "available", True)):
       with self.assertRaises(FrozenInstanceError):
         setattr(target, attribute, value)
+
+  def test_compact_availability_follows_the_drive_state_and_the_off_road_state(self):
+    pages = {Destination.TOGGLES, Destination.DEVICE, Destination.SOFTWARE, Destination.DRIVING_MODEL, Destination.DRIVING_CONTROLS,
+             Destination.APPEARANCE, Destination.GALAXY, Destination.X10, Destination.NETWORK, Destination.BLUETOOTH, Destination.VEHICLE,
+             Destination.DEVELOPER}
+    self.assertIn(Destination.X10, [entry[0] for entry in COMPACT_MENU])
+    items = SettingsState().availability
+    for forceable, offroad in ((False, False), (True, False), (False, True), (True, True)):
+      drive = {"available": forceable, "revision": "r7"}
+      result = {item.destination: item for item in compact_availability(items, drive, offroad, "onroad")}
+      self.assertEqual(set(result), set(Destination))
+      expected = pages | ({Destination.FORCE_DRIVE} if forceable else set()) | ({Destination.PAIR} if offroad else set())
+      self.assertEqual({destination for destination, item in result.items() if item.available}, expected)
+      force = result[Destination.FORCE_DRIVE]
+      self.assertEqual((force.request_value, force.request_revision, force.reason), ("onroad", "r7", None))
+      for destination, item in result.items():
+        if destination != Destination.FORCE_DRIVE:  # only the Force Drive State entry carries a request
+          self.assertEqual((item.request_value, item.request_revision, item.reason),
+                           ("", None, DestinationAvailability(destination).reason))
 
 
 if __name__ == "__main__":

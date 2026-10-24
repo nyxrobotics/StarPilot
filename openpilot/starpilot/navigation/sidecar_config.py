@@ -173,8 +173,9 @@ def sidecar_enabled() -> bool:
   return load_config().get("enabled") is True
 
 
-def sidecar_port() -> int:
-  port = load_config().get("port", DEFAULT_PORT)
+def port_of(config: Mapping[str, object]) -> int:
+  """The port a config object means: a number or text of digits in 1..65535, else the default."""
+  port = config.get("port", DEFAULT_PORT)
   if isinstance(port, str) and port.isascii() and port.isdigit():  # str.isdigit() alone also accepts "²" (int() raises) and "٣" (= port 3)
     try:
       port = int(port)
@@ -183,6 +184,10 @@ def sidecar_port() -> int:
   if isinstance(port, int) and not isinstance(port, bool) and 0 < port < 65536:
     return port
   return DEFAULT_PORT
+
+
+def sidecar_port() -> int:
+  return port_of(load_config())
 
 
 def _is_printable_ascii(text: str) -> bool:

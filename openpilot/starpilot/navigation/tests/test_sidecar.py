@@ -63,6 +63,15 @@ def test_invalid_explicit_sidecar_token_fails_closed(tmp_path, monkeypatch, inva
   assert sidecar_token() == ''
 
 
+@pytest.mark.parametrize('port', [8765, '9000', '\u0663', '\u00b2', '', 'abc', 0, 1, 65535, 65536, -1, True, 1.5, None, [1], '99999999999999999999'])
+def test_port_of_is_the_port_the_runtime_reads(tmp_path, monkeypatch, port):
+  config = tmp_path / 'sidecar.json'
+  monkeypatch.setenv('SIDECAR_CONFIG', str(config))
+  write_config(config, {'enabled': True, 'port': port})
+  assert sidecar_config.sidecar_port() == sidecar_config.port_of({'port': port})
+  assert sidecar_config.port_of({}) == sidecar_config.DEFAULT_PORT
+
+
 def token_of(length):
   """A printable ASCII token of exactly `length` characters that uses both ends of the allowed range."""
   return ('!~' + 'x' * length)[:length]

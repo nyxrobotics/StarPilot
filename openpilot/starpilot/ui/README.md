@@ -53,8 +53,11 @@ For a deterministic presentation capture with supplied sample state:
 Use `--profile large` for C3. `preview_typography`, `preview_home`,
 `preview_settings`, `preview_device`, `preview_software` and
 `preview_slc_actions` provide narrower fixtures; each exposes its arguments
-with `--help`. Previews require a graphics context. They do not launch driving
-services, operate a vehicle or establish device performance.
+with `--help`. `preview_sidecar` captures every card and keyboard dialog of the
+compact X10 sidecar settings page from sample state (it needs
+`RAYLIB_BACKEND=headless` when no display is available). Previews require a
+graphics context. They do not launch driving services, operate a vehicle or
+establish device performance.
 
 ## Performance diagnostics
 
