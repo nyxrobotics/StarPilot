@@ -21,6 +21,12 @@ NO_SERVER_MESSAGE = "sidecar: no route server (sidecar off, unusable host settin
 
 # --- the exchange with the route server (RouteSession)
 ROUTE_DEADLINE_S = 5.0                # one route request in total: connect, request and the whole answer (upstream's timeout=5 is per socket operation)
+# Alternatives cost the X10 time and answer size, and one over-long alternative refuses the whole answer (bench finding BC-03: 350 - 500 km
+# trips took 3.9 - 4.4 s with them against the 5.0 s above, and a 501 km trip was refused with 422 for an alternative of 9,609 vertices while
+# the same request without alternatives took 1.8 s). Up to this straight-line distance the comma asks for them as before (155 routes up to
+# 102.7 km: all answered, the slowest in 2.65 s); beyond it, only for the main route. The deadline is not scaled with the distance: both
+# kinds of request finish in 2.7 s or less, and a longer wait only holds the single route worker longer when the X10 is not answering.
+ALTERNATIVES_MAX_DISTANCE_M = 100_000.0
 MAX_ROUTE_BYTES = 16 * 1024 * 1024    # hard cap of an answer; the largest real one seen is 0.4 MB
 READ_CHUNK_BYTES = 64 * 1024
 ROUTE_HEADERS = {"Accept": "application/json", "Accept-Encoding": "identity", "Connection": "close", "User-Agent": "starpilot-sidecar-route/3"}
@@ -440,8 +446,8 @@ class SidecarRouteEngine(MapboxRouteEngine):
       end = (float(destination['latitude']), float(destination['longitude']))
       url = (server.directions_url + '/' +
              f'{position[0]},{position[1]};{destination["longitude"]},{destination["latitude"]}')
-      params = {'access_token': token, 'geometries': 'geojson', 'steps': 'true', 'overview': 'full',
-                'banner_instructions': 'true', 'alternatives': 'true'}
+      params = {'access_token': token, 'geometries': 'geojson', 'steps': 'true', 'overview': 'full', 'banner_instructions': 'true',
+                'alternatives': 'true' if _haversine(start, end) <= ALTERNATIVES_MAX_DISTANCE_M else 'false'}  # inf (not finite) -> false
       if exclusions:
         params['exclude'] = ','.join(exclusions)
       if bearing is not None:
