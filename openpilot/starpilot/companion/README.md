@@ -70,6 +70,22 @@ Refused through the remote tunnel.
 
 ## Android
 
+### T11 map route over Bluetooth
+
+The X10 Companion requests authenticated Galaxy `GET /api/navigation/guidance?map=1` over its paired BLE session. The reply keeps the usual short maneuver text and adds `destinationCoordinates` and the active route in GeoJSON order (`[longitude, latitude]`). The route is reduced to at most 512 points and the whole map reply is limited to 32 KiB in the Android parser. Companion sends `routeKey=<16 hex characters>` on later polls; Galaxy returns `routeUnchanged: true` without the line until the route changes. No Sidecar APK or Sidecar API token is involved in this display path.
+
+Companion caches the line and adds these extras to **every active** `CATEGORY_NAVIGATION` notification, including after a `routeUnchanged` BLE reply:
+
+| Extra key prefix: `link.firestar.companion.` | Android type | Meaning |
+| --- | --- | --- |
+| `destinationLatitude`, `destinationLongitude` | `Double` | Destination marker; absent when no valid destination is available. |
+| `routeKey` | `String` | Galaxy's current route version. |
+| `routeCoordinates` | `DoubleArray` | Up to 512 interleaved `[longitude, latitude]` pairs; empty means clear the line. |
+
+The map extras are present only while Companion has current `guiding` or `arrived` maneuver guidance; it cancels that notification while waiting for a route. This BLE display feed can work while the X10 Wi-Fi belongs to T11, but navigation still needs its normal connection to the X10 Sidecar route server to calculate or refresh an X10 route.
+
+As of 2026-10-24, the bounded route and incremental reply passed Galaxy tests, and Companion unit tests and a debug APK build passed. Projection with a **live selected route** on the T11 has not yet been checked.
+
 Install: join the Galaxy hotspot, open Galaxy → **Galaxy Access & Install** →
 **Android companion**, and install the APK. Later updates install from inside
 the app: tap **Update app** while connected over Galaxy Wi-Fi/LAN, allow
