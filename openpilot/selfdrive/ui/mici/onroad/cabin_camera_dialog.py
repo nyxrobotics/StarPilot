@@ -22,6 +22,10 @@ class CabinCameraView(CameraView):
 
 class BaseCabinCameraDialog(Widget):
   # Not a NavWidget so training guide can use this without back navigation
+  VIEW_ENABLE_PARAM = "IsDriverViewEnabled"
+  CLEAR_DISTRACTION_ON_SHOW = True
+  PUBLISH_MONITORING_ALERTS = True
+
   def __init__(self):
     super().__init__()
     self._camera_view = CabinCameraView("camerad", VisionStreamType.VISION_STREAM_CABIN)
@@ -41,19 +45,22 @@ class BaseCabinCameraDialog(Widget):
 
   def show_event(self):
     super().show_event()
-    ui_state.params.put_bool("IsDriverViewEnabled", True)
+    ui_state.params.put_bool(self.VIEW_ENABLE_PARAM, True)
     self._publish_alert_sound(None)
     device.set_override_interactive_timeout(300)
-    ui_state.params.remove("DriverTooDistracted")
-    self._pm = messaging.PubMaster(['selfdriveState'])
+    if self.CLEAR_DISTRACTION_ON_SHOW:
+      ui_state.params.remove("DriverTooDistracted")
+    if self.PUBLISH_MONITORING_ALERTS:
+      self._pm = messaging.PubMaster(['selfdriveState'])
 
   def hide_event(self):
     super().hide_event()
-    ui_state.params.put_bool("IsDriverViewEnabled", False)
+    ui_state.params.put_bool(self.VIEW_ENABLE_PARAM, False)
     device.set_override_interactive_timeout(None)
 
   def _handle_mouse_release(self, _):
-    ui_state.params.remove("DriverTooDistracted")
+    if self.CLEAR_DISTRACTION_ON_SHOW:
+      ui_state.params.remove("DriverTooDistracted")
 
   def __del__(self):
     self.close()
@@ -101,7 +108,7 @@ class BaseCabinCameraDialog(Widget):
 
   def _publish_alert_sound(self, dm_state):
     """Publish selfdriveState with only alertSound field set"""
-    if self._pm is None:
+    if not self.PUBLISH_MONITORING_ALERTS or self._pm is None:
       return
 
     AudibleAlert = log.SelfdriveState.AudibleAlert

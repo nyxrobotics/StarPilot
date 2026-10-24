@@ -12,11 +12,29 @@ from openpilot.system.ui.lib.application import MousePos
 
 
 class TestC4DrivingSideCamera(unittest.TestCase):
+  def test_preview_uses_camera_without_driver_monitoring_alerts(self):
+    dialog = page.WheelSideCameraDialog.__new__(page.WheelSideCameraDialog)
+    dialog._camera_view = Mock(frame=object())
+    dialog._pm = Mock()
+    dialog.proposal = WheelSideProposal()
+    rect = rl.Rectangle(0, 0, 536, 240)
+
+    with patch.object(BaseCabinCameraDialog, "_render", side_effect=AssertionError("driver monitoring overlay used")), \
+         patch.object(page, "_parked", return_value=True), \
+         patch.object(page.rl, "begin_scissor_mode"), patch.object(page.rl, "end_scissor_mode"), \
+         patch.object(page.rl, "draw_rectangle_rec"), patch.object(page.rl, "draw_rectangle_rounded"), \
+         patch.object(page, "gui_label"):
+      dialog._render(rect)
+
+    dialog._camera_view._render.assert_called_once_with(rect)
+    dialog._pm.send.assert_not_called()
+
   def test_no_dismisses_and_yes_saves_only_a_fresh_confirmed_proposal(self):
     settings = Mock()
     settings.save_wheel_side.return_value = True
     dialog = page.WheelSideCameraDialog.__new__(page.WheelSideCameraDialog)
     dialog.settings = settings
+    dialog.on_saved = Mock()
     dialog.proposal = WheelSideProposal()
     dialog._camera_view = None
     dialog._rect = rl.Rectangle(0, 0, 536, 240)
@@ -33,10 +51,12 @@ class TestC4DrivingSideCamera(unittest.TestCase):
       dialog._handle_mouse_release(MousePos(50, 205))
       pop.assert_called_once_with()
       settings.save_wheel_side.assert_not_called()
+      dialog.on_saved.assert_not_called()
 
       dialog._handle_mouse_press(MousePos(490, 205))
       dialog._handle_mouse_release(MousePos(490, 205))
       settings.save_wheel_side.assert_called_once_with("right")
+      dialog.on_saved.assert_called_once_with()
 
     settings.save_wheel_side.reset_mock()
     with patch.object(page, "_parked", return_value=True), \

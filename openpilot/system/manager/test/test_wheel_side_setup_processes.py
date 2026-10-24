@@ -1,0 +1,33 @@
+"""Wheel-side setup needs cabin inference without driver-monitoring demo or audio."""
+
+from types import SimpleNamespace
+
+import pytest
+
+from openpilot.common.params import Params
+from openpilot.system.manager import process_config
+
+
+@pytest.mark.parametrize(('setup', 'driver_view', 'started', 'expected'), [
+  (True, False, False, {'camerad': True, 'webcamerad': True, 'dmonitoringmodeld': True,
+                        'soundd': False, 'dmonitoringd': False}),
+  (False, True, False, {'camerad': True, 'webcamerad': True, 'dmonitoringmodeld': True,
+                        'soundd': True, 'dmonitoringd': True}),
+  (False, False, False, {'camerad': False, 'webcamerad': False, 'dmonitoringmodeld': False,
+                         'soundd': False, 'dmonitoringd': False}),
+  (False, False, True, {'camerad': True, 'webcamerad': True, 'dmonitoringmodeld': True,
+                        'soundd': True, 'dmonitoringd': True}),
+])
+def test_wheel_side_setup_process_scope(monkeypatch, setup, driver_view, started, expected):
+  monkeypatch.setattr(process_config, 'camera_requested', lambda: False)
+  values = {'IsWheelSideSetupEnabled': setup, 'IsDriverViewEnabled': driver_view}
+  params = SimpleNamespace(get_bool=lambda key: values.get(key, False))
+  processes = {proc.name: proc for proc in process_config.procs}
+
+  assert {name: processes[name].should_run(started, params, None) for name in expected} == expected
+
+
+def test_setup_param_is_registered_as_boolean(tmp_path):
+  params = Params(str(tmp_path))
+  params.put_bool('IsWheelSideSetupEnabled', True, block=True)
+  assert params.get_bool('IsWheelSideSetupEnabled')

@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 import time
 
 import pyray as rl
 
 from openpilot.selfdrive.ui.mici.onroad.cabin_camera_dialog import BaseCabinCameraDialog
-from openpilot.selfdrive.ui.mici.widgets.button import BigButton, GreyBigButton
-from openpilot.selfdrive.ui.mici.widgets.dialog import BigConfirmationDialog, BigDialog
+from openpilot.selfdrive.ui.mici.widgets.button import BigButton
+from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog
 from openpilot.selfdrive.ui.ui_state import device, ui_state
 from openpilot.starpilot.ui.driving_side_settings import DrivingSideSettings, WheelSideProposal
 from openpilot.starpilot.ui.slc_offset_feature import native_parked
@@ -32,9 +33,14 @@ def _label(side: str | None) -> str:
 class WheelSideCameraDialog(NavWidget, BaseCabinCameraDialog):
   """Show a fresh cabin-camera proposal; only a separate YES tap saves it."""
 
-  def __init__(self, settings: DrivingSideSettings):
+  VIEW_ENABLE_PARAM = "IsWheelSideSetupEnabled"
+  CLEAR_DISTRACTION_ON_SHOW = False
+  PUBLISH_MONITORING_ALERTS = False
+
+  def __init__(self, settings: DrivingSideSettings, on_saved: Callable[[], None] | None = None):
     super().__init__()
     self.settings = settings
+    self.on_saved = on_saved
     self.proposal = WheelSideProposal()
     self._last_frame = 0
     self._pressed: tuple[str, str | None] | None = None
@@ -80,8 +86,8 @@ class WheelSideCameraDialog(NavWidget, BaseCabinCameraDialog):
 
   @staticmethod
   def _button_rect(rect: rl.Rectangle, action: str) -> rl.Rectangle:
-    return rl.Rectangle(rect.x + (10 if action == "no" else rect.width - 90),
-                        rect.y + rect.height - 59, 80, 49)
+    return rl.Rectangle(rect.x + (12 if action == "no" else rect.width - 116),
+                        rect.y + rect.height - 70, 104, 60)
 
   def _target(self, pos: MousePos) -> str | None:
     for action in ("no", "yes"):
@@ -109,16 +115,24 @@ class WheelSideCameraDialog(NavWidget, BaseCabinCameraDialog):
         saved = False
       if saved:
         gui_app.pop_widget()
+        if self.on_saved is not None:
+          self.on_saved()
       else:
         gui_app.push_widget(BigDialog("", "Park and try saving the wheel side again."))
 
   def _render(self, rect: rl.Rectangle):
-    super()._render(rect)
-    overlay = rl.Rectangle(rect.x, rect.y + rect.height - 69, rect.width, 69)
+    # Draw the camera without the inherited DMoji, driver alerts, or warning sounds.
+    rl.begin_scissor_mode(int(rect.x), int(rect.y), int(rect.width), int(rect.height))
+    self._camera_view._render(rect)
+    if not self._camera_view.frame:
+      gui_label(rect, "Camera starting...", font_size=28, font_weight=FontWeight.MEDIUM,
+                alignment=TextAlignment.CENTER)
+    rl.end_scissor_mode()
+    overlay = rl.Rectangle(rect.x, rect.y + rect.height - 82, rect.width, 82)
     rl.draw_rectangle_rec(overlay, rl.Color(0, 0, 0, 225))
     candidate = self.proposal.expire(time.monotonic()) if _parked() else None
-    message = f"Wheel on {_label(candidate)}?" if candidate is not None else "Look toward camera. Waiting for a clear result."
-    gui_label(rl.Rectangle(rect.x + 96, overlay.y + 4, rect.width - 192, 61), message,
+    message = f"Wheel on {_label(candidate)}?" if candidate is not None else "Looking for driver..."
+    gui_label(rl.Rectangle(rect.x + 120, overlay.y + 4, rect.width - 240, 74), message,
               font_size=22, font_weight=FontWeight.MEDIUM, alignment=TextAlignment.CENTER)
     for action, label, enabled in (("no", "NO", True), ("yes", "YES", candidate is not None)):
       bounds = self._button_rect(rect, action)
@@ -128,71 +142,113 @@ class WheelSideCameraDialog(NavWidget, BaseCabinCameraDialog):
                 alignment=TextAlignment.CENTER, color=rl.WHITE if enabled else rl.GRAY)
 
 
+class _SideChoicePage(NavScroller):
+  """Short choice list with a check on the currently saved option."""
+
+  def __init__(self, settings: DrivingSideSettings, kind: str, on_choice, on_camera):
+    super().__init__()
+    self.settings = settings
+    self.kind = kind
+    self._check = gui_app.texture("icons_mici/settings/device/up_to_date.png", 64, 64)
+    self._options: list[tuple[str | None, BigButton, str]] = []
+
+    widgets: list[BigButton] = []
+    if kind == "wheel":
+      camera = BigButton("use camera", "review, then YES", gui_app.texture(CAMERA_ICON, 64, 64),
+                         description="The cabin camera proposes the steering-wheel position. Tap YES to save it.")
+      camera.set_click_callback(on_camera)
+      camera.set_enabled(lambda: _parked() and not self.is_dismissing)
+      widgets.append(camera)
+      choices = (("right", "wheel on right", "set manually"),
+                 ("left", "wheel on left", "set manually"),
+                 (None, "automatic", "clear saved choice"))
+    else:
+      choices = ((None, "follow wheel", "default"),
+                 ("left", "drive on left", "set manually"),
+                 ("right", "drive on right", "set manually"))
+
+    for side, title, detail in choices:
+      button = BigButton(title, detail)
+      button.set_click_callback(lambda selected=side: on_choice(kind, selected))
+      button.set_enabled(lambda: _parked() and not self.is_dismissing)
+      widgets.append(button)
+      self._options.append((side, button, detail))
+    self._scroller.add_widgets(widgets)
+
+  def _update_state(self):
+    super()._update_state()
+    state = self.settings.snapshot()
+    selected = (state.wheel_side if state.wheel_saved else None) if self.kind == "wheel" else (
+      state.traffic_side if state.traffic_saved else None)
+    for side, button, detail in self._options:
+      active = side == selected
+      button.set_icon(self._check if active else None)
+      button.set_value("selected" if active else detail)
+
+
 class DrivingSideLayoutMici(NavScroller):
   def __init__(self):
     super().__init__()
     self.settings = DrivingSideSettings(ui_state.params, _parked)
     self._camera_dialog: WheelSideCameraDialog | None = None
-    info = gui_app.texture(INFO_ICON, 64, 64)
-    camera = gui_app.texture(CAMERA_ICON, 64, 64)
+    self._wheel_choices: _SideChoicePage | None = None
+    self._traffic_choices: _SideChoicePage | None = None
 
-    self._wheel_status = GreyBigButton("wheel side", "", info)
-    self._traffic_status = GreyBigButton("road side", "", info)
+    self._wheel_button = BigButton("steering wheel", "", gui_app.texture(CAMERA_ICON, 64, 64),
+                                   description="Set the steering-wheel position by camera or manually.")
+    self._wheel_button.set_click_callback(lambda: self._open_choices("wheel"))
+    self._wheel_button.set_enabled(_parked)
 
-    camera_button = BigButton("detect wheel", "camera proposal", camera,
-                              description="While parked, show the cabin camera. A clear result is only saved after you tap YES.")
-    camera_button.set_click_callback(self._show_camera)
-    camera_button.set_enabled(_parked)
-
-    wheel_right = BigButton("wheel on right", "manual choice", camera)
-    wheel_right.set_click_callback(lambda: self._confirm("wheel", "right"))
-    wheel_left = BigButton("wheel on left", "manual choice", camera)
-    wheel_left.set_click_callback(lambda: self._confirm("wheel", "left"))
-    wheel_auto = BigButton("wheel automatic", "clear saved choice", camera)
-    wheel_auto.set_click_callback(lambda: self._confirm("wheel", None))
-
-    traffic_left = BigButton("drive on left", "manual road side", info)
-    traffic_left.set_click_callback(lambda: self._confirm("traffic", "left"))
-    traffic_right = BigButton("drive on right", "manual road side", info)
-    traffic_right.set_click_callback(lambda: self._confirm("traffic", "right"))
-    traffic_default = BigButton("road side default", "follow wheel side", info)
-    traffic_default.set_click_callback(lambda: self._confirm("traffic", None))
-
-    for button in (wheel_right, wheel_left, wheel_auto, traffic_left, traffic_right, traffic_default):
-      button.set_enabled(_parked)
-    self._scroller.add_widgets([self._wheel_status, camera_button, wheel_right, wheel_left, wheel_auto,
-                                self._traffic_status, traffic_left, traffic_right, traffic_default])
+    self._traffic_button = BigButton("traffic side", "", gui_app.texture(INFO_ICON, 64, 64),
+                                     description="By default, a right-side steering wheel means driving on the left. You can choose either traffic side.")
+    self._traffic_button.set_click_callback(lambda: self._open_choices("traffic"))
+    self._traffic_button.set_enabled(_parked)
+    self._scroller.add_widgets([self._wheel_button, self._traffic_button])
 
   def _update_state(self):
     super()._update_state()
     state = self.settings.snapshot()
-    wheel_source = "saved" if state.wheel_saved else "auto"
-    traffic_source = "saved" if state.traffic_saved else "default" if state.wheel_saved else "auto"
-    self._wheel_status.set_value(f"{_label(state.wheel_side)} ({wheel_source})")
-    self._traffic_status.set_value(f"{_label(state.traffic_side)} ({traffic_source})")
+    wheel_source = "saved" if state.wheel_saved else "automatic"
+    traffic_source = "manual" if state.traffic_saved else "default" if state.wheel_saved else "automatic"
+    self._wheel_button.set_value(f"{_label(state.wheel_side)} ({wheel_source})")
+    self._traffic_button.set_value(f"{_label(state.traffic_side)} ({traffic_source})")
+
+  def _open_choices(self, kind: str):
+    if not _parked():
+      return
+    if kind == "wheel":
+      if self._wheel_choices is None:
+        self._wheel_choices = _SideChoicePage(self.settings, kind, self._choose, self._show_camera)
+      page = self._wheel_choices
+    else:
+      if self._traffic_choices is None:
+        self._traffic_choices = _SideChoicePage(self.settings, kind, self._choose, self._show_camera)
+      page = self._traffic_choices
+    gui_app.push_widget(page)
 
   def _show_camera(self):
     if _parked():
       if self._camera_dialog is None:
-        self._camera_dialog = WheelSideCameraDialog(self.settings)
+        self._camera_dialog = WheelSideCameraDialog(self.settings, on_saved=self._camera_saved)
       gui_app.push_widget(self._camera_dialog)
 
-  def _confirm(self, kind: str, side: str | None):
+  def _camera_saved(self):
+    if self._wheel_choices is not None and gui_app.widget_in_stack(self._wheel_choices):
+      self._wheel_choices.dismiss()
+
+  def _choose(self, kind: str, side: str | None):
     if not _parked():
       return
-    noun = "wheel" if kind == "wheel" else "road"
-    text = f"restore {noun} default" if side is None else f"save {side} {noun} side"
-
-    def save():
-      try:
-        if kind == "wheel":
-          result = self.settings.clear_wheel_side() if side is None else self.settings.save_wheel_side(side)
-        else:
-          result = self.settings.clear_traffic_side() if side is None else self.settings.save_traffic_side(side)
-      except (OSError, RuntimeError, ValueError):
-        result = False
-      if not result:
-        gui_app.push_widget(BigDialog("", "Park and try saving the driving side again."))
-
-    icon = gui_app.texture(CAMERA_ICON if kind == "wheel" else INFO_ICON, 64, 64)
-    gui_app.push_widget(BigConfirmationDialog(text, icon, save))
+    page = self._wheel_choices if kind == "wheel" else self._traffic_choices
+    try:
+      if kind == "wheel":
+        result = self.settings.clear_wheel_side() if side is None else self.settings.save_wheel_side(side)
+      else:
+        result = self.settings.clear_traffic_side() if side is None else self.settings.save_traffic_side(side)
+    except (OSError, RuntimeError, ValueError):
+      result = False
+    if result:
+      if page is not None and gui_app.widget_in_stack(page):
+        page.dismiss()
+    else:
+      gui_app.push_widget(BigDialog("", "Park and try saving the driving side again."))
