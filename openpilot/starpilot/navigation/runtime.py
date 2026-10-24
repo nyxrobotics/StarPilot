@@ -7,13 +7,25 @@ import time
 import uuid
 
 from openpilot.starpilot.navigation.owner import ConflictError, NavigationOwner, ValidationError, ROUTE_AVOIDANCES
-from openpilot.starpilot.navigation.route_engine import MapboxRouteEngine
+from openpilot.starpilot.navigation.route_engine import MapboxRouteEngine, distance
 
 from openpilot.starpilot.gps.phone import read_phone_gps
 from openpilot.starpilot.gps.source import GPS_MAX_AGE_NS, GPS_SERVICES, bearing, select_location
 
 ARRIVED_NS = 5_000_000_000      # stopped at the destination this long shows "You have arrived"
 END_ROUTE_NS = 15_000_000_000   # ...and this long ends navigation, like tapping End navigation
+OFF_ROUTE_DROP_NS = 2_000_000_000  # a route the car has been off this long is dropped; one the car was on is asked for again at once
+
+# A route whose start the car never reached. The route server snaps the start of a route to its road network (the X10 up to 300 m, the
+# sidecar check accepts up to 1,000 m), so a car in a car park or a drive can stand far from the start of every route it is given.
+# That is a mismatch of start and car, not a deviation: dropping the route and asking again would only get the same snapped start (bench
+# finding BC-04: 34 requests in 71 s, each 0.5 - 0.7 s of X10 time). Such a route stays on display, without control, while the car stays
+# where it asked; once the car has moved away, a new request waits until START_RETRY_NS after the last one, twice as long for each
+# repeat, at most START_RETRY_MAX_NS. A route the car was on is never held and never delayed: leaving it is a deviation.
+START_HOLD_M = 100.   # two fixes of a parked car can be 50 m apart (25 m accuracy is accepted); a car pulling out of a drive is within
+                      # reach (50 m) of the start of its route after 91 m of the 141 m seen on the bench
+START_RETRY_NS = 10_000_000_000
+START_RETRY_MAX_NS = 60_000_000_000
 
 
 def location(sm, now_ns: int, phone_fix=None):
@@ -45,6 +57,10 @@ class RouteRuntime:
     self.retry_after = 0
     self.off_route_since = 0
     self.arrived_since = 0
+    self.fetch_origin = self.route_origin = None  # (longitude, latitude) the request in flight / the one behind self.route asked from
+    self.fetch_at = self.route_at = 0             # ...and when it was made
+    self.route_near = False                       # the car has been within reach of self.route at least once
+    self.start_mismatches = 0                     # routes in a row that the car never came near
     self.ended_revision = None
     self.session = uuid.uuid4().hex
 
@@ -86,6 +102,7 @@ class RouteRuntime:
       self.routes = []
       self.preview_only = False
       self.retry_after = self.off_route_since = self.arrived_since = 0
+      self.route_origin, self.route_near, self.start_mismatches = None, False, 0
     # A saved origin can draw a preview, but a fresh fix must calculate its own route.
     if position is not None and self.preview_only:
       self.route, self.routes = None, []
@@ -106,6 +123,8 @@ class RouteRuntime:
       if self.fetch_key == self.key:
         self.routes = getattr(route, 'alternatives', [route]) if route is not None else []
         self.route = route
+        # A new route starts its own off-route clock: the previous one's must not drop it the moment it arrives.
+        self.route_origin, self.route_at, self.route_near, self.off_route_since = self.fetch_origin, self.fetch_at, False, 0
         if self.routes:
           self.owner.record_routes(settings['revision'], self.routes)
         self.retry_after = now_ns + 30_000_000_000 if route is None else 0
@@ -131,6 +150,7 @@ class RouteRuntime:
           if self.future is None and now_ns >= self.retry_after:
             self.preview_only = True
             self.fetch_key = self.key
+            self.fetch_origin, self.fetch_at = (saved['longitude'], saved['latitude']), now_ns
             self.future = self.executor.submit(self.engine.fetch, token,
                                                (saved['longitude'], saved['latitude']), settings['destination'], saved.get('bearing'), exclusions)
       return result
@@ -140,14 +160,18 @@ class RouteRuntime:
       result['status'] = 'routeUnavailable' if self.retry_after > now_ns else 'routing'
       if self.future is None and now_ns >= self.retry_after:
         self.fetch_key = self.key
+        self.fetch_origin, self.fetch_at = coordinates, now_ns
         self.future = self.executor.submit(self.engine.fetch, token, coordinates, settings['destination'], bearing, exclusions)
       return result
     progress = self.route.progress(coordinates, speed, bearing)
+    if progress.near_route:
+      if not self.route_near:
+        self.off_route_since = 0  # the car has just reached the route: it gets its own two seconds to line up with it
+      self.route_near, self.start_mismatches = True, 0
     self.off_route_since = (self.off_route_since or now_ns) if progress.off_route else 0
     self.arrived_since = (self.arrived_since or now_ns) if progress.arrived else 0
-    if self.off_route_since and now_ns - self.off_route_since >= 2_000_000_000:
-      self.route = None
-      self.routes = []
+    if self.off_route_since and now_ns - self.off_route_since >= OFF_ROUTE_DROP_NS and not self._start_unreached(coordinates):
+      self._drop_route()
       result['status'] = 'routing'
       return result
     arrived = self.arrived_since and now_ns - self.arrived_since >= ARRIVED_NS
@@ -157,6 +181,17 @@ class RouteRuntime:
                   nextManeuver=progress.next_maneuver, route=self.route.preview(),
                   controlValid=bool(drive_id > 0 and not progress.off_route and not progress.arrived and stamp >= drive_id))
     return result
+
+  def _start_unreached(self, coordinates) -> bool:
+    """True for a route the car has never been near while the car is still where it asked for it. Never for a route it was on."""
+    return not self.route_near and self.route_origin is not None and distance(coordinates, self.route_origin) <= START_HOLD_M
+
+  def _drop_route(self) -> None:
+    self.route, self.routes, self.off_route_since = None, [], 0
+    if not self.route_near:
+      self.start_mismatches += 1
+      pause = min(START_RETRY_NS << min(self.start_mismatches - 1, 6), START_RETRY_MAX_NS)
+      self.retry_after = self.route_at + pause
 
   def _end_route(self, revision: str) -> None:
     # Once per destination; a concurrent change (new destination, Galaxy edit) wins over arrival.

@@ -60,6 +60,9 @@ class Progress:
   next_maneuver: dict
   off_route: bool
   arrived: bool
+  # Within the speed-dependent distance of the route geometry, whatever the heading says. off_route is this plus the heading check;
+  # RouteRuntime uses it to tell a route the car never reached (the server snapped its start away) from one the car left.
+  near_route: bool = True
 
 
 class NavigationRoute:
@@ -135,7 +138,8 @@ class NavigationRoute:
                               math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(delta)))
       misaligned = abs((direction - bearing + 180) % 360 - 180) > 75
     arrived = speed < 2 and distance(position, self.points[-1]) < 40 and instruction['remainingDistanceMeters'] < 40
-    return Progress(instruction, next_maneuver, separation > threshold or misaligned, arrived)
+    far = separation > threshold
+    return Progress(instruction, next_maneuver, far or misaligned, arrived, not far)
 
 
 class MapboxRouteEngine:
