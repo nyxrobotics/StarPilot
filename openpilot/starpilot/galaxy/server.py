@@ -6,6 +6,7 @@ from contextlib import nullcontext
 from http.cookies import SimpleCookie
 from ipaddress import ip_address
 import json
+import math
 import os
 import re
 import secrets
@@ -578,7 +579,21 @@ def make_server(*, port=8082, host='127.0.0.1', monitor=None, owner=None, crashe
         position = state.get('location')
         last_position = {'latitude': str(position['latitude']), 'longitude': str(position['longitude'])} if position else \
                         {'latitude': '', 'longitude': ''}
-        result = {'destination': destination, 'lastPosition': last_position, 'isMetric': state['isMetric']}
+        # The sidecar only needs the current maneuver, not the route, favorites or
+        # the navigation settings returned to an authenticated Galaxy browser.
+        instruction = state.get('instruction') if selected is not None and state['status'] in ('guiding', 'arrived') else None
+        fields = ('text', 'maneuverType', 'maneuverModifier')
+        distances = ('distanceMeters', 'remainingDistanceMeters', 'remainingDurationSeconds')
+        if (type(instruction) is not dict or
+            any(type(instruction.get(key)) is not str or len(instruction[key]) > 1024 for key in fields) or
+            any(type(instruction.get(key)) not in (int, float) or not 0 <= instruction[key] <= 1_000_000_000 or
+                not math.isfinite(instruction[key])
+                for key in distances)):
+          instruction = None
+        else:
+          instruction = {key: instruction[key] for key in (*fields, *distances)}
+        result = {'destination': destination, 'lastPosition': last_position, 'isMetric': state['isMetric'],
+                  'navigationStatus': state['status'], 'instruction': instruction}
       except (OSError, ValueError, KeyError, TypeError, RuntimeError):
         self.json(503, {'message': 'Navigation status unavailable'})
         return

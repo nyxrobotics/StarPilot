@@ -103,6 +103,8 @@ class SidecarNavigationHttpTest(unittest.TestCase):
     self.assertEqual(initial['destination'], '')
     self.assertEqual(initial['lastPosition'], {'latitude': '', 'longitude': ''})
     self.assertIs(type(initial['isMetric']), bool)
+    self.assertEqual(initial['navigationStatus'], 'disabled')
+    self.assertIsNone(initial['instruction'])
     self.assertEqual(self.request('POST', payload=PLACE), (200, {'message': 'Destination set'}))
     document = self.navigation.read()
     self.assertTrue(document['enabled'])
@@ -111,10 +113,38 @@ class SidecarNavigationHttpTest(unittest.TestCase):
     status, state = self.request()
     self.assertEqual(status, 200)
     self.assertEqual(json.loads(state['destination'])['name'], PLACE['name'])
+    self.assertEqual(state['navigationStatus'], 'waitingForLocation')
+    self.assertIsNone(state['instruction'])
     self.assertNotIn(TOKEN, json.dumps(state))
     self.assertNotIn('token', state)
     self.assertEqual(self.request('DELETE'), (200, {'message': 'Destination cleared'}))
     self.assertEqual(self.request()[1]['destination'], '')
+    self.assertIsNone(self.request()[1]['instruction'])
+
+  def test_current_maneuver_is_narrow_and_clears_with_stale_runtime(self):
+    self.assertEqual(self.request('POST', payload=PLACE)[0], 200)
+    revision = self.navigation.read()['revision']
+    maneuver = {'text': 'Turn left onto Main Street', 'maneuverType': 'turn', 'maneuverModifier': 'left',
+                'distanceMeters': 42.0, 'remainingDistanceMeters': 1500.0, 'remainingDurationSeconds': 180.0,
+                'privateRouteData': 'must not escape'}
+    self.navigation.runtime_source = lambda: {'revision': revision, 'status': 'guiding', 'instruction': maneuver, 'route': []}
+    status, state = self.request()
+    self.assertEqual(status, 200)
+    self.assertEqual(state['navigationStatus'], 'guiding')
+    self.assertEqual(state['instruction'], {key: value for key, value in maneuver.items() if key != 'privateRouteData'})
+    self.assertNotIn('privateRouteData', json.dumps(state))
+
+    # An absent runtime sample is how NavigationStatusSource reports expired
+    # cereal messages; never keep the previous maneuver on the X10.
+    self.navigation.runtime_source = lambda: None
+    status, state = self.request()
+    self.assertEqual(status, 200)
+    self.assertEqual(state['navigationStatus'], 'waitingForLocation')
+    self.assertIsNone(state['instruction'])
+
+    self.navigation.runtime_source = lambda: {'revision': revision, 'status': 'guiding',
+                                               'instruction': dict(maneuver, distanceMeters=float('nan')), 'route': []}
+    self.assertIsNone(self.request()[1]['instruction'])
 
   def test_invalid_destination_and_revoked_token_do_not_write(self):
     before = self.navigation.read()
@@ -138,7 +168,7 @@ class SidecarNavigationHttpTest(unittest.TestCase):
     self.navigation.configure({'token': mapbox_token}, self.navigation.read()['revision'], lambda: True)
     status, state = self.request()
     self.assertEqual(status, 200)
-    self.assertEqual(set(state), {'destination', 'lastPosition', 'isMetric'})
+    self.assertEqual(set(state), {'destination', 'lastPosition', 'isMetric', 'navigationStatus', 'instruction'})
     self.assertNotIn(mapbox_token, json.dumps(state))
     self.assertNotIn(TOKEN, json.dumps(state))
 
