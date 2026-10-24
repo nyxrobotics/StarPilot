@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Build
+import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -27,6 +28,11 @@ class NavigationGuidanceService : Service() {
         private const val SERVICE_ID = 4
         private const val GUIDANCE_ID = 5
         private const val MAX_SAMPLE_AGE_MS = 10_000L
+        // AARE reads these bounded extras from our existing navigation notification.
+        private const val EXTRA_DESTINATION_LATITUDE = "link.firestar.companion.destinationLatitude"
+        private const val EXTRA_DESTINATION_LONGITUDE = "link.firestar.companion.destinationLongitude"
+        private const val EXTRA_ROUTE_KEY = "link.firestar.companion.routeKey"
+        private const val EXTRA_ROUTE_COORDINATES = "link.firestar.companion.routeCoordinates"
         fun enabled(prefs: android.content.SharedPreferences) = prefs.getBoolean("androidAutoGuidance", false)
     }
 
@@ -38,6 +44,7 @@ class NavigationGuidanceService : Service() {
     @Volatile private var lastSample = 0L
     private var lastConnectAttempt = 0L
     private var own: BleTransport? = null
+    private val routeCache = NavigationRouteCache()
     private var status = ""
     private val staleCheck = object : Runnable {
         override fun run() {
@@ -86,17 +93,20 @@ class NavigationGuidanceService : Service() {
             return
         }
         try {
-            val response = transport.request(JSONObject().put("method", "GET").put("path", "/api/navigation/guidance"), 10)
+            val response = transport.request(JSONObject().put("method", "GET").put("path", routeCache.queryPath()), 20)
             if (response.getInt("status") != 200) error("Guidance unavailable")
             val encoded = response.getString("body")
-            if (encoded.length > 5_500) error("Guidance exceeds limit")
-            val guidance = NavigationGuidancePolicy.parse(Base64.getDecoder().decode(encoded))
+            if (encoded.length > 44_000) error("Guidance exceeds limit")
+            val sample = NavigationGuidancePolicy.parseMapSample(Base64.getDecoder().decode(encoded))
+                ?: error("Invalid map guidance")
+            routeCache.apply(sample)
+            val guidance = sample.guidance
             if (guidance == null) {
                 clearGuidance()
                 updateStatus("Connected; waiting for route")
             } else {
                 lastSample = SystemClock.elapsedRealtime()
-                notifications.notify(GUIDANCE_ID, guidanceNotice(guidance))
+                notifications.notify(GUIDANCE_ID, guidanceNotice(guidance, sample.destinationCoordinates))
                 updateStatus("Connected to comma")
             }
         } catch (_: Exception) {
@@ -138,14 +148,22 @@ class NavigationGuidanceService : Service() {
             .addAction(Notification.Action.Builder(null, "Stop", stop).build()).build()
     }
 
-    private fun guidanceNotice(guidance: NavigationGuidance): Notification {
+    private fun guidanceNotice(guidance: NavigationGuidance, destination: DoubleArray?): Notification {
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        val mapExtras = Bundle().apply {
+            if (destination != null) {
+                putDouble(EXTRA_DESTINATION_LONGITUDE, destination[0])
+                putDouble(EXTRA_DESTINATION_LATITUDE, destination[1])
+            }
+            routeCache.routeKey?.let { putString(EXTRA_ROUTE_KEY, it) }
+            putDoubleArray(EXTRA_ROUTE_COORDINATES, routeCache.coordinates)
+        }
         return Notification.Builder(this, GUIDANCE_CHANNEL).setSmallIcon(android.R.drawable.ic_dialog_map)
             .setContentTitle(guidance.distanceLabel()).setContentText(guidance.instruction)
             .setSubText("To ${guidance.destination}").setContentIntent(open)
             .setCategory(Notification.CATEGORY_NAVIGATION).setOngoing(true).setOnlyAlertOnce(true)
-            .setShowWhen(false).build()
+            .setShowWhen(false).addExtras(mapExtras).build()
     }
 
     private fun updateStatus(text: String) {

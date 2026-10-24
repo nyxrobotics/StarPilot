@@ -40,6 +40,7 @@ from openpilot.starpilot.galaxy.flm_training_results import FlmTrainingResults
 from openpilot.starpilot.galaxy.sentry_events import SentryEvents, SentryEventsUnavailable
 from openpilot.starpilot.sentry_mode.notifications import NotificationOwner, NotificationUnavailable
 from openpilot.starpilot.galaxy.map_status import MapStatus, MapUnavailable
+from openpilot.starpilot.galaxy.navigation_map import bounded_route, destination_coordinates
 from openpilot.starpilot.galaxy.map_operations import MapOperationError, MapOperations, validate_action
 from openpilot.starpilot.galaxy.plots import Plots
 from openpilot.starpilot.galaxy.software_status import SoftwareStatus, SoftwareUnavailable
@@ -606,7 +607,16 @@ def make_server(*, port=8082, host='127.0.0.1', monitor=None, owner=None, crashe
       if not self.require_session():
         return
       try:
-        state = navigation_owner().snapshot()
+        # The map extension is opt-in, keeping old companion replies very small.
+        try:
+          query = parse_qs(urlsplit(self.path).query, max_num_fields=2)
+        except ValueError:
+          query = {}
+        map_requested = query.get('map') == ['1']
+        route_key = query.get('routeKey', [''])[0] if map_requested else ''
+        if not re.fullmatch(r'[0-9a-f]{16}', route_key):
+          route_key = ''
+        state = navigation_owner().snapshot(route_key if map_requested and route_key else None)
         status = state['status']
         selected = state.get('destination')
         name = selected.get('name') if type(selected) is dict else None
@@ -626,6 +636,14 @@ def make_server(*, port=8082, host='127.0.0.1', monitor=None, owner=None, crashe
         result = {'status': status if type(status) is str and len(status) <= 40 else 'unavailable',
                   'destination': name, 'isMetric': state['isMetric'] if type(state.get('isMetric')) is bool else True,
                   'instruction': instruction}
+        if map_requested:
+          result['destinationCoordinates'] = destination_coordinates(selected)
+          current_key = state.get('routeKey')
+          result['routeKey'] = current_key if type(current_key) is str and re.fullmatch(r'[0-9a-f]{16}', current_key) else ''
+          if state.get('routeUnchanged') is True and result['routeKey'] == route_key:
+            result['routeUnchanged'] = True
+          else:
+            result['route'] = bounded_route(state.get('route'))
       except (OSError, ValueError, KeyError, TypeError, RuntimeError):
         self.json(503, {'error': 'Navigation guidance unavailable'})
         return

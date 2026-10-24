@@ -172,6 +172,41 @@ class NavigationHttpTest(unittest.TestCase):
       state['instruction']['distanceMeters'] = float('nan')
       self.assertIsNone(self.request('/api/navigation/guidance', cookie=self.local_cookie)[1]['instruction'])
 
+  def test_companion_map_guidance_sends_bounded_active_route_only_when_changed(self):
+    self.assertEqual(self.request('/api/navigation/guidance?map=1')[0], 401)
+    self.action('configure', patch={'enabled': True, 'token': 'pk.test'})
+    self.action('select', destination=PLACE)
+    revision = self.navigation.read()['revision']
+    line = [{'latitude': 41.1 + (0.001 if index >= 4000 else 0), 'longitude': -88.2 + index / 100_000}
+            for index in range(8000)]
+    self.navigation.runtime_source = lambda: {'revision': revision, 'status': 'guiding',
+                                               'instruction': {'text': 'Continue', 'distanceMeters': 300.0}, 'route': line}
+    path = '/api/navigation/guidance?map=1'
+    status, first, _ = self.request(path, cookie=self.local_cookie)
+    self.assertEqual(status, 200)
+    self.assertEqual(first['destinationCoordinates'], [-88.2, 41.1])
+    self.assertEqual(first['instruction']['text'], 'Continue')
+    self.assertLessEqual(len(first['route']), 512)
+    self.assertEqual(first['route'][0], [-88.2, 41.1])
+    self.assertEqual(first['route'][-1], [-88.12001, 41.101])
+    self.assertLess(len(json.dumps(first).encode()), 32_768)
+    self.assertNotIn('recents', first)
+    self.assertNotIn('pk.test', json.dumps(first))
+
+    status, unchanged, _ = self.request(path + '&routeKey=' + first['routeKey'], cookie=self.local_cookie)
+    self.assertEqual(status, 200)
+    self.assertEqual(unchanged['routeKey'], first['routeKey'])
+    self.assertTrue(unchanged['routeUnchanged'])
+    self.assertNotIn('route', unchanged)
+    self.assertEqual(unchanged['destinationCoordinates'], [-88.2, 41.1])
+
+    line.append({'latitude': 41.101, 'longitude': -88.12})
+    status, changed, _ = self.request(path + '&routeKey=' + first['routeKey'], cookie=self.local_cookie)
+    self.assertEqual(status, 200)
+    self.assertNotEqual(changed['routeKey'], first['routeKey'])
+    self.assertIn('route', changed)
+    self.assertNotIn('routeUnchanged', changed)
+
   def test_keys_require_parked_but_destinations_do_not(self):
     self.parked = False
     self.assertEqual(self.action('configure', patch={'token': 'pk.new-key'})[0], 409)
