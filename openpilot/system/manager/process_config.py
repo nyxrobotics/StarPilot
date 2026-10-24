@@ -142,9 +142,12 @@ procs = [
   PythonProcess("sentry_motion", "openpilot.starpilot.sentry_mode.runtime", sentry_motion, enabled=not PC),
   PythonProcess("vasm_monitor", "openpilot.starpilot.spot_monitor.runtime", vasm_monitor, enabled=not PC),
   PythonProcess("ui", "openpilot.selfdrive.ui.ui", always_run, restart_on_exit=True),
-  PythonProcess("navigationd", "openpilot.starpilot.navigation.runtime", always_run),
-  PythonProcess("navtilesd", "openpilot.starpilot.navigation.navtilesd", always_run, enabled=platform.system() == "Linux"),
-  PythonProcess("galaxy", "openpilot.starpilot.galaxy.managed", galaxy_local),
+  # Without restart_on_exit a dead process of an always-running owner stays dead until the whole stack restarts (X10 sidecar bench, BC-11).
+  # The manager restarts after 1, 2, 4, 8, 16 and then every 30 s, and forgets the failures after a minute of running.
+  PythonProcess("navigationd", "openpilot.starpilot.navigation.runtime", always_run, restart_on_exit=True),
+  PythonProcess("navtilesd", "openpilot.starpilot.navigation.navtilesd", always_run, enabled=platform.system() == "Linux",
+                restart_on_exit=True),
+  PythonProcess("galaxy", "openpilot.starpilot.galaxy.managed", galaxy_local, restart_on_exit=True),
   PythonProcess("galaxy_phone", "openpilot.starpilot.galaxy_bluetooth.bootstrap", galaxy_local,
                 enabled=COMMA_HARDWARE and not os.environ.get("OPENPILOT_PREFIX"), restart_on_exit=True),
   PythonProcess("replay_owner", "openpilot.starpilot.replay.owner", only_offroad,

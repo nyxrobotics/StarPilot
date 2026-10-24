@@ -150,6 +150,65 @@ class TestProcessRecovery(unittest.TestCase):
     restarting = {p.name for p in procs if getattr(p, "restart_on_exit", False)}
     self.assertLessEqual({"ui", "soundd", "android_autod"}, restarting)
 
+  # The X10 sidecar flow lives in these three: a dead navigationd turns destinations into no routes, a dead galaxy answers the X10 with
+  # connection refused, a dead navtilesd leaves the onroad map without new tiles. Without restart_on_exit the manager never started a
+  # dead PythonProcess again (start() returns while proc is set) until the whole stack was restarted (bench finding BC-11).
+  NAVIGATION_OWNERS = ("navigationd", "galaxy", "navtilesd")
+
+  def configured_copy(self, name):
+    from openpilot.system.manager.process_config import managed_processes
+    configured = managed_processes[name]
+    assert isinstance(configured, process.PythonProcess)
+    return process.PythonProcess(name, configured.module, configured.should_run, restart_on_exit=configured.restart_on_exit)
+
+  def test_navigation_and_galaxy_owners_restart_after_a_crash(self):
+    for name in self.NAVIGATION_OWNERS:
+      with self.subTest(process=name):
+        p = self.configured_copy(name)
+        self.assertTrue(p.restart_on_exit)
+        self.step(p, started=False)  # parked: they run offroad too
+        old = p.proc
+        assert isinstance(old, Child)
+        old.exitcode = -9  # killed, like the bench's `kill <pid>`
+        self.step(p, started=False)
+        self.assertIs(p.proc, old)
+        self.now += 1.01
+        self.step(p, started=False)
+        self.assertIsNot(p.proc, old)
+        self.assertTrue(old.joined)
+        assert isinstance(p.proc, Child)
+        self.assertIsNone(p.proc.exitcode)
+
+  def test_navigation_and_galaxy_owners_keep_running_onroad_and_offroad(self):
+    from openpilot.system.manager.process_config import managed_processes
+    with patch.dict(process.os.environ, clear=False) as environ:
+      environ.pop("STARPILOT_GALAXY_DISABLE", None)
+      for name in self.NAVIGATION_OWNERS:
+        for started in (False, True):
+          self.assertTrue(managed_processes[name].should_run(started, Mock(), None), (name, started))
+      environ["STARPILOT_GALAXY_DISABLE"] = "1"
+      self.assertFalse(managed_processes["galaxy"].should_run(False, Mock(), None))
+      self.assertTrue(managed_processes["navigationd"].should_run(False, Mock(), None))
+
+  def test_a_crash_looping_navigation_owner_cannot_storm_the_manager(self):
+    for name in self.NAVIGATION_OWNERS:
+      with self.subTest(process=name):
+        p = self.configured_copy(name)
+        starts, last = [], None
+        for _ in range(1200):  # ten minutes of the manager loop (2 Hz) with a process that dies the moment it starts
+          self.step(p, started=False)
+          if p.proc is not None and p.proc is not last:
+            starts.append(self.now)
+            last = p.proc
+          if p.proc is not None and p.proc.exitcode is None:
+            p.proc.exitcode = 1
+          self.now += 0.5
+        gaps = [round(b - a, 1) for a, b in zip(starts, starts[1:], strict=False)]
+        self.assertLessEqual(len(starts), 25, gaps)
+        self.assertEqual(gaps[:6], [1.5, 2.5, 4.5, 8.5, 16.5, 30.5], "1, 2, 4, 8, 16, 30 s after the manager noticed the death")
+        self.assertGreaterEqual(min(gaps), 1.5)
+        self.assertEqual(set(gaps[5:]), {30.5}, "the pause stops growing at 30 s")
+
 
   def test_sensor_three_recovery_cycles_obey_backoff_and_stop_eligibility(self):
     from openpilot.system.manager import process_config
