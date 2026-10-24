@@ -4,16 +4,16 @@ This branch integrates the X10 route server with StarPilot's 7.0 navigation runt
 
 ## Connection and settings
 
-The comma and X10 must be able to reach each other on the same trusted local network. Give each a stable IP address. In the **X10 app**, set the comma IP manually and set a shared API token of 20–128 printable ASCII characters. The token is used for both X10 route requests and destination commands. The X10 route server listens on port 8765 by default.
+The comma and X10 must be able to reach each other on the same trusted local network. Give each a stable IP address. In the **X10 app**, set the comma IP manually and set a shared API token of 10–128 printable ASCII characters (no spaces). The token is used for both X10 route requests and destination commands. The X10 route server listens on port 8765 by default.
 
-On the **comma**, create `/data/sidecar.json` with mode 0600. `host` is the **X10 IP**, not the comma IP; `token` must match the X10 app setting. Use a newly generated value, for example `openssl rand -hex 24` on a trusted machine. Do not reuse a Mapbox token.
+On the **comma**, create `/data/sidecar.json` with mode 0600. `host` is the **X10 IP**, not the comma IP; `token` must match the X10 app setting. Use a newly generated value, for example `openssl rand -hex 24` on a trusted machine. Do not reuse a Mapbox token. A short token is easier to guess: 10 characters is the minimum the comma accepts, and a random value of 24 or more characters is recommended on any shared network. If the X10 app still refuses a token shorter than 20 characters, update the X10 app; the comma accepts 10–128.
 
 ```json
 {
   "enabled": true,
   "host": "<X10 IPv4 address>",
   "port": 8765,
-  "token": "<same 20–128 character token as X10>"
+  "token": "<same 10–128 character token as X10>"
 }
 ```
 

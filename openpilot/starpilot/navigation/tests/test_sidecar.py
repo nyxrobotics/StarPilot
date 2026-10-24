@@ -63,6 +63,60 @@ def test_invalid_explicit_sidecar_token_fails_closed(tmp_path, monkeypatch, inva
   assert sidecar_token() == ''
 
 
+def token_of(length):
+  """A printable ASCII token of exactly `length` characters that uses both ends of the allowed range."""
+  return ('!~' + 'x' * length)[:length]
+
+
+@pytest.mark.parametrize('length, accepted', [(0, False), (1, False), (9, False), (10, True), (11, True), (24, True),
+                                             (127, True), (128, True), (129, False), (1000, False)])
+def test_token_strength_boundaries_are_10_and_128(length, accepted):
+  token = token_of(length)
+  assert len(token) == length
+  assert sidecar_config.is_valid_token(token) is accepted
+  assert (sidecar_config.token_problem(token) is None) is accepted
+  assert sidecar_config.TOKEN_MIN_LENGTH == 10 and sidecar_config.TOKEN_MAX_LENGTH == 128
+
+
+def test_only_printable_ascii_0x21_to_0x7e_is_accepted_in_a_token():
+  codes = [*range(0x300), 0x2028, 0x3042, 0xFF01, 0x1F600, 0xD800, 0xDFFF]
+  for code in codes:
+    token = 'a' * 9 + chr(code)
+    assert sidecar_config.is_valid_token(token) is (0x21 <= code <= 0x7E), hex(code)
+  for edge in ('!' * 10, '~' * 10, 'a' * 5 + '!' + 'b' * 4, 'a' * 5 + '~' + 'b' * 4):
+    assert sidecar_config.is_valid_token(edge)
+  for padded in (' ' + 'a' * 10, 'a' * 10 + ' ', 'a' * 10 + '\n', '\t' + 'a' * 10):
+    assert not sidecar_config.is_valid_token(padded)
+
+
+@pytest.mark.parametrize('value', [None, 0, 1.5, True, b'abcdefghijkl', ['abcdefghijkl'], {'token': 'abcdefghijkl'}])
+def test_a_token_must_be_text(value):
+  assert sidecar_config.token_problem(value) == 'The token must be text'
+  assert not sidecar_config.is_valid_token(value)
+
+
+def test_token_problem_messages_name_the_rule_but_never_the_token():
+  marker = 'ZZSECRETMARKERZZ'
+  messages = [sidecar_config.token_problem(marker[:8]) or '', sidecar_config.token_problem(marker + ' x') or '',
+              sidecar_config.token_problem(marker * 12) or '', sidecar_config.token_problem(marker + '\u00e9') or '']
+  assert '' not in messages and len(set(messages)) == 3  # too short, too long, and two ways to use a bad character
+  assert all(marker not in message and marker[:8] not in message for message in messages)
+  assert 'at least 10' in (sidecar_config.token_problem('short') or '')
+  assert 'at most 128' in (sidecar_config.token_problem('x' * 129) or '')
+  assert 'printable ASCII' in (sidecar_config.token_problem('has space 12345') or '')
+
+
+def test_route_token_reader_stays_lenient_while_the_strength_rule_is_strict(tmp_path, monkeypatch):
+  config = tmp_path / 'sidecar.json'
+  monkeypatch.setenv('SIDECAR_CONFIG', str(config))
+  for token in ('short', 'a', token_of(9), token_of(128)):
+    write_config(config, {'enabled': True, 'token': token})
+    assert sidecar_token() == token  # the route server decides what it accepts; this device only sends it
+  write_config(config, {'enabled': True})
+  assert sidecar_token() == sidecar_config.DEFAULT_TOKEN
+  assert not sidecar_config.is_valid_token(sidecar_config.DEFAULT_TOKEN)
+
+
 @pytest.mark.parametrize('content', [
   'not json', '[]', 'null', '{}', '{"enabled":"true"}', '{"enabled":1}', '{"enabled":false}',
 ])

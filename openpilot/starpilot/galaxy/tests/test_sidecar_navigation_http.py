@@ -81,6 +81,24 @@ class SidecarNavigationHttpTest(unittest.TestCase):
     self.config(enabled=False, host='127.0.0.1', token=TOKEN)
     self.assertEqual(self.request()[0], 403)
 
+  def test_bridge_accepts_tokens_of_10_to_128_printable_characters_only(self):
+    def token_of(length):
+      return ('!~' + 'x' * length)[:length]
+
+    for length, expected in ((0, 403), (1, 403), (9, 403), (10, 200), (11, 200), (24, 200), (128, 200), (129, 403)):
+      token = token_of(length)
+      self.config(enabled=True, host='127.0.0.1', token=token)
+      status = self.request(token=token or None)[0]
+      self.assertEqual(status, expected, length)
+    # The configured token itself is refused before any header is compared, so a well-formed header proves the config check.
+    for bad in ('has space in token', ' leading-space-token', 'trailing-space-token ', 'tab\tinside-token', 'new\nline-token-0',
+                'nul\x00-token-0123', 'del\x7f-token-0123', 'caf\u00e9-token-0123', '\u65e5\u672c\u8a9e\u306e\u30c8\u30fc\u30af\u30f3\u3067\u3059\u3088'):
+      self.config(enabled=True, host='127.0.0.1', token=bad)
+      self.assertEqual(self.request(token='unrelated-but-valid-token')[0], 403, repr(bad))
+    for wrong_type in (None, 12345678901234567890, True, ['abcdefghijklmnop']):
+      self.config(enabled=True, host='127.0.0.1', token=wrong_type)
+      self.assertEqual(self.request(token='unrelated-but-valid-token')[0], 403, repr(wrong_type))
+
   def test_bridge_rejects_remote_tunnel_browser_origin_and_forged_host(self):
     self.assertEqual(self.request(remote=True)[0], 403)
     self.assertEqual(self.request(origin='http://127.0.0.1')[0], 403)

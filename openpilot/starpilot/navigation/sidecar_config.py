@@ -20,6 +20,11 @@ Config file keys (all optional except "enabled"):
   port       TCP port of the route server (default 8765)
   token      sent as access_token; the route server may require it as a shared secret (default "sidecar")
 
+Token rules: the route request reader below is lenient (any printable ASCII token of 1..128 characters is sent, the route server decides
+what it accepts, and a missing key means the default). Where this device authenticates or writes a secret, the strength rule applies:
+TOKEN_MIN_LENGTH..TOKEN_MAX_LENGTH (10..128) printable ASCII characters, no spaces (token_problem). That is the Galaxy X10 bridge
+(destination commands from the X10) and the settings screen's writer (save_config).
+
 "host": "auto" (DESIGN section 2: the app must work in all three topologies, the patch assumes none):
   A  the head unit is the hotspot           -> it is the default gateway of `interface`
   B  the comma is the hotspot (head unit    -> `interface` has no default gateway; the head unit is one of its
@@ -51,7 +56,7 @@ import socket
 import struct
 import threading
 import time
-from typing import NamedTuple
+from typing import NamedTuple, TypeGuard
 
 CONFIG_PATH = "/data/sidecar.json"
 CONFIG_ENV = "SIDECAR_CONFIG"
@@ -61,6 +66,8 @@ ARP_TABLE_PATH = "/proc/net/arp"
 DEFAULT_PORT = 8765
 DEFAULT_INTERFACE = "wlan0"
 DEFAULT_TOKEN = "sidecar"
+TOKEN_MIN_LENGTH = 10   # shortest token the Galaxy X10 bridge accepts and the settings screen writes (token_problem)
+TOKEN_MAX_LENGTH = 128
 DIRECTIONS_PATH = "/directions/v5/mapbox/driving-traffic"
 
 HOST_AUTO = "auto"
@@ -175,13 +182,43 @@ def sidecar_port() -> int:
   return DEFAULT_PORT
 
 
+def _is_printable_ascii(text: str) -> bool:
+  """Only 0x21-0x7e: no space, no control character (including DEL), nothing beyond ASCII."""
+  return text.isascii() and all("!" <= ch <= "~" for ch in text)
+
+
+def token_problem(token: object) -> str | None:
+  """Why `token` is not acceptable as the shared X10 token, or None when it is.
+
+  One rule for every place that checks token strength (the Galaxy X10 bridge and the settings screen's writer): a str of
+  TOKEN_MIN_LENGTH..TOKEN_MAX_LENGTH printable ASCII characters. The message names the rule and the length, never the token.
+  """
+  if type(token) is not str:
+    return "The token must be text"
+  if not _is_printable_ascii(token):
+    return "The token may only use printable ASCII characters, without spaces"
+  if len(token) < TOKEN_MIN_LENGTH:
+    return f"The token needs at least {TOKEN_MIN_LENGTH} characters (now {len(token)})"
+  if len(token) > TOKEN_MAX_LENGTH:
+    return f"The token may have at most {TOKEN_MAX_LENGTH} characters (now {len(token)})"
+  return None
+
+
+def is_valid_token(token: object) -> TypeGuard[str]:
+  return token_problem(token) is None
+
+
 def sidecar_token() -> str:
-  """Route API access_token; an explicitly invalid value disables route fetches."""
+  """Route API access_token; an explicitly invalid value disables route fetches.
+
+  Lenient on purpose (see the module docstring): this device only sends the token, so a short legacy value (and the default for a
+  missing key) keeps working. The strength rule, is_valid_token(), guards what this device accepts and writes.
+  """
   config = load_config()
   if "token" not in config:
     return DEFAULT_TOKEN
   token = config["token"]
-  if isinstance(token, str) and 1 <= len(token) <= 128 and token.isascii() and all("!" <= ch <= "~" for ch in token):
+  if isinstance(token, str) and 1 <= len(token) <= TOKEN_MAX_LENGTH and _is_printable_ascii(token):
     return token
   return ""
 

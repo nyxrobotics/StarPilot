@@ -545,8 +545,7 @@ def make_server(*, port=8082, host='127.0.0.1', monitor=None, owner=None, crashe
       host = config.get('host')
       token = config.get('token')
       if (config.get('enabled') is not True or type(host) is not str or not sidecar_config.is_lan_address(host) or
-          type(token) is not str or not 20 <= len(token) <= 128 or
-          any(not 0x21 <= ord(character) <= 0x7e for character in token)):
+          not sidecar_config.is_valid_token(token)):  # 10-128 printable ASCII characters, the settings screen's rule
         return denied(403)
       try:
         if ip_address(peer) != ip_address(host):
