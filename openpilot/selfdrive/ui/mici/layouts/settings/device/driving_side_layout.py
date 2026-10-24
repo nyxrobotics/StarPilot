@@ -26,6 +26,10 @@ def _parked() -> bool:
   return native_parked(ui_state) and not ui_state.engaged
 
 
+def _camera_setup_allowed() -> bool:
+  return _parked() and not ui_state.ignition
+
+
 def _label(side: str | None) -> str:
   return {"left": "left", "right": "right"}.get(side, "unknown")
 
@@ -68,8 +72,10 @@ class WheelSideCameraDialog(NavWidget, BaseCabinCameraDialog):
     super()._update_state()
     now = time.monotonic()
     self.proposal.expire(now)
-    if not _parked():
+    if not _camera_setup_allowed():
       self.proposal.reset()
+      if self._active and self in gui_app._nav_stack:
+        gui_app.pop_widget(gui_app._nav_stack.index(self))
       return
     sm = ui_state.sm
     frame = sm.recv_frame.get("driverStateV2", 0)
@@ -98,17 +104,17 @@ class WheelSideCameraDialog(NavWidget, BaseCabinCameraDialog):
   def _handle_mouse_press(self, pos: MousePos):
     action = self._target(pos)
     candidate = self.proposal.expire(time.monotonic())
-    self._pressed = (action, candidate) if action == "no" or action == "yes" and candidate is not None and _parked() else None
+    self._pressed = (action, candidate) if action == "no" or action == "yes" and candidate is not None and _camera_setup_allowed() else None
 
-  def _handle_mouse_release(self, pos: MousePos):
-    super()._handle_mouse_release(pos)
+  def _handle_mouse_release(self, _: MousePos):
+    super()._handle_mouse_release(_)
     pressed = self._pressed
     self._pressed = None
-    if pressed is None or self._target(pos) != pressed[0]:
+    if pressed is None or self._target(_) != pressed[0]:
       return
     if pressed[0] == "no":
       gui_app.pop_widget()
-    elif pressed[1] is not None and pressed[1] == self.proposal.expire(time.monotonic()):
+    elif _camera_setup_allowed() and pressed[1] is not None and pressed[1] == self.proposal.expire(time.monotonic()):
       try:
         saved = self.settings.save_wheel_side(pressed[1])
       except (OSError, RuntimeError, ValueError):
@@ -130,7 +136,7 @@ class WheelSideCameraDialog(NavWidget, BaseCabinCameraDialog):
     rl.end_scissor_mode()
     overlay = rl.Rectangle(rect.x, rect.y + rect.height - 82, rect.width, 82)
     rl.draw_rectangle_rec(overlay, rl.Color(0, 0, 0, 225))
-    candidate = self.proposal.expire(time.monotonic()) if _parked() else None
+    candidate = self.proposal.expire(time.monotonic()) if _camera_setup_allowed() else None
     message = f"Wheel on {_label(candidate)}?" if candidate is not None else "Looking for driver..."
     gui_label(rl.Rectangle(rect.x + 120, overlay.y + 4, rect.width - 240, 74), message,
               font_size=22, font_weight=FontWeight.MEDIUM, alignment=TextAlignment.CENTER)
@@ -157,7 +163,7 @@ class _SideChoicePage(NavScroller):
       camera = BigButton("use camera", "review, then YES", gui_app.texture(CAMERA_ICON, 64, 64),
                          description="The cabin camera proposes the steering-wheel position. Tap YES to save it.")
       camera.set_click_callback(on_camera)
-      camera.set_enabled(lambda: _parked() and not self.is_dismissing)
+      camera.set_enabled(lambda: _camera_setup_allowed() and not self.is_dismissing)
       widgets.append(camera)
       choices = (("right", "wheel on right", "set manually"),
                  ("left", "wheel on left", "set manually"),
@@ -227,7 +233,7 @@ class DrivingSideLayoutMici(NavScroller):
     gui_app.push_widget(page)
 
   def _show_camera(self):
-    if _parked():
+    if _camera_setup_allowed():
       if self._camera_dialog is None:
         self._camera_dialog = WheelSideCameraDialog(self.settings, on_saved=self._camera_saved)
       gui_app.push_widget(self._camera_dialog)

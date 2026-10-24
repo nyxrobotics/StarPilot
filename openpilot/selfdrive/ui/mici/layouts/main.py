@@ -21,6 +21,9 @@ class MiciMainLayout(Scroller):
   def __init__(self):
     super().__init__(snap_items=True, spacing=0, pad=0, scroll_indicator=False, edge_shadows=False)
 
+    # The preview belongs to this UI process; clear a stale request after a UI restart.
+    ui_state.params.put_bool("IsWheelSideSetupEnabled", False, block=True)
+
     self._pm = messaging.PubMaster(['bookmarkButton', 'userBookmark'])
 
     self._prev_onroad = False

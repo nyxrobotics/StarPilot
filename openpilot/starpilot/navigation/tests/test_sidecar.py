@@ -9,6 +9,7 @@ from pathlib import Path
 import threading
 import time
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 
@@ -36,6 +37,12 @@ def write_config(path, value):
   # Keep the cached config signature distinct even on filesystems with coarse timestamps.
   stamp = time.time_ns() + 1_000_000_000
   os.utime(path, ns=(stamp, stamp))
+
+
+def fail_if_called(message: str):
+  def reject(*_args: object) -> None:
+    raise AssertionError(message)
+  return reject
 
 
 def test_real_x10_response_is_accepted_by_the_new_route_parser():
@@ -86,7 +93,7 @@ def test_unusable_fixed_host_never_falls_back_to_discovery(tmp_path, monkeypatch
   config = tmp_path / 'sidecar.json'
   monkeypatch.setenv('SIDECAR_CONFIG', str(config))
   write_config(config, {'enabled': True, 'host': host})
-  monkeypatch.setattr(sidecar_config, '_discover', lambda *_args: pytest.fail('discovery must not run'))
+  monkeypatch.setattr(sidecar_config, '_discover', fail_if_called('discovery must not run'))
   assert sidecar_config.resolve_route_server() is None
 
 
@@ -94,7 +101,7 @@ def test_fixed_host_and_port_need_no_network_probe(tmp_path, monkeypatch):
   config = tmp_path / 'sidecar.json'
   monkeypatch.setenv('SIDECAR_CONFIG', str(config))
   write_config(config, {'enabled': True, 'host': '192.168.1.10', 'port': '9000'})
-  monkeypatch.setattr(sidecar_config, '_discover', lambda *_args: pytest.fail('discovery must not run'))
+  monkeypatch.setattr(sidecar_config, '_discover', fail_if_called('discovery must not run'))
   assert sidecar_config.sidecar_route_server() == RouteServer('192.168.1.10', 9000, SOURCE_FIXED)
 
 
@@ -249,7 +256,7 @@ def test_route_transport_does_not_follow_redirects_or_read_oversized_answers():
         self.send_header('Content-Length', str(MAX_ROUTE_BYTES + 1))
         self.end_headers()
 
-    def log_message(self, *_args):
+    def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
       pass
 
   server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
@@ -272,7 +279,7 @@ def test_route_transport_does_not_follow_redirects_or_read_oversized_answers():
   'http://0.0.0.0/x', 'http:///x', '/directions/x', '',
 ])
 def test_route_transport_rejects_non_lan_urls_before_connect(monkeypatch, url):
-  monkeypatch.setattr(RouteSession, '_exchange', staticmethod(lambda *_args: pytest.fail('must not connect')))
+  monkeypatch.setattr(RouteSession, '_exchange', staticmethod(fail_if_called('must not connect')))
   with pytest.raises(RouteFetchError):
     RouteSession().get(url)
 
@@ -309,7 +316,7 @@ def test_route_transport_deadline_covers_a_trickling_body(monkeypatch):
       except OSError:
         pass
 
-    def log_message(self, *_args):
+    def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
       pass
 
   server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)

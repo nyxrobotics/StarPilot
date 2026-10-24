@@ -10,11 +10,19 @@ from openpilot.selfdrive.monitoring.dmonitoringd import confirmed_wheel_on_right
 from openpilot.selfdrive.monitoring.policy import DriverMonitoring
 
 
+class FakeParams:
+  def __init__(self, side: object):
+    self.side = side
+
+  def get(self, key: str) -> object:
+    return self.side if key == 'DriverSide' else None
+
+
 @pytest.mark.parametrize(('saved', 'expected'), [
   ('right', True), ('left', False), (None, None), ('auto', None), ('RIGHT', None), (b'right', None),
 ])
 def test_only_confirmed_driver_side_values_override_camera(saved, expected):
-  params = SimpleNamespace(get=lambda key: saved if key == 'DriverSide' else None)
+  params = FakeParams(saved)
   assert confirmed_wheel_on_right(params) is expected
 
 

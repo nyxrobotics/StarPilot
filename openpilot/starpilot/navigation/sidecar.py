@@ -237,7 +237,7 @@ def _position(value: Any, what: str) -> tuple[float, float]:
 
 
 def _haversine(a: tuple[float, float], b: tuple[float, float]) -> float:
-  """Metres between two (latitude, longitude) points; infinite when a value is not finite."""
+  """Meters between two (latitude, longitude) points; infinite when a value is not finite."""
   if not all(math.isfinite(value) for value in (*a, *b)):
     return math.inf
   dlat = math.radians(b[0] - a[0])
@@ -288,7 +288,7 @@ def _check_banner(banner: Any, where: str) -> None:
 
 
 def _check_magnitude(value: float, length: float, what: str) -> None:
-  """`value` (a distance in metres) against the haversine `length` of the geometry it describes."""
+  """`value` (a distance in meters) against the haversine `length` of the geometry it describes."""
   if length < SHORT_ROUTE_M:
     if value > SHORT_ROUTE_DISTANCE_MAX_M:
       raise RouteRejected(f"{what} is {value:.0f} m for a geometry of {length:.0f} m")

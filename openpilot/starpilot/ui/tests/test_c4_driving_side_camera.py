@@ -1,17 +1,33 @@
 """C4 cabin-camera proposals need a fresh, explicit YES before saving."""
 
 import unittest
+from typing import cast
 from unittest.mock import Mock, patch
 
 import pyray as rl
 
 from openpilot.selfdrive.ui.mici.layouts.settings.device import driving_side_layout as page
-from openpilot.selfdrive.ui.mici.onroad.cabin_camera_dialog import BaseCabinCameraDialog
+from openpilot.selfdrive.ui.mici.onroad.cabin_camera_dialog import BaseCabinCameraDialog, CabinCameraView
 from openpilot.starpilot.ui.driving_side_settings import WheelSideProposal
 from openpilot.system.ui.lib.application import MousePos
 
 
 class TestC4DrivingSideCamera(unittest.TestCase):
+  def test_ignition_closes_preview_before_it_blocks_onroad_startup(self):
+    dialog = page.WheelSideCameraDialog.__new__(page.WheelSideCameraDialog)
+    dialog.proposal = WheelSideProposal()
+    dialog._active = True
+    dialog._camera_view = cast(CabinCameraView, None)
+
+    with patch.object(page.NavWidget, "_update_state"), \
+         patch.object(page, "_parked", return_value=True), \
+         patch.object(page.ui_state, "ignition", True), \
+         patch.object(page.gui_app, "_nav_stack", [object(), dialog]), \
+         patch.object(page.gui_app, "pop_widget") as pop:
+      dialog._update_state()
+
+    pop.assert_called_once_with(1)
+
   def test_preview_uses_camera_without_driver_monitoring_alerts(self):
     dialog = page.WheelSideCameraDialog.__new__(page.WheelSideCameraDialog)
     dialog._camera_view = Mock(frame=object())
@@ -36,7 +52,7 @@ class TestC4DrivingSideCamera(unittest.TestCase):
     dialog.settings = settings
     dialog.on_saved = Mock()
     dialog.proposal = WheelSideProposal()
-    dialog._camera_view = None
+    dialog._camera_view = cast(CabinCameraView, None)
     dialog._rect = rl.Rectangle(0, 0, 536, 240)
     dialog._pressed = None
     for i in range(20):

@@ -5,7 +5,7 @@ unit) instead of api.mapbox.com. The configuration is also read by the scoped Ga
 
 Rules, in order of importance:
   * OFF unless the JSON file (default /data/sidecar.json) exists, parses, and says {"enabled": true}.
-    Anything else (missing file, bad JSON, wrong types) means OFF, i.e. stock StarPilot behaviour.
+    Anything else (missing file, bad JSON, wrong types) means OFF, i.e. stock StarPilot behavior.
   * No guessing: an unusable address yields None and the caller fails closed (no route, no desire).
   * Standard library only: RouteRuntime, NavigationOwner and Galaxy import it, so these getters must stay cheap.
     Only resolve_route_server() with "host": "auto" touches the network, and only from RouteRuntime's fetch worker
@@ -16,17 +16,17 @@ Config file keys (all optional except "enabled"):
   host       "auto" (the default when the key is absent) or the fixed IPv4 address of the route server
              (RFC 1918, loopback 127/8 or link-local 169.254/16 only, see is_lan_address). A fixed address skips
              discovery. Any other value is unusable and means "no route" (fail closed), it never falls back to discovery.
-  interface  Wi-Fi interface whose default gateway and ARP neighbours are used (default wlan0)
+  interface  Wi-Fi interface whose default gateway and ARP neighbors are used (default wlan0)
   port       TCP port of the route server (default 8765)
   token      sent as access_token; the route server may require it as a shared secret (default "sidecar")
 
 "host": "auto" (DESIGN section 2: the app must work in all three topologies, the patch assumes none):
   A  the head unit is the hotspot           -> it is the default gateway of `interface`
   B  the comma is the hotspot (head unit    -> `interface` has no default gateway; the head unit is one of its
-     is a Wi-Fi client)                        ARP neighbours (/proc/net/arp)
-  C  both are clients of one access point   -> the gateway is the router; the head unit is an ARP neighbour
+     is a Wi-Fi client)                        ARP neighbors (/proc/net/arp)
+  C  both are clients of one access point   -> the gateway is the router; the head unit is an ARP neighbor
                                                (or set "host" to its address)
-Candidates, in priority order: the default gateway of `interface`, then the ARP neighbours of `interface`
+Candidates, in priority order: the default gateway of `interface`, then the ARP neighbors of `interface`
 (complete entries on that interface only, RFC 1918 IPv4 only, no duplicates), at most 6 in total. Every
 candidate is probed in parallel with GET http://candidate:port/status (a plain GET: no token, no position, nothing
 of the destination is sent to a host that has not been verified). A candidate verifies when it answers
@@ -66,7 +66,7 @@ DIRECTIONS_PATH = "/directions/v5/mapbox/driving-traffic"
 HOST_AUTO = "auto"
 SOURCE_FIXED = "fixed"        # "host" is an address in the config file
 SOURCE_VERIFIED = "verified"  # answered GET /status as an openpilot-sidecar
-SOURCE_GATEWAY = "gateway"    # nothing verified; the default gateway, unverified (the pre-discovery behaviour)
+SOURCE_GATEWAY = "gateway"    # nothing verified; the default gateway, unverified (the pre-discovery behavior)
 
 STATUS_PATH = "/status"
 SERVICE_NAME = "openpilot-sidecar"  # discovery signature of GET /status (DESIGN 4.4)
@@ -206,7 +206,7 @@ def is_lan_address(address: str) -> bool:
 
 
 def is_private_ipv4(address: str) -> bool:
-  """True only for RFC 1918 IPv4 literals (10/8, 172.16/12, 192.168/16): what an ARP neighbour of a Wi-Fi link must be."""
+  """True only for RFC 1918 IPv4 literals (10/8, 172.16/12, 192.168/16): what an ARP neighbor of a Wi-Fi link must be."""
   try:
     ip = ipaddress.IPv4Address(address)
   except ValueError:
@@ -255,14 +255,14 @@ def default_gateway(interface: str = DEFAULT_INTERFACE, route_table_path: str | 
   return min(candidates, key=lambda route: route[1])[2]
 
 
-def parse_arp_neighbours(arp_table: str, interface: str) -> list[str]:
+def parse_arp_neighbours(arp_table: str, interface: str) -> list[str]:  # codespell:ignore neighbours
   """RFC 1918 IPv4 addresses of the resolved /proc/net/arp entries on `interface`, in table order, without duplicates.
 
   Columns: IP address, HW type, Flags, HW address, Mask, Device. Flags are hex; 0x2 (ATF_COM) = resolved, an
   unresolved entry has flags 0x0 and an all-zero HW address. Lines of other interfaces, lines that do not parse,
   non-RFC 1918 addresses and entries for the broadcast HW address are skipped.
   """
-  neighbours: list[str] = []
+  neighbors: list[str] = []
   for line in arp_table.splitlines():
     fields = line.split()
     if len(fields) < 6 or fields[5] != interface:
@@ -274,25 +274,25 @@ def parse_arp_neighbours(arp_table: str, interface: str) -> list[str]:
       continue
     if not resolved or hw_address in (UNSET_HW_ADDRESS, BROADCAST_HW_ADDRESS) or not is_private_ipv4(address):
       continue
-    if address not in neighbours:
-      neighbours.append(address)
-  return neighbours
+    if address not in neighbors:
+      neighbors.append(address)
+  return neighbors
 
 
-def arp_neighbours(interface: str = DEFAULT_INTERFACE, arp_table_path: str | None = None) -> list[str]:
-  """parse_arp_neighbours() of the ARP table file; [] when it cannot be read."""
+def arp_neighbours(interface: str = DEFAULT_INTERFACE, arp_table_path: str | None = None) -> list[str]:  # codespell:ignore neighbours
+  """Parse the ARP table file; [] when it cannot be read."""
   try:
     with open(arp_table_path or ARP_TABLE_PATH, "rb") as f:
       text = f.read(MAX_ARP_BYTES).decode("utf-8", "replace")
   except OSError:
     return []
-  return parse_arp_neighbours(text, interface)
+  return parse_arp_neighbours(text, interface)  # codespell:ignore neighbours
 
 
 def discovery_candidates(interface: str, gateway: str | None) -> list[str]:
-  """Hosts to probe, best first: `gateway` (already checked by the caller), then the ARP neighbours; at most 6."""
+  """Hosts to probe, best first: `gateway` (already checked by the caller), then the ARP neighbors; at most 6."""
   candidates = [gateway] if gateway is not None else []
-  for address in arp_neighbours(interface):
+  for address in arp_neighbours(interface):  # codespell:ignore neighbours
     if address not in candidates:
       candidates.append(address)
   return candidates[:MAX_DISCOVERY_CANDIDATES]

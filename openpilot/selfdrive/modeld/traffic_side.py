@@ -18,7 +18,7 @@ class _ParamsReader(Protocol):
 
 def saved_traffic_side(params: _ParamsReader) -> str | None:
   road = params.get('TrafficSide')
-  if road in ('left', 'right'):
+  if isinstance(road, str) and road in ('left', 'right'):
     return road
   wheel = params.get('DriverSide')
   return 'left' if wheel == 'right' else 'right' if wheel == 'left' else None

@@ -9,6 +9,13 @@ import pyray as rl
 
 from openpilot.common.params import Params
 from openpilot.selfdrive.ui.mici.layouts.settings.device import driving_side_layout as page
+from openpilot.system.ui.widgets import Widget
+
+
+def click(widget: Widget) -> None:
+  callback = widget._click_callback
+  assert callback is not None
+  callback()
 
 
 class TestC4DrivingSideNavigation(unittest.TestCase):
@@ -18,7 +25,7 @@ class TestC4DrivingSideNavigation(unittest.TestCase):
     self.params = Params(self.directory.name)
     self.parked = Mock(return_value=True)
     for target, attribute, value in (
-      (page, "ui_state", SimpleNamespace(params=self.params)),
+      (page, "ui_state", SimpleNamespace(params=self.params, ignition=False)),
       (page, "_parked", self.parked),
       (page.gui_app, "texture", Mock(return_value=rl.Texture())),
       (page.gui_app, "font", Mock(return_value=rl.Font())),
@@ -35,7 +42,7 @@ class TestC4DrivingSideNavigation(unittest.TestCase):
     self.assertEqual(self.panel._traffic_button.value, "unknown (automatic)")
 
     with patch.object(page.gui_app, "push_widget") as push:
-      self.panel._wheel_button._click_callback()
+      click(self.panel._wheel_button)
       wheel = self.panel._wheel_choices
       self.assertIsNotNone(wheel)
       push.assert_called_once_with(wheel)
@@ -43,7 +50,7 @@ class TestC4DrivingSideNavigation(unittest.TestCase):
                      ["use camera", "wheel on right", "wheel on left", "automatic"])
 
     with patch.object(page.gui_app, "widget_in_stack", return_value=True), patch.object(wheel, "dismiss") as dismiss:
-      wheel._options[0][1]._click_callback()
+      click(wheel._options[0][1])
       dismiss.assert_called_once_with()
     self.assertEqual(self.params.get("DriverSide"), "right")
     self.assertIsNone(self.params.get("TrafficSide"))
@@ -57,7 +64,7 @@ class TestC4DrivingSideNavigation(unittest.TestCase):
   def test_traffic_side_override_and_default_are_clear_from_choices(self):
     self.params.put("DriverSide", "right", block=True)
     with patch.object(page.gui_app, "push_widget") as push:
-      self.panel._traffic_button._click_callback()
+      click(self.panel._traffic_button)
       traffic = self.panel._traffic_choices
       self.assertIsNotNone(traffic)
       push.assert_called_once_with(traffic)
@@ -67,12 +74,12 @@ class TestC4DrivingSideNavigation(unittest.TestCase):
     traffic._update_state()
     self.assertIs(traffic._options[0][1]._txt_icon, traffic._check)
     with patch.object(page.gui_app, "widget_in_stack", return_value=True), patch.object(traffic, "dismiss") as dismiss:
-      traffic._options[2][1]._click_callback()
+      click(traffic._options[2][1])
       dismiss.assert_called_once_with()
       self.assertEqual(self.params.get("TrafficSide"), "right")
       traffic._update_state()
       self.assertIs(traffic._options[2][1]._txt_icon, traffic._check)
-      traffic._options[0][1]._click_callback()
+      click(traffic._options[0][1])
       self.assertIsNone(self.params.get("TrafficSide"))
     self.panel._update_state()
     self.assertEqual(self.panel._traffic_button.value, "left (default)")
@@ -82,7 +89,7 @@ class TestC4DrivingSideNavigation(unittest.TestCase):
       self.panel._open_choices("wheel")
     wheel = self.panel._wheel_choices
     with patch.object(page, "WheelSideCameraDialog") as camera_type, patch.object(page.gui_app, "push_widget"):
-      wheel._scroller.items[0]._click_callback()
+      click(wheel._scroller.items[0])
       on_saved = camera_type.call_args.kwargs["on_saved"]
       with patch.object(page.gui_app, "widget_in_stack", return_value=True), patch.object(wheel, "dismiss") as dismiss:
         on_saved()

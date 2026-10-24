@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import time
+from typing import Protocol
 import openpilot.cereal.messaging as messaging
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process
@@ -9,7 +10,11 @@ from openpilot.starpilot.aol.runtime import monitoring_lateral_engaged
 from openpilot.starpilot.feature_runtime import requested as feature_requested
 
 
-def confirmed_wheel_on_right(params: Params) -> bool | None:
+class _ParamsReader(Protocol):
+  def get(self, key: str) -> object: ...
+
+
+def confirmed_wheel_on_right(params: _ParamsReader) -> bool | None:
   """The offroad-confirmed side, or None to retain automatic calibration."""
   side = params.get("DriverSide")
   return True if side == "right" else False if side == "left" else None

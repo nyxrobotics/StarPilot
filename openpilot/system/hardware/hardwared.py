@@ -143,6 +143,14 @@ def update_jetlink_alert() -> None:
     jetlink_alert_usable = False
     cloudlog.warning("Offroad_JetlinkUnavailable is not in this params library: Jetlink's offroad alert is off")
 
+
+def camera_preview_active(params: Params) -> bool:
+  return params.get_bool("IsDriverViewEnabled") or params.get_bool("IsWheelSideSetupEnabled")
+
+
+def should_enter_power_save(ignition: bool, should_start: bool, screen_brightness_percent: float, camera_preview: bool) -> bool:
+  return not (ignition or should_start or camera_preview) and screen_brightness_percent < 1e-3
+
 def touch_thread(end_event):
   count = 0
 
@@ -400,7 +408,8 @@ def hardware_thread(end_event, hw_queue) -> None:
     # with 2% left, we killall, otherwise the phone will take a long time to boot
     startup_conditions["free_space"] = msg.deviceState.freeSpacePercent > 2
     startup_conditions["completed_training"] = params.get("CompletedTrainingVersion") == training_version
-    startup_conditions["not_driver_view"] = not params.get_bool("IsDriverViewEnabled")
+    camera_preview = camera_preview_active(params)
+    startup_conditions["not_driver_view"] = not camera_preview
 
     # must be at an engageable thermal band to go onroad
     startup_conditions["device_temp_engageable"] = thermal_status < ThermalStatus.overheated
@@ -445,7 +454,8 @@ def hardware_thread(end_event, hw_queue) -> None:
       except Exception:
         pass
 
-    should_pwrsave = not (onroad_conditions["ignition"] or should_start) and msg.deviceState.screenBrightnessPercent < 1e-3
+    should_pwrsave = should_enter_power_save(onroad_conditions["ignition"], should_start,
+                                            msg.deviceState.screenBrightnessPercent, camera_preview)
     if should_pwrsave != pwrsave or (count == 0):
       HARDWARE.set_power_save(should_pwrsave)
     pwrsave = should_pwrsave

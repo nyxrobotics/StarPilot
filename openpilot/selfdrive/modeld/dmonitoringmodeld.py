@@ -116,7 +116,9 @@ def get_driverstate_packet(model_output, frame_id: int, location_ts: int, exec_t
 
 
 def main():
-  config_realtime_process(7, 5)
+  # comma 4 can offline core 7 during offroad camera setup.
+  available_cores = os.sched_getaffinity(0) if hasattr(os, 'sched_getaffinity') else {7}
+  config_realtime_process(7 if 7 in available_cores else max(available_cores), 5)
 
   cloudlog.warning("connecting to cabin stream")
   vipc_client = VisionIpcClient("camerad", VisionStreamType.VISION_STREAM_CABIN, True)

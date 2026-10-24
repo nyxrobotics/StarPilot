@@ -8,7 +8,8 @@ from openpilot.starpilot.flm import producer_clock_equivalence as clock
 
 
 APPROVED = {
-  'selfdrive/modeld/modeld.py': 'cc4f0187df2505a623db079e1ee3b6dfea56577303aa104c1770fd744f16f2ba',
+  'selfdrive/modeld/modeld.py': '265cb428b3d2f08bf52c9ccd0d6823a43fda96dc6aa6833cd35c01b4d9e2e487',
+  'selfdrive/modeld/traffic_side.py': '52aa4413aec863d4ec6bb0b1c669751c37a7781ac1b6461304132daa67a1b010',
   'visionipc/visionipc_server.cc': 'a4325a5171eacb931eb271d06a992d2f27216040df113d92099f62cdfa67d81a',
   'visionipc/visionipc_client.cc': 'd142cd60eedabfc581e9770fcd6f0ca81b762ba9dbc608b54dd20a27a317a52d',
 }
@@ -16,7 +17,7 @@ APPROVED = {
 
 def test_exact_installed_upstream_closure_is_checked_before_contract():
   contract = clock.pinned_default_contract()
-  assert len(clock.PRODUCER_SOURCE_HASHES) == 19
+  assert len(clock.PRODUCER_SOURCE_HASHES) == 20
   assert {relative: expected for _, relative, expected in clock.PRODUCER_SOURCE_HASHES if relative in APPROVED} == APPROVED
   assert contract.producer_revision == clock.CLOSURE_SHA256
   assert contract.proof_sha256 == clock.CLOSURE_SHA256
