@@ -224,11 +224,18 @@ class NativeSettingsTests(unittest.TestCase):
     self.assertEqual(toggles._scroller._items[2].title, 'Safe Mode')
     self.assertEqual(toggles._scroller._items[7].title, 'Right Hand Driving')
     self.assertEqual(self.device._scroller._items[0].title, 'Galaxy')
+    self.assertEqual([item.title for item in self.device._scroller._items[:3]], ['Galaxy', 'X10 sidecar', 'Replay'])
     self.assertNotIn(self.device._power_off_btn, self.device._scroller._items)
     self.assertEqual(session.system_power_action, layout._system_power_action)
     galaxy = next(item for item in self.device._scroller._items if item.title == 'Galaxy')
     galaxy.callback()
     session.galaxy_flow.open_large.assert_called_once_with()
+    sidecar = next(item for item in self.device._scroller._items if item.title == 'X10 sidecar')
+    with patch('openpilot.starpilot.ui.sidecar_large.SidecarLargeView', return_value='x10 page') as page, \
+         patch('openpilot.starpilot.ui.sidecar_large.gui_app.push_widget') as push:
+      sidecar.callback()
+    page.assert_called_once_with(session.sidecar_flow)
+    push.assert_called_once_with('x10 page')
 
   def test_system_power_uses_native_confirmation_and_rechecks_before_effects(self):
     put_bool = self.params.put_bool

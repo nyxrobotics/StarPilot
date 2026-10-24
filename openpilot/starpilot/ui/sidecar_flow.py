@@ -14,12 +14,13 @@ their next read of the file (about a second); no restart is needed.
 """
 from __future__ import annotations
 
+import ipaddress
 import time
 from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Protocol
+from typing import Any, NamedTuple, Protocol
 
 from openpilot.starpilot.navigation import sidecar_config as config
 from openpilot.starpilot.navigation.sidecar_status import X10Status, check_x10
@@ -28,8 +29,7 @@ POLL_INTERVAL_S = 5.0   # while the screen is open
 READ_INTERVAL_S = 0.5   # how often the saved file is looked at
 LOCKED_NOTICE = "Park the car to change the X10 settings"
 BUSY_NOTICE = "Saving, wait a moment"
-DEFAULT_NOTICE_PORT = "The port must be a number from 1 to 65535"
-HIDDEN_CHAR = "•"
+PORT_NOTICE = "The port must be a number from 1 to 65535"
 
 
 @dataclass(frozen=True)
@@ -64,6 +64,11 @@ class SidecarView:
   def can_enable(self) -> bool:
     return self.readable and self.has_host and self.has_token
 
+  @property
+  def can_clear(self) -> bool:
+    """There is something for Clear to do: the sidecar is on, a token is saved, or the file is damaged (and gets replaced)."""
+    return self.enabled or self.token_length > 0 or self.document == config.DOC_CORRUPT
+
 
 @dataclass(frozen=True)
 class SidecarText:
@@ -76,6 +81,56 @@ class SidecarText:
   token: str
   test: str
   warning: str = ""
+
+
+class Feedback(NamedTuple):
+  """The line under the text while typing; `valid` is what enables the keyboard's check mark."""
+  text: str
+  error: bool = False
+  valid: bool = False
+
+
+def host_feedback(text: str) -> Feedback:
+  value = text.strip()
+  if not value:
+    return Feedback("e.g. 192.168.1.20")
+  if value.lower() == config.HOST_AUTO:
+    return Feedback("enter the X10's own address", error=True)
+  if any(char not in "0123456789." for char in value):
+    return Feedback("digits and dots only", error=True)
+  try:
+    ipaddress.IPv4Address(value)
+  except ValueError:
+    parts = value.split(".")
+    if len(parts) == 4 and all(parts):
+      return Feedback("check the numbers (0-255)", error=True)
+    return Feedback("keep typing: a.b.c.d")
+  if config.host_problem(value) is not None:
+    return Feedback("must be a private address", error=True)
+  return Feedback("looks good", valid=True)
+
+
+def port_feedback(text: str) -> Feedback:
+  value = text.strip()
+  if not value:
+    return Feedback("usually 8765")
+  if not (value.isascii() and value.isdigit()):
+    return Feedback("digits only", error=True)
+  if config.parse_port(value) is None:
+    return Feedback("1 to 65535", error=True)
+  return Feedback("looks good", valid=True)
+
+
+def token_feedback(text: str) -> Feedback:
+  if not text:
+    return Feedback("10 to 128 characters, no spaces")
+  if config.token_problem(text) is None:
+    return Feedback(f"{len(text)} characters", valid=True)
+  if not text.isascii() or any(not "!" <= char <= "~" for char in text):
+    return Feedback("ASCII only, no spaces", error=True)
+  if len(text) < config.TOKEN_MIN_LENGTH:
+    return Feedback(f"need {config.TOKEN_MIN_LENGTH} characters ({len(text)})", error=True)
+  return Feedback(f"max {config.TOKEN_MAX_LENGTH} characters ({len(text)})", error=True)
 
 
 def age_text(seconds: float) -> str:
@@ -92,10 +147,6 @@ def age_text(seconds: float) -> str:
 def group_token(token: str, size: int = 4) -> str:
   """The token in groups of `size`, so that it can be compared with the X10 app by eye. Display only."""
   return " ".join(token[index:index + size] for index in range(0, len(token), size))
-
-
-def hide_text(text: str) -> str:
-  return HIDDEN_CHAR * len(text)
 
 
 def describe(view: SidecarView) -> SidecarText:
@@ -214,6 +265,8 @@ class SidecarFlow:
     self._status_at = 0.0
     self._notice = ""
     self._closed = False
+    self._view = SidecarView()
+    self._failing = False
 
   # ------------------------------------------------------------------ lifecycle
 
@@ -236,7 +289,19 @@ class SidecarFlow:
   # ------------------------------------------------------------------ one frame
 
   def update(self) -> SidecarView:
-    """Collect finished work, schedule the next check and return the view. Never blocks."""
+    """Collect finished work, schedule the next check and return the view. Never blocks, never raises: the page must not take the UI
+    down, so an unexpected failure keeps the last view and is logged once until it stops."""
+    try:
+      self._view = self._build_view()
+      self._failing = False
+    except Exception:
+      if not self._failing:
+        self._failing = True
+        from openpilot.common.swaglog import cloudlog  # lazy: the rest of this module needs no logging stack
+        cloudlog.exception("sidecar settings update failed")
+    return self._view
+
+  def _build_view(self) -> SidecarView:
     now = self._now()
     self._collect_save()
     if self._read_at is None or now - self._read_at >= READ_INTERVAL_S:
@@ -332,7 +397,7 @@ class SidecarFlow:
   def set_port(self, text: str) -> bool:
     port = config.parse_port(text)
     if port is None:
-      self._notice = DEFAULT_NOTICE_PORT
+      self._notice = PORT_NOTICE
       return False
     return self._change({"port": port})
 

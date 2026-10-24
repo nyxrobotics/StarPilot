@@ -7,14 +7,15 @@ from pathlib import Path
 import stat
 import threading
 import time
+from types import SimpleNamespace as NS
 
 import pytest
 
 from openpilot.starpilot.navigation import sidecar_config as config
 from openpilot.starpilot.navigation.sidecar_status import Verdict, X10Status
-from openpilot.starpilot.ui import sidecar_flow
 from openpilot.starpilot.ui.sidecar_flow import (
   BUSY_NOTICE, LOCKED_NOTICE, POLL_INTERVAL_S, READ_INTERVAL_S, SidecarFlow, SidecarView, age_text, describe, group_token,
+  host_feedback, port_feedback, token_feedback,
 )
 
 HOST = '192.168.1.20'
@@ -142,6 +143,12 @@ def test_a_saved_token_is_summarized_by_its_length_and_problem(env, token, lengt
   assert view.token_length == length and (problem in view.token_problem if problem else not view.token_problem), view
   if view.token_length and view.token_problem:
     assert describe(view).token == 'needs fixing' and not view.has_token
+
+
+def test_clear_has_something_to_do_only_when_the_sidecar_is_on_a_token_is_saved_or_the_file_is_damaged():
+  assert not SidecarView().can_clear and not SidecarView(document=config.DOC_OK, host=HOST, port=9000).can_clear
+  assert SidecarView(enabled=True).can_clear and SidecarView(token_length=1).can_clear and SidecarView(document=config.DOC_CORRUPT).can_clear
+  assert not SidecarView(document=config.DOC_UNREADABLE).can_clear  # replacing it would not help: the disk refuses
 
 
 def test_a_damaged_file_is_reported_and_other_cards_stay_neutral(env):
@@ -396,15 +403,22 @@ def test_a_failing_check_does_not_break_the_screen(env):
   assert env.flow.update().checking is True
 
 
-def test_the_screen_thread_never_waits_for_a_slow_x10_or_a_slow_disk(tmp_path):
-  release = threading.Event()
-  started = threading.Event()
+def test_the_screen_thread_never_waits_for_a_slow_x10_or_a_slow_disk(tmp_path, monkeypatch):
+  release_check, release_save = threading.Event(), threading.Event()
+  check_started, save_started = threading.Event(), threading.Event()
+  real_save = config.save_config
 
   def slow_check(host, port):
-    started.set()
-    release.wait(5)
+    check_started.set()
+    release_check.wait(10)
     return READY._replace(host=host, port=port)
 
+  def slow_save(*args, **kwargs):
+    save_started.set()
+    release_save.wait(10)  # a disk that takes its time
+    return real_save(*args, **kwargs)
+
+  monkeypatch.setattr(config, 'save_config', slow_save)
   path = tmp_path / 'sidecar.json'
   flow = SidecarFlow(lambda: True, path=str(path), check=slow_check)
   try:
@@ -412,23 +426,47 @@ def test_the_screen_thread_never_waits_for_a_slow_x10_or_a_slow_disk(tmp_path):
     flow.activate()
     began = time.monotonic()
     first = flow.update()
-    flow.set_port('9000')
+    assert flow.set_port('9000') is True
     second = flow.update()
     for _ in range(50):
-      flow.update()
-    assert time.monotonic() - began < 0.5
-    assert first.checking is True and started.wait(2) and second.checking is True
-    assert second.status is None
-    release.set()
-    deadline = time.monotonic() + 3
+      last = flow.update()
+    assert time.monotonic() - began < 0.5                      # fifty-two frames while both workers are stuck
+    assert first.checking is True and check_started.wait(5) and save_started.wait(5)
+    assert second.checking is True and second.busy is True and second.status is None
+    assert last.busy is True and last.port == 8765 and json.loads(path.read_text()) == {'host': HOST}  # nothing written yet
+    release_check.set()
+    release_save.set()
+    deadline = time.monotonic() + 20
     view = flow.update()
-    while (view.status is None or view.busy) and time.monotonic() < deadline:
+    while (view.status is None or view.busy or view.port != 9000) and time.monotonic() < deadline:
       time.sleep(0.01)
       view = flow.update()
     assert view.status == READY._replace(port=9000) and not view.busy and view.port == 9000
   finally:
-    release.set()
+    release_check.set()
+    release_save.set()
     flow.close()
+
+
+def test_an_unexpected_failure_keeps_the_last_view_and_is_logged_once(env, monkeypatch):
+  logged = []
+  monkeypatch.setattr('openpilot.common.swaglog.cloudlog', NS(exception=lambda message: logged.append(message)))
+  env.put({'host': HOST, 'port': 9000})
+  good = env.flow.update()
+  assert good.host == HOST
+
+  def explode(_path=None):
+    raise RuntimeError('boom')
+
+  monkeypatch.setattr(config, 'read_config_document', explode)
+  env.tick(READ_INTERVAL_S)
+  for _ in range(5):
+    assert env.flow.update() == good  # the page keeps drawing the last state instead of taking the UI down
+  assert logged == ['sidecar settings update failed']
+  monkeypatch.undo()
+  env.put({'host': '10.0.0.7'})
+  env.tick(READ_INTERVAL_S)
+  assert env.flow.update().host == '10.0.0.7'
 
 
 def test_close_shuts_the_workers_down_and_nothing_runs_afterwards(tmp_path):
@@ -515,7 +553,6 @@ def test_age_in_one_short_unit(seconds, text):
 def test_the_token_is_grouped_by_fours_for_comparing_with_the_x10_app():
   assert group_token('abcdefghij') == 'abcd efgh ij' and group_token('abcd') == 'abcd' and group_token('') == ''
   assert group_token('a' * 128).count(' ') == 31
-  assert sidecar_flow.hide_text('abc') == '•••' and sidecar_flow.hide_text('') == ''
 
 
 def test_the_flow_reads_the_default_location_when_no_path_is_given(tmp_path, monkeypatch):
@@ -524,3 +561,47 @@ def test_the_flow_reads_the_default_location_when_no_path_is_given(tmp_path, mon
   monkeypatch.setenv(config.CONFIG_ENV, str(target))
   flow = SidecarFlow(lambda: True, executor=ManualExecutor())
   assert flow.update().host == HOST and Path(config.config_path()) == target
+
+
+# ---------------------------------------------------------------- the line under the typed text
+
+CORPUS = ['', ' ', 'auto', '192', '192.168', '192.168.1', '192.168.1.', '192.168.1.20', ' 192.168.1.20 ', '192.168.1.256', '192.168.01.5',
+          '1.2.3.4.5', '8.8.8.8', '10.0.0.1', '172.16.0.1', '172.32.0.1', '127.0.0.1', 'a.b.c.d', 'x10.local', '192,168,1,20', '١.1.1.1',
+          '0', '1', '80', '8765', '65535', '65536', '99999', '123456', '-1', '1e3', '80.0', ' 80 ', '８０', '8 0',
+          'short', 'x' * 9, 'x' * 10, 'x' * 128, 'x' * 129, 'has space 12345', 'café-0123456789', '日本語' * 5, '!' * 10, '~' * 10]
+
+
+@pytest.mark.parametrize('text', CORPUS)
+def test_the_check_mark_follows_exactly_what_the_writer_accepts(text):
+  assert host_feedback(text).valid is (config.host_problem(text) is None), text
+  assert port_feedback(text).valid is (config.parse_port(text) is not None), text
+  assert token_feedback(text).valid is config.is_valid_token(text), text
+  for feedback in (host_feedback, port_feedback, token_feedback):
+    result = feedback(text)
+    assert not (result.valid and result.error) and result.text and len(result.text) <= 34, (feedback.__name__, text, result)
+
+
+@pytest.mark.parametrize('feedback, text, shown, error', [
+  (host_feedback, '', 'e.g. 192.168.1.20', False),
+  (host_feedback, '192.168', 'keep typing: a.b.c.d', False),
+  (host_feedback, '192.168.1.', 'keep typing: a.b.c.d', False),
+  (host_feedback, '192.168.1.256', 'check the numbers (0-255)', True),
+  (host_feedback, '192.168.01.5', 'check the numbers (0-255)', True),
+  (host_feedback, '192.168.1.x', 'digits and dots only', True),
+  (host_feedback, 'auto', "enter the X10's own address", True),
+  (host_feedback, '8.8.8.8', 'must be a private address', True),
+  (host_feedback, '192.168.1.20', 'looks good', False),
+  (port_feedback, '', 'usually 8765', False),
+  (port_feedback, '80a', 'digits only', True),
+  (port_feedback, '70000', '1 to 65535', True),
+  (port_feedback, '0', '1 to 65535', True),
+  (port_feedback, '8765', 'looks good', False),
+  (token_feedback, '', '10 to 128 characters, no spaces', False),
+  (token_feedback, 'abc', 'need 10 characters (3)', True),
+  (token_feedback, 'has space 12345', 'ASCII only, no spaces', True),
+  (token_feedback, 'x' * 129, 'max 128 characters (129)', True),
+  (token_feedback, 'x' * 24, '24 characters', False),
+])
+def test_the_line_under_the_text_says_what_to_do_next(feedback, text, shown, error):
+  result = feedback(text)
+  assert (result.text, result.error) == (shown, error)

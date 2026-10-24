@@ -1860,9 +1860,12 @@ class StarMainLayout(MainLayout):
     device_scroller.add_widget(
       button_item("Galaxy", "OPEN", callback=self.star.galaxy_flow.open_large))
     device_scroller._items.insert(0, device_scroller._items.pop())
+    from openpilot.starpilot.ui.sidecar_large import SidecarLarge
+    device_scroller.add_widget(button_item("X10 sidecar", "OPEN", callback=SidecarLarge(self.star.sidecar_flow).open))
+    device_scroller._items.insert(1, device_scroller._items.pop())
     from openpilot.starpilot.ui.replay_settings import open_replay
     device_scroller.add_widget(button_item("Replay", "OPEN", callback=lambda: open_replay(self.star)))
-    device_scroller._items.insert(1, device_scroller._items.pop())
+    device_scroller._items.insert(2, device_scroller._items.pop())
     toggle_items = self._large_panels[Destination.TOGGLES]._scroller._items
     toggle_items.insert(2, text_item("Safe Mode", "N/A"))
     toggle_items.insert(7, text_item("Right Hand Driving", "N/A"))

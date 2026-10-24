@@ -15,10 +15,8 @@ from openpilot.starpilot.navigation.sidecar_status import Verdict, X10Status
 from openpilot.starpilot.ui import runtime_app, sidecar_compact
 from openpilot.starpilot.ui.presentation import Profile
 from openpilot.starpilot.ui.settings_state import COMPACT_MENU, Destination, SettingsInput, SettingsState
-from openpilot.starpilot.ui.sidecar_compact import (
-  SidecarCompact, SidecarInputDialog, SidecarPage, host_feedback, port_feedback, token_feedback,
-)
-from openpilot.starpilot.ui.sidecar_flow import SidecarView, describe
+from openpilot.starpilot.ui.sidecar_compact import SidecarCompact, SidecarInputDialog, SidecarPage
+from openpilot.starpilot.ui.sidecar_flow import SidecarView, describe, host_feedback, port_feedback, token_feedback
 
 HOST = '192.168.1.20'
 READY = X10Status(Verdict.READY, HOST, 8765, 'app 1.4.2, up 2 h', api=1, version='1.4.2', engine='ready', uptime_s=7200, http_status=200)
@@ -199,7 +197,18 @@ def test_cards_that_change_settings_are_locked_while_driving_or_saving_and_the_c
     made.page.apply(view)
     for name in ('toggle', 'address', 'token', 'port', 'clear'):
       assert made.cards[name].is_enabled is editable, (name, view)
-    assert made.cards['test'].is_enabled and made.cards['status'].is_enabled and made.cards['reveal'].is_enabled
+    assert made.cards['test'].is_enabled and made.cards['status'].is_enabled
+    assert made.cards['reveal'].is_enabled is view.editable  # the token is shown only while parked, even while a change is saved
+
+
+def test_clear_is_offered_only_when_there_is_something_to_clear(made):
+  for view, offered in ((CONFIGURED, True), (SidecarView(document=config.DOC_MISSING), False),
+                        (SidecarView(document=config.DOC_OK, host=HOST, port=9000), False), (SidecarView(document=config.DOC_CORRUPT), True)):
+    made.page.apply(view)
+    assert made.cards['clear'].is_enabled is offered, view
+  made.page.apply(SidecarView(document=config.DOC_MISSING))
+  made.cards['clear'].click()
+  assert made.built == []
 
 
 def test_the_switch_asks_the_flow_and_falls_back_to_the_saved_state(made):
@@ -273,6 +282,12 @@ def test_show_token_lists_it_in_groups_of_four_on_lines_of_sixteen(made):
   assert args[1].replace(' ', '').replace('\n', '') == made.flow.token
 
 
+def test_show_token_does_nothing_while_driving(made):
+  made.page.apply(replace(CONFIGURED, editable=False))
+  made.cards['reveal'].click()
+  assert made.built == []
+
+
 def test_show_token_says_so_when_there_is_none(made):
   made.flow.token = ''
   made.cards['reveal'].click()
@@ -291,50 +306,6 @@ def test_the_flow_runs_only_while_the_page_is_shown(made):
   made.page.show_event()
   made.page.hide_event()
   assert made.flow.calls == ['activate', 'deactivate']
-
-
-# ---------------------------------------------------------------- the line under the typed text
-
-CORPUS = ['', ' ', 'auto', '192', '192.168', '192.168.1', '192.168.1.', '192.168.1.20', ' 192.168.1.20 ', '192.168.1.256', '192.168.01.5',
-          '1.2.3.4.5', '8.8.8.8', '10.0.0.1', '172.16.0.1', '172.32.0.1', '127.0.0.1', 'a.b.c.d', 'x10.local', '192,168,1,20', '١.1.1.1',
-          '0', '1', '80', '8765', '65535', '65536', '99999', '123456', '-1', '1e3', '80.0', ' 80 ', '８０', '8 0',
-          'short', 'x' * 9, 'x' * 10, 'x' * 128, 'x' * 129, 'has space 12345', 'café-0123456789', '日本語' * 5, '!' * 10, '~' * 10]
-
-
-@pytest.mark.parametrize('text', CORPUS)
-def test_the_check_mark_follows_exactly_what_the_writer_accepts(text):
-  assert host_feedback(text).valid is (config.host_problem(text) is None), text
-  assert port_feedback(text).valid is (config.parse_port(text) is not None), text
-  assert token_feedback(text).valid is config.is_valid_token(text), text
-  for feedback in (host_feedback, port_feedback, token_feedback):
-    result = feedback(text)
-    assert not (result.valid and result.error) and result.text and len(result.text) <= 34, (feedback.__name__, text, result)
-
-
-@pytest.mark.parametrize('feedback, text, shown, error', [
-  (host_feedback, '', 'e.g. 192.168.1.20', False),
-  (host_feedback, '192.168', 'keep typing: a.b.c.d', False),
-  (host_feedback, '192.168.1.', 'keep typing: a.b.c.d', False),
-  (host_feedback, '192.168.1.256', 'check the numbers (0-255)', True),
-  (host_feedback, '192.168.01.5', 'check the numbers (0-255)', True),
-  (host_feedback, '192.168.1.x', 'digits and dots only', True),
-  (host_feedback, 'auto', "enter the X10's own address", True),
-  (host_feedback, '8.8.8.8', 'must be a private address', True),
-  (host_feedback, '192.168.1.20', 'looks good', False),
-  (port_feedback, '', 'usually 8765', False),
-  (port_feedback, '80a', 'digits only', True),
-  (port_feedback, '70000', '1 to 65535', True),
-  (port_feedback, '0', '1 to 65535', True),
-  (port_feedback, '8765', 'looks good', False),
-  (token_feedback, '', '10 to 128 characters, no spaces', False),
-  (token_feedback, 'abc', 'need 10 characters (3)', True),
-  (token_feedback, 'has space 12345', 'ASCII only, no spaces', True),
-  (token_feedback, 'x' * 129, 'max 128 characters (129)', True),
-  (token_feedback, 'x' * 24, '24 characters', False),
-])
-def test_the_line_under_the_text_says_what_to_do_next(feedback, text, shown, error):
-  result = feedback(text)
-  assert (result.text, result.error) == (shown, error)
 
 
 # ---------------------------------------------------------------- the keyboard dialog

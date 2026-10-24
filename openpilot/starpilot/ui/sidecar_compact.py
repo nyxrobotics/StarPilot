@@ -8,16 +8,15 @@ second or two without a restart. Nothing can be edited while driving. The state 
 
 from __future__ import annotations
 
-import ipaddress
 from collections.abc import Callable
-from typing import NamedTuple
 
 import pyray as rl
 
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigToggle, GreyBigButton
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigConfirmationDialog, BigDialog, BigInputDialog, SettingDescriptionDialog
-from openpilot.starpilot.navigation import sidecar_config as config
-from openpilot.starpilot.ui.sidecar_flow import SidecarControls, SidecarView, describe, group_token
+from openpilot.starpilot.ui.sidecar_flow import (
+  Feedback, SidecarControls, SidecarView, describe, group_token, host_feedback, port_feedback, token_feedback,
+)
 from openpilot.system.ui.lib.application import FontWeight, MousePos, gui_app
 from openpilot.system.ui.widgets.label import UnifiedLabel
 from openpilot.system.ui.widgets.scroller import NavScroller
@@ -43,56 +42,6 @@ DESCRIPTIONS = {
   "test": "Asks the X10 for its status. It shows whether the X10 answers and its route engine is ready. It cannot check the token.",
   "clear": "Turns the X10 sidecar off and removes the saved token. The address and port stay.",
 }
-
-
-class Feedback(NamedTuple):
-  """The line under the text while typing; `valid` is what enables the keyboard's check mark."""
-  text: str
-  error: bool = False
-  valid: bool = False
-
-
-def host_feedback(text: str) -> Feedback:
-  value = text.strip()
-  if not value:
-    return Feedback("e.g. 192.168.1.20")
-  if value.lower() == config.HOST_AUTO:
-    return Feedback("enter the X10's own address", error=True)
-  if any(char not in "0123456789." for char in value):
-    return Feedback("digits and dots only", error=True)
-  try:
-    ipaddress.IPv4Address(value)
-  except ValueError:
-    parts = value.split(".")
-    if len(parts) == 4 and all(parts):
-      return Feedback("check the numbers (0-255)", error=True)
-    return Feedback("keep typing: a.b.c.d")
-  if config.host_problem(value) is not None:
-    return Feedback("must be a private address", error=True)
-  return Feedback("looks good", valid=True)
-
-
-def port_feedback(text: str) -> Feedback:
-  value = text.strip()
-  if not value:
-    return Feedback("usually 8765")
-  if not (value.isascii() and value.isdigit()):
-    return Feedback("digits only", error=True)
-  if config.parse_port(value) is None:
-    return Feedback("1 to 65535", error=True)
-  return Feedback("looks good", valid=True)
-
-
-def token_feedback(text: str) -> Feedback:
-  if not text:
-    return Feedback("10 to 128 characters, no spaces")
-  if config.token_problem(text) is None:
-    return Feedback(f"{len(text)} characters", valid=True)
-  if not text.isascii() or any(not "!" <= char <= "~" for char in text):
-    return Feedback("ASCII only, no spaces", error=True)
-  if len(text) < config.TOKEN_MIN_LENGTH:
-    return Feedback(f"need {config.TOKEN_MIN_LENGTH} characters ({len(text)})", error=True)
-  return Feedback(f"max {config.TOKEN_MAX_LENGTH} characters ({len(text)})", error=True)
 
 
 class SidecarInputDialog(BigInputDialog):
@@ -167,8 +116,10 @@ class SidecarPage(NavScroller):
     for card, action in ((self._address, self._edit_address), (self._token, self._edit_token), (self._port, self._edit_port),
                          (self._reveal, self._show_token), (self._test, self._test_now), (self._clear_card, self._confirm_clear)):
       card.set_click_callback(action)
-    for card in (self._toggle, self._address, self._token, self._port, self._clear_card):
+    for card in (self._toggle, self._address, self._token, self._port):
       card.set_enabled(self._can_edit)
+    self._clear_card.set_enabled(lambda: self._can_edit() and self.view.can_clear)
+    self._reveal.set_enabled(lambda: self.view.editable)  # the token is shown only while parked, like every change
     self._warning.set_visible(lambda: bool(self._words.warning))
     self._reveal.set_visible(lambda: self.view.token_length > 0)
     self._words = describe(self.view)
@@ -243,6 +194,8 @@ class SidecarPage(NavScroller):
     self.flow.clear()
 
   def _show_token(self) -> None:
+    if not self.view.editable:
+      return
     token = self.flow.reveal_token()
     if not token:
       gui_app.push_widget(BigDialog("", "No token is saved."))
@@ -255,7 +208,7 @@ class SidecarPage(NavScroller):
     self.flow.test_now()
 
   def _confirm_clear(self) -> None:
-    if not self._can_edit():
+    if not (self._can_edit() and self.view.can_clear):
       return
     gui_app.push_widget(BigConfirmationDialog("slide to clear", gui_app.texture("icons_mici/settings/device/uninstall.png", 64, 64),
                                               self._clear, red=True))
