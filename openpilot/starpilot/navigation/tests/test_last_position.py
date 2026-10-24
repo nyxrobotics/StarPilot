@@ -1,6 +1,8 @@
 import json
 import math
+import os
 from concurrent.futures import Future
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
 
@@ -210,3 +212,99 @@ def test_online_route_from_saved_location_needs_no_offline_map_downloads(tmp_pat
   source.snapshot = lambda: dict(preview, instruction=None)
   snapshot = owner.snapshot()
   assert snapshot['network'] == 'online' and snapshot['location']['lastKnown'] and snapshot['route']
+
+
+# --- BC-12: the cache follows the file ---------------------------------------------------------------------------------------------
+
+POINT = {'longitude': -88., 'latitude': 42., 'bearing': 90.}
+
+
+def test_deleting_the_saved_position_resets_it_in_the_running_process(tmp_path):
+  clock = [0.]
+  store = LastPositionStore(tmp_path, clock=lambda: clock[0])
+  store.record(POINT)
+  assert store.read()['latitude'] == 42 and not store.dirty
+  store.path.unlink()
+  assert store.read() is None, 'the process kept the position of a file that is gone (bench finding BC-12)'
+  clock[0] = 6.  # past the checkpoint interval: the very same fix is recorded again and the file comes back
+  store.record(POINT)
+  assert store.read()['latitude'] == 42 and store.path.exists()
+
+
+def test_a_second_reader_follows_the_daemons_file_to_its_end(tmp_path):
+  daemon, galaxy = LastPositionStore(tmp_path), LastPositionStore(tmp_path)
+  daemon.record(POINT)
+  assert galaxy.read()['longitude'] == -88
+  daemon.record({'longitude': -87., 'latitude': 43., 'bearing': 90.})
+  daemon.flush(force=True)
+  assert galaxy.read()['latitude'] == 43
+  daemon.path.unlink()
+  assert galaxy.read() is None and daemon.read() is None
+
+
+def test_a_stale_saved_position_stops_producing_route_previews_once_the_file_is_deleted(tmp_path, monkeypatch):
+  monkeypatch.setattr(NavigationOwner, '_is_metric', lambda self: True)
+  monkeypatch.setenv('SIDECAR_CONFIG', str(tmp_path / 'no-sidecar.json'))
+  owner = NavigationOwner(tmp_path, runtime_source=lambda: None, transient_root=tmp_path / 'runtime')
+  settings = owner.configure({'enabled': True, 'token': 'pk.test'}, '0', True)
+  owner.select({'name': 'Destination', 'longitude': .01, 'latitude': 0.}, settings['revision'], True)
+  owner.position_store.record({'longitude': 0., 'latitude': 0., 'bearing': 90.})
+  jobs = []
+
+  class Executor:
+    def submit(self, *args):
+      jobs.append(args)
+      return Future()
+
+  runtime = RouteRuntime(owner, engine=SimpleNamespace(fetch=None), executor=Executor())
+  owner.position_store.path.unlink()  # the bench's clean-up: rm last-position.json
+  assert runtime.update(10, None, 1)['status'] == 'waitingForLocation'
+  assert jobs == [], 'a deleted position still produced a route preview request'
+  assert owner.snapshot()['location'] is None
+
+
+def test_an_unwritten_fix_is_not_lost_because_the_file_is_missing(tmp_path, monkeypatch):
+  monkeypatch.setattr(os, 'replace', lambda *args: (_ for _ in ()).throw(OSError('disk full')))
+  store = LastPositionStore(tmp_path)
+  store.record(POINT)
+  assert store.dirty and not store.path.exists()
+  assert store.read()['latitude'] == 42, 'the newest fix is the position while storage is unavailable'
+
+
+def test_a_file_that_cannot_be_read_right_now_does_not_erase_the_position(tmp_path, monkeypatch):
+  store = LastPositionStore(tmp_path)
+  store.record(POINT)
+  opened = Path.open
+
+  def deny(path, *args, **kwargs):
+    if path == store.path:
+      raise PermissionError(13, 'Permission denied')
+    return opened(path, *args, **kwargs)
+
+  monkeypatch.setattr(Path, 'open', deny)
+  assert store.read()['latitude'] == 42, 'only a missing file means there is no saved position'
+  monkeypatch.undo()
+  assert store.read()['latitude'] == 42
+
+
+@pytest.mark.parametrize('content', [
+  pytest.param('{"latitude":', id='truncated'),
+  pytest.param('[' * 4096, id='nested-brackets'),
+  pytest.param('{"version":1,"latitude":43,"longitude":-87,"recordedAt":0}', id='no-timestamp'),
+  pytest.param('', id='empty'),
+])
+def test_a_file_that_became_invalid_is_no_saved_position(tmp_path, content):
+  store = LastPositionStore(tmp_path)
+  store.record(POINT)
+  store.path.write_text(content)
+  assert store.read() is None, 'a process must answer what a freshly started one would'
+  assert LastPositionStore(tmp_path).read() is None
+
+
+def test_a_recursion_error_from_the_decoder_is_no_saved_position(tmp_path, monkeypatch):
+  # Deeply nested brackets raise RecursionError instead of ValueError on some builds (the limit is the interpreter's, not ours).
+  from openpilot.starpilot.navigation import position
+  store = LastPositionStore(tmp_path)
+  store.record(POINT)
+  monkeypatch.setattr(position.json, 'loads', lambda *_args: (_ for _ in ()).throw(RecursionError('maximum recursion depth exceeded')))
+  assert store.read() is None

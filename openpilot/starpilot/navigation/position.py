@@ -27,9 +27,16 @@ class LastPositionStore:
     self.last_attempt = None
 
   def _read_disk(self):
+    """The saved point; None when there is none (no file, or one that is not a valid position).
+
+    Raises OSError when the file exists but cannot be read right now: that says nothing about the saved position.
+    """
     try:
       with self.path.open('rb') as source:
         raw = source.read(4097)
+    except (FileNotFoundError, NotADirectoryError):
+      return None
+    try:
       value = json.loads(raw)
       if (len(raw) > 4096 or not coordinates(value) or value.get('version') != 1 or
           type(value.get('recordedAt')) not in (int, float) or not math.isfinite(value['recordedAt']) or
@@ -39,14 +46,18 @@ class LastPositionStore:
       if type(value.get('bearing')) in (int, float) and math.isfinite(value['bearing']):
         point['bearing'] = float(value['bearing']) % 360
       return dict(point, validForMs=0, lastKnown=True)
-    except (OSError, ValueError, TypeError, KeyError):
+    except (ValueError, TypeError, KeyError, RecursionError):
       return None
 
   def read(self):
-    saved = self._read_disk()
-    if saved and not self.dirty:
-      self.cached = saved
-      self.dirty = False
+    # The file is the truth: deleting it, or replacing it with something that is not a position, resets the position of this process
+    # too (it used to keep the last one it had read, so a stale position went on producing route previews: bench finding BC-12). Only a
+    # fix that has not been written yet (storage unavailable) is newer than the file, and a file that cannot be read now proves nothing.
+    if not self.dirty:
+      try:
+        self.cached = self._read_disk()
+      except OSError:
+        pass
     return dict(self.cached) if self.cached else None
 
   def record(self, point):
