@@ -43,7 +43,8 @@ export function validNavigation(value) {
       !value.alternatives.every((row,index) => row.index === index && Number.isFinite(row.durationSeconds) && row.durationSeconds >= 0 &&
         Number.isFinite(row.distanceMeters) && row.distanceMeters >= 0 && Array.isArray(row.geometry) && row.geometry.length <= 512 && row.geometry.every(coordinate)) ||
       !Number.isInteger(value.selectedRoute) || value.selectedRoute < 0 || value.selectedRoute > 2)) return false
-  return !!value && typeof value.enabled === "boolean" && typeof value.isMetric === "boolean" && typeof value.hasKey === "boolean" && STATUS.has(value.status) &&
+  return !!value && typeof value.enabled === "boolean" && typeof value.isMetric === "boolean" && typeof value.hasKey === "boolean" &&
+    (value.sidecarEnabled === undefined || typeof value.sidecarEnabled === "boolean") && STATUS.has(value.status) &&
     ROUTE_AVOIDANCES.every(({ key }) => value[key] === undefined || typeof value[key] === "boolean") &&
     (value.gpsSource === undefined || GPS_MODES.some((mode) => mode.value === value.gpsSource)) &&
     (value.network === undefined || ["online", "offline", "unknown"].includes(value.network)) &&
@@ -274,7 +275,7 @@ export class NavigationClient {
         this.controller = null
         this.busy = false
         this.emit()
-        this.timer = this.later(() => { this.timer = null; this.load() }, this.data?.enabled && this.data?.hasKey ? 1000 : this.data?.status === "guiding" ? 2000 : 5000)
+        this.timer = this.later(() => { this.timer = null; this.load() }, this.data?.enabled && (this.data?.hasKey || this.data?.sidecarEnabled) ? 1000 : this.data?.status === "guiding" ? 2000 : 5000)
       }
     }
   }
@@ -310,9 +311,9 @@ export const NavigationPage = {
     },
     controlsAvailable() { return this.mode === "local" && !!this.data && !this.stale },
     available() { return this.controlsAvailable && !this.busy && !this.searchPending },
-    ready() { return !!this.data?.enabled && !!this.data?.hasKey },
-    offline() { return this.mode === "local" && this.ready && !this.stale && this.data?.network === "offline" },
-    usingSavedLocation() { return this.mode === "local" && this.ready && !this.stale && this.data?.network !== "offline" &&
+    ready() { return !!this.data?.enabled && !!(this.data?.hasKey || this.data?.sidecarEnabled) },
+    offline() { return this.mode === "local" && this.ready && !this.data?.sidecarEnabled && !this.stale && this.data?.network === "offline" },
+    usingSavedLocation() { return this.mode === "local" && this.ready && !this.data?.sidecarEnabled && !this.stale && this.data?.network !== "offline" &&
       this.data?.location?.lastKnown === true },
     favorites() { return this.data?.favorites || [] },
     savedIds() { return new Set(this.favorites.map((place) => place.id)) },
@@ -346,6 +347,8 @@ export const NavigationPage = {
         return 'Route preview from last saved location'
       if (this.data?.status === 'routing' && this.data.location?.lastKnown)
         return 'Finding a route from last saved location…'
+      if (this.data?.status === 'needsKey' && this.data?.sidecarEnabled)
+        return 'Check the X10 route token'
       return ({ disabled: "Navigation is off", needsKey: "Add your Mapbox key to get started", noDestination: "Where would you like to go?",
         waitingForLocation: "Waiting for GPS", routing: "Finding your route…", guiding: "Route guidance", arrived: "You have arrived",
         routeUnavailable: "A route could not be found", stale: "Waiting for navigation" })[this.data?.status] || "Connecting to navigation…"
@@ -533,7 +536,8 @@ export const NavigationPage = {
         </section>
         <section class="gx-card gx-navigation__section">
           <div class="gx-section__header"><i class="bi bi-map" aria-hidden="true"></i><span class="gx-section__title">Mapbox</span></div>
-          <p>One public Mapbox access token (starting with pk.) handles the map, place and address search, and routes. A separate secret token is not needed.</p>
+          <p v-if="data?.sidecarEnabled">X10 supplies routes while sidecar mode is active. A public Mapbox token is optional for Galaxy map tiles and place search.</p>
+          <p v-else>One public Mapbox access token (starting with pk.) handles the map, place and address search, and routes. A separate secret token is not needed.</p>
           <p>Save your token while parked. Galaxy keeps it on your comma and never displays it after saving. Permanent address results can be saved. Search suggestions are temporary and used only for the current route. Favorites and recent destinations are also kept on your comma; going to one skips search, so it uses none of your search allowance. URL-restricted keys may reject map requests.</p>
           <p class="gx-note">Typing suggestions and offline road maps stop just short of Mapbox's free monthly allowance and resume on the 1st. Permanent address lookups are billed by Mapbox. Searches, address lookups, routes and map views are counted here but not limited.</p>
           <dl v-if="usageRows.length" class="gx-navigation__usage" aria-label="Mapbox use this month">
@@ -560,7 +564,8 @@ export const NavigationPage = {
             <a class="gx-btn gx-btn--tonal" href="#/navigation/maps" @click.prevent="selectTab('maps')">Open offline maps</a></GxNotice>
           <GxNotice v-else-if="usingSavedLocation">Using your last saved location to plan routes. Route planning requires Internet; offline map downloads aren't required.
             Live guidance starts when GPS is available.</GxNotice>
-          <form v-if="ready" @submit.prevent="search" class="gx-navigation__search" role="search" @focusout="onSearchFocusOut">
+          <GxNotice v-if="ready && data?.sidecarEnabled && !data?.hasKey">Search and send destinations from X10. Saved places on your comma can still be selected here.</GxNotice>
+          <form v-if="data?.enabled && data?.hasKey" @submit.prevent="search" class="gx-navigation__search" role="search" @focusout="onSearchFocusOut">
             <div class="gx-navigation__field">
               <i class="bi bi-search" aria-hidden="true"></i>
               <label for="navigation-search" class="gx-sr-only">Search destinations</label>
@@ -629,14 +634,14 @@ export const NavigationPage = {
               <button v-for="choice in data.alternatives" :key="choice.index" type="button" class="gx-btn" :class="choice.index===data.selectedRoute ? '' : 'gx-btn--tonal'" :aria-pressed="choice.index===data.selectedRoute" :disabled="!controlsAvailable" @click="client.action('selectRoute',{index:choice.index})">{{duration(choice.durationSeconds)}} · {{distance(choice.distanceMeters)}}</button>
             </div>
             <div class="gx-navigation__route-actions gx-actions">
-              <button type="button" class="gx-btn gx-btn--tonal" :disabled="!controlsAvailable" @click="$refs.search?.focus()"><i class="bi bi-search" aria-hidden="true"></i> Change destination</button>
+              <button v-if="data?.hasKey" type="button" class="gx-btn gx-btn--tonal" :disabled="!controlsAvailable" @click="$refs.search?.focus()"><i class="bi bi-search" aria-hidden="true"></i> Change destination</button>
               <button type="button" class="gx-btn gx-btn--danger" :disabled="!controlsAvailable" @click="client.action('clear')">End navigation</button>
             </div>
           </section>
-          <section v-if="data && !data.hasKey" class="gx-card gx-navigation__section"><div class="gx-section__header"><i class="bi bi-key" aria-hidden="true"></i><span class="gx-section__title">Connect Mapbox</span></div><p>Add your public Mapbox key to search for places and plan a route. Your key stays on your comma.</p>
+          <section v-if="data && !data.hasKey && !data.sidecarEnabled" class="gx-card gx-navigation__section"><div class="gx-section__header"><i class="bi bi-key" aria-hidden="true"></i><span class="gx-section__title">Connect Mapbox</span></div><p>Add your public Mapbox key to search for places and plan a route. Your key stays on your comma.</p>
             <form @submit.prevent="saveKey(true)" class="gx-navigation__search"><label for="navigation-inline-token" class="gx-sr-only">Public Mapbox access token</label><input id="navigation-inline-token" class="gx-field" type="password" autocomplete="off" v-model="token" placeholder="pk.…" maxlength="2048" required :disabled="!controlsAvailable"><button type="submit" class="gx-btn" :disabled="!controlsAvailable || !token.trim()">Save and enable</button></form><button type="button" class="gx-btn gx-btn--tonal" @click="selectTab('setup')">Key details</button>
           </section>
-          <section v-else-if="data && !data.enabled" class="gx-card gx-navigation__section"><div class="gx-section__header"><i class="bi bi-power" aria-hidden="true"></i><span class="gx-section__title">Navigation is off</span></div><p>Turn on the Navigation switch above to search for a destination.</p></section>
+          <section v-else-if="data && !data.enabled" class="gx-card gx-navigation__section"><div class="gx-section__header"><i class="bi bi-power" aria-hidden="true"></i><span class="gx-section__title">Navigation is off</span></div><p>Turn on the Navigation switch above to choose a destination.</p></section>
           <template v-else>
             <p v-if="busy || searchPending" role="status" class="gx-navigation__busy">{{ searchPending ? 'Searching…' : 'Working…' }}</p>
             <p v-if="searched && !busy && !error && results.length === 0" class="gx-card gx-navigation__section gx-note">No places found. Try a nearby town or a more specific address.</p>
@@ -655,8 +660,8 @@ export const NavigationPage = {
           <div class="gx-navigation__preview-head"><div class="gx-navigation__step"><div><h3>Your route</h3><p role="status">{{ stale ? 'Reconnecting · last received route' : statusLabel }}</p></div></div>
             <span v-if="summary" class="gx-navigation__trip">{{ duration(summary.duration) }} · {{ distance(summary.distance) }}</span></div>
           <BluetoothNotice v-if="bluetooth" feature="Map preview">Destination controls remain available.</BluetoothNotice>
-          <NavigationMap v-else-if="ready" :data="data" :stale="stale" />
-          <div v-else class="gx-navigation__empty"><i class="bi bi-signpost-split" aria-hidden="true"></i><p>{{ mode !== 'local' ? 'Connect to your comma to use navigation.' : 'Set up navigation to show the map.' }}</p><button v-if="mode === 'local' && data" type="button" class="gx-btn gx-btn--tonal" @click="selectTab('setup')">Open navigation setup</button></div>
+          <NavigationMap v-else-if="ready && data?.hasKey" :data="data" :stale="stale" />
+          <div v-else class="gx-navigation__empty"><i class="bi bi-signpost-split" aria-hidden="true"></i><p>{{ ready && data?.sidecarEnabled ? 'X10 navigation is ready. Add a public Mapbox key for the map preview.' : mode !== 'local' ? 'Connect to your comma to use navigation.' : 'Set up navigation to show the map.' }}</p><button v-if="mode === 'local' && data" type="button" class="gx-btn gx-btn--tonal" @click="selectTab('setup')">Open navigation setup</button></div>
         </section>
         </div>
       </template>

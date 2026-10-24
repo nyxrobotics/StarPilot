@@ -27,11 +27,13 @@ def location(sm, now_ns: int, phone_fix=None):
 
 
 class RouteRuntime:
-  def __init__(self, owner: NavigationOwner, engine=None, executor=None):
+  def __init__(self, owner: NavigationOwner, engine=None, executor=None, *, sidecar_mode: bool | None = None):
     self.owner = owner
+    from openpilot.starpilot.navigation.sidecar_config import sidecar_enabled
+    self._auto_mode = engine is None and sidecar_mode is None
+    self.sidecar_mode = sidecar_enabled() if sidecar_mode is None else sidecar_mode
     if engine is None:
-      from openpilot.starpilot.navigation.mapbox_budget import MonthlyBudget
-      engine = MapboxRouteEngine(owner.session, MonthlyBudget('directions', owner.root / 'mapbox-usage'))
+      engine = self._new_engine(self.sidecar_mode)
     self.engine = engine
     self.executor = executor or ThreadPoolExecutor(max_workers=1, thread_name_prefix='route')
     self.key = None
@@ -46,6 +48,13 @@ class RouteRuntime:
     self.ended_revision = None
     self.session = uuid.uuid4().hex
 
+  def _new_engine(self, sidecar_mode: bool):
+    if sidecar_mode:
+      from openpilot.starpilot.navigation.sidecar import SidecarRouteEngine
+      return SidecarRouteEngine()
+    from openpilot.starpilot.navigation.mapbox_budget import MonthlyBudget
+    return MapboxRouteEngine(self.owner.session, MonthlyBudget('directions', self.owner.root / 'mapbox-usage'))
+
   def update(self, now_ns: int, position, drive_id: int) -> dict:
     if position is not None:
       stamp, coordinates, _, bearing = position
@@ -54,10 +63,24 @@ class RouteRuntime:
     if position is None:
       self.owner.position_store.flush()
     settings = self.owner.read_routing()
+    from openpilot.starpilot.navigation.sidecar_config import (configured_host, sidecar_enabled, sidecar_interface,
+                                                               sidecar_port, sidecar_token)
+    configured_sidecar = sidecar_enabled()
+    if self._auto_mode and configured_sidecar != self.sidecar_mode:
+      self.sidecar_mode = configured_sidecar
+      self.engine = self._new_engine(configured_sidecar)
+      # The old worker may still finish; its result must never become the route for the new source.
+      if self.future is not None:
+        self.future.cancel()
+      self.future = self.fetch_key = None
+    sidecar_active = self.sidecar_mode and configured_sidecar
+    token = sidecar_token() if sidecar_active else ('' if self.sidecar_mode else settings['token'])
+    route_server_settings = (configured_host(), sidecar_port(), sidecar_interface()) if sidecar_active else None
     selected = settings['destination']
     destination_key = None if selected is None else (selected['id'], selected['longitude'], selected['latitude'])
     exclusions = tuple(value for key, value in ROUTE_AVOIDANCES.items() if settings[key])
-    key = settings['enabled'], hashlib.sha256(settings['token'].encode()).digest(), destination_key, drive_id, exclusions
+    key = (settings['enabled'], sidecar_active, route_server_settings, hashlib.sha256(token.encode()).digest(),
+           destination_key, drive_id, exclusions)
     if key != self.key:
       self.key, self.route = key, None
       self.routes = []
@@ -69,7 +92,7 @@ class RouteRuntime:
       self.retry_after = 0
       self.fetch_key = None  # reject an in-flight request from the saved origin
       self.preview_only = False
-    base_status = ('disabled' if not settings['enabled'] else 'needsKey' if not settings['token'] else
+    base_status = ('disabled' if not settings['enabled'] else 'needsKey' if not token else
                    'noDestination' if settings['destination'] is None else 'waitingForLocation')
     result = {'sessionId': self.session, 'frameMonoTime': now_ns, 'startedMonoTime': drive_id,
                   'revision': settings['revision'], 'enabled': settings['enabled'], 'status': base_status,
@@ -108,7 +131,7 @@ class RouteRuntime:
           if self.future is None and now_ns >= self.retry_after:
             self.preview_only = True
             self.fetch_key = self.key
-            self.future = self.executor.submit(self.engine.fetch, settings['token'],
+            self.future = self.executor.submit(self.engine.fetch, token,
                                                (saved['longitude'], saved['latitude']), settings['destination'], saved.get('bearing'), exclusions)
       return result
     stamp, coordinates, speed, bearing = position
@@ -117,7 +140,7 @@ class RouteRuntime:
       result['status'] = 'routeUnavailable' if self.retry_after > now_ns else 'routing'
       if self.future is None and now_ns >= self.retry_after:
         self.fetch_key = self.key
-        self.future = self.executor.submit(self.engine.fetch, settings['token'], coordinates, settings['destination'], bearing, exclusions)
+        self.future = self.executor.submit(self.engine.fetch, token, coordinates, settings['destination'], bearing, exclusions)
       return result
     progress = self.route.progress(coordinates, speed, bearing)
     self.off_route_since = (self.off_route_since or now_ns) if progress.off_route else 0

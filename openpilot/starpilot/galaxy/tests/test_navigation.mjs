@@ -8,6 +8,14 @@ const response = (value, status = 200) => ({ ok: status === 200, status, json: a
 const flush = async () => { for (let i = 0; i < 8; i++) await Promise.resolve() }
 
 assert(validNavigation(snapshot()))
+const sidecarSnapshot = { ...snapshot(), hasKey: false, sidecarEnabled: true }
+assert(validNavigation(sidecarSnapshot))
+assert(!validNavigation({ ...sidecarSnapshot, sidecarEnabled: 'true' }))
+assert.equal(NavigationPage.computed.ready.call({ data: sidecarSnapshot }), true)
+assert.equal(NavigationPage.computed.ready.call({ data: { ...sidecarSnapshot, sidecarEnabled: false } }), false)
+assert.equal(NavigationPage.computed.statusLabel.call({ data: { ...sidecarSnapshot, status: 'needsKey' } }), 'Check the X10 route token')
+assert.equal(NavigationPage.computed.offline.call({ mode: 'local', ready: true, stale: false,
+  data: { ...sidecarSnapshot, network: 'offline' } }), false)
 for (const key of ['avoidTolls', 'avoidHighways', 'avoidFerries']) {
   for (const value of [true, false]) assert(validNavigation({ ...snapshot(), [key]: value }))
   for (const value of ['true', 1, null, []]) assert(!validNavigation({ ...snapshot(), [key]: value }))
@@ -255,6 +263,6 @@ console.log("Local HTTP search UUID fallback passed")
   assert.ok(NavigationPage.template.includes("selectTab('setup')"))
   assert.ok(NavigationPage.template.includes('Save key'))
   assert.ok(NavigationPage.template.includes('<BluetoothNotice v-if="bluetooth" feature="Map preview"'))
-  assert.ok(NavigationPage.template.includes('<NavigationMap v-else-if="ready"'))
+  assert.ok(NavigationPage.template.includes('<NavigationMap v-else-if="ready && data?.hasKey"'))
 }
 await import("./test_navigation_map.mjs")

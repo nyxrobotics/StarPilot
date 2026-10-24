@@ -329,7 +329,10 @@ class NavigationOwner:
 
   def _snapshot(self, route_key: str | None = None) -> dict:
     document = self.read_routing()
-    status = ('disabled' if not document['enabled'] else 'needsKey' if not document['token'] else
+    from openpilot.starpilot.navigation.sidecar_config import sidecar_enabled
+    local_routes = sidecar_enabled()
+    routing_ready = bool(document['token']) or local_routes
+    status = ('disabled' if not document['enabled'] else 'needsKey' if not routing_ready else
               'noDestination' if document['destination'] is None else 'waitingForLocation')
     result = {key: document[key] for key in ('enabled', 'destination', 'recents', 'revision')}
     result.update({key: document[key] for key in ROUTE_AVOIDANCES})
@@ -340,9 +343,9 @@ class NavigationOwner:
     result['mapboxUsage'] = read_usage(self.root / 'mapbox-usage')
     result['alternatives'] = [dict(row, geometry=rounded(row['geometry'])) for row in self.route_options(document['revision'])]
     result['selectedRoute'] = document.get('routeChoice', 0)
-    result.update(hasKey=bool(document['token']), status=status, instruction=None, route=[], isMetric=self._is_metric(), location=None,
-                  network='unknown')
-    if document['enabled'] and document['token']:
+    result.update(hasKey=bool(document['token']), sidecarEnabled=local_routes, status=status,
+                  instruction=None, route=[], isMetric=self._is_metric(), location=None, network='unknown')
+    if document['enabled'] and routing_ready:
       if self.runtime_source is None:
         from openpilot.starpilot.navigation.status import NavigationStatusSource
         self.runtime_source = NavigationStatusSource()
@@ -704,13 +707,15 @@ class NavigationOwner:
     if active is not None and active['destination']['id'] == selected['id']:
       raise ValidationError('This place can be used for a route but cannot be saved')
 
-  def select(self, value: dict, expected_revision: str, authorized) -> dict:
+  def select(self, value: dict, expected_revision: str, authorized, *, enable: bool = False) -> dict:
     if isinstance(value, dict) and value.get('temporary'):
       raise ValidationError('This place can be used for a route but cannot be saved')
     selected = destination(value)
     def update(doc):
       self._reject_temporary_promotion(doc, selected)
       self._navigate(doc, selected)
+      if enable:
+        doc['enabled'] = True
     return self._change(update, expected_revision, authorized)
 
   def clear(self, expected_revision: str, authorized) -> dict:

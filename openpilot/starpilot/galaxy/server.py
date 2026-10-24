@@ -4,6 +4,7 @@ import argparse
 import hashlib
 from contextlib import nullcontext
 from http.cookies import SimpleCookie
+from ipaddress import ip_address
 import json
 import os
 import re
@@ -519,6 +520,141 @@ def make_server(*, port=8082, host='127.0.0.1', monitor=None, owner=None, crashe
       return 200, {'authenticated': True}, sessions.create(generation)
 
   class Handler(_LocalHTTPHandler):
+    def sidecar_bridge_token(self, *, respond=True):
+      """Authorize the opt-in X10 destination bridge without a Galaxy browser session.
+
+      The X10 has no Galaxy cookie. The bridge is limited to its fixed LAN address
+      and a separate strong token; it never grants access to any other Galaxy API.
+      """
+      from openpilot.starpilot.navigation import sidecar_config
+
+      def denied(status):
+        if respond:
+          self.json(status, {'message': 'Sidecar navigation unavailable'})
+        return None
+
+      if getattr(self.server, 'remote_transport', False) or urlsplit(self.path).query or self.headers.get('Origin') is not None:
+        return denied(403)
+      destination = self.connection.getsockname()[0]
+      peer = self.client_address[0]
+      hosts = self.headers.get_all('Host', [])
+      if (len(hosts) != 1 or not allowed_authority(hosts[0], destination, self.server.server_port) or
+          not direct_local_connection(peer, destination, self.headers)):
+        return denied(403)
+      config = sidecar_config.load_config()
+      host = config.get('host')
+      token = config.get('token')
+      if (config.get('enabled') is not True or type(host) is not str or not sidecar_config.is_lan_address(host) or
+          type(token) is not str or not 20 <= len(token) <= 128 or
+          any(not 0x21 <= ord(character) <= 0x7e for character in token)):
+        return denied(403)
+      try:
+        if ip_address(peer) != ip_address(host):
+          return denied(403)
+      except ValueError:
+        return denied(403)
+      authorization = self.headers.get_all('Authorization', [])
+      if len(authorization) != 1 or not secrets.compare_digest(authorization[0], 'Bearer ' + token):
+        return denied(401)
+      return token
+
+    def sidecar_bridge_valid(self, token):
+      return self.sidecar_bridge_token(respond=False) == token
+
+    def sidecar_bridge_status(self):
+      token = self.sidecar_bridge_token()
+      if token is None:
+        return
+      if self.headers.get('Transfer-Encoding') is not None or self.headers.get_all('Content-Length', []):
+        self.json(400, {'message': 'Unexpected request body'})
+        return
+      try:
+        state = navigation_owner().snapshot()
+        selected = state['destination']
+        destination = '' if selected is None else json.dumps({
+          'name': selected['name'], 'place_name': selected['name'],
+          'latitude': selected['latitude'], 'longitude': selected['longitude'],
+        }, allow_nan=False, separators=(',', ':'))
+        position = state.get('location')
+        last_position = {'latitude': str(position['latitude']), 'longitude': str(position['longitude'])} if position else \
+                        {'latitude': '', 'longitude': ''}
+        result = {'destination': destination, 'lastPosition': last_position, 'isMetric': state['isMetric']}
+      except (OSError, ValueError, KeyError, TypeError, RuntimeError):
+        self.json(503, {'message': 'Navigation status unavailable'})
+        return
+      if self.sidecar_bridge_valid(token):
+        self.json(200, result)
+      else:
+        self.json(401, {'message': 'Sidecar navigation unavailable'})
+
+    def sidecar_bridge_change(self, *, clear=False):
+      token = self.sidecar_bridge_token()
+      if token is None:
+        return
+      selected = None
+      if not clear:
+        content_types = self.headers.get_all('Content-Type', [])
+        if (self.headers.get('Transfer-Encoding') is not None or len(content_types) != 1 or
+            content_types[0].lower() != 'application/json'):
+          self.json(415, {'message': 'JSON required'})
+          return
+        lengths = self.headers.get_all('Content-Length', [])
+        try:
+          size = int(lengths[0]) if len(lengths) == 1 else -1
+        except ValueError:
+          size = -1
+        if not 0 < size <= 2048:
+          self.json(413, {'message': 'Invalid request size'})
+          return
+        try:
+          def unique_object(pairs):
+            result = {}
+            for key, value in pairs:
+              if key in result:
+                raise ValueError('Duplicate field')
+              result[key] = value
+            return result
+          payload = json.loads(self.rfile.read(size), object_pairs_hook=unique_object)
+          if type(payload) is not dict or set(payload) != {'name', 'latitude', 'longitude'}:
+            raise ValueError('Invalid destination')
+          from openpilot.starpilot.navigation.owner import destination
+          selected = destination(payload)
+        except (OSError, ValueError, UnicodeError, RecursionError):
+          self.json(400, {'message': 'Invalid destination payload'})
+          return
+      elif (self.headers.get('Transfer-Encoding') is not None or
+            self.headers.get_all('Content-Length', []) not in ([], ['0'])):
+        self.json(400, {'message': 'Unexpected request body'})
+        return
+      from openpilot.starpilot.navigation.owner import ConflictError, ValidationError
+      try:
+        with effect_lock:
+          if not self.sidecar_bridge_valid(token):
+            self.json(401, {'message': 'Sidecar navigation unavailable'})
+            return
+          owner = navigation_owner()
+          revision = owner.read()['revision']
+          if clear:
+            owner.clear(revision, lambda: self.sidecar_bridge_valid(token))
+          else:
+            owner.select(selected, revision, lambda: self.sidecar_bridge_valid(token), enable=True)
+      except PermissionError:
+        self.json(401, {'message': 'Sidecar navigation unavailable'})
+        return
+      except ConflictError:
+        self.json(409, {'message': 'Navigation changed; retry'})
+        return
+      except ValidationError:
+        self.json(400, {'message': 'Invalid destination payload'})
+        return
+      except (OSError, RuntimeError):
+        self.json(503, {'message': 'Navigation unavailable'})
+        return
+      if self.sidecar_bridge_valid(token):
+        self.json(200, {'message': 'Destination cleared' if clear else 'Destination set'})
+      else:
+        self.json(401, {'message': 'Sidecar navigation unavailable'})
+
     def camera_video(self, encoded_name: str, *, combined=False):
       camera_video(self, encoded_name, media=local_media, combined=combined)
 
@@ -671,6 +807,9 @@ def make_server(*, port=8082, host='127.0.0.1', monitor=None, owner=None, crashe
       if not self.local_request():
         return
       path = urlsplit(self.path).path
+      if path == '/api/navigation':
+        self.sidecar_bridge_status()
+        return
       if path.startswith(('/api/replay/', '/api/recordings/')) and not self.direct_local():
         self.json(403, {'error': 'Routes require a local Galaxy connection', 'code': 'local_only'})
         return
@@ -1469,6 +1608,9 @@ def make_server(*, port=8082, host='127.0.0.1', monitor=None, owner=None, crashe
       self.do_GET()
 
     def do_POST(self):
+      if urlsplit(self.path).path == '/api/navigation':
+        self.sidecar_bridge_change()
+        return
       if not self.local_request(mutation=True):
         return
       path = urlsplit(self.path).path
@@ -2722,6 +2864,9 @@ def make_server(*, port=8082, host='127.0.0.1', monitor=None, owner=None, crashe
         self.json(405, {'error': 'Method unavailable'})
 
     def do_DELETE(self):
+      if urlsplit(self.path).path == '/api/navigation':
+        self.sidecar_bridge_change(clear=True)
+        return
       if not self.local_request(mutation=True):
         return
       if urlsplit(self.path).path == '/api/spotify':

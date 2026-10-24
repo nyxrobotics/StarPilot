@@ -8,6 +8,7 @@ StarPilot is an independent fork of [openpilot](https://github.com/commaai/openp
 
 - [Developer commands](tools/STARPILOT_DEVELOPMENT.md): host tools, replay, and device builds.
 - [Driving interfaces](openpilot/starpilot/ui/README.md) and [Galaxy](openpilot/starpilot/galaxy/README.md): native and companion controls.
+- [X10 sidecar navigation on SecretGoodStarPilot](docs/X10_SIDECAR.md): local route server and destination bridge setup.
 - [Driving models](openpilot/starpilot/models/README.md): model management, artifact compatibility, and Model Laboratory status.
 - [Builds and developer tools](docs/how-to/laptop-device-build.md): local development and device builds.
 - [Dependency maintenance](tools/vendor/README.md): tracked source folders and upstream sync records.
