@@ -59,6 +59,7 @@ from openpilot.selfdrive.modeld.parse_model_outputs import Parser
 from openpilot.selfdrive.modeld.fill_model_msg import fill_model_msg, fill_driving_model_data, fill_pose_msg, PublishState
 from openpilot.selfdrive.modeld.constants import ModelConstants, Plan
 from openpilot.selfdrive.modeld.helpers import MODELS_DIR, chestnut_present, modeld_pkl_path, load_oob, wait_for_chestnut
+from openpilot.selfdrive.modeld.traffic_side import saved_traffic_side, traffic_convention_index
 
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
@@ -436,6 +437,7 @@ def main(demo=False):
 
   publish_state = PublishState()
   params = Params()
+  traffic_side = saved_traffic_side(params)
   chestnut_state = ChestnutGpuState(pm, model.chestnut) if CHESTNUT else None
 
   # setup filter to track dropped frames
@@ -520,7 +522,7 @@ def main(demo=False):
       extrinsics_calibration_seen = True
 
     traffic_convention = np.zeros(2)
-    traffic_convention[int(is_rhd)] = 1
+    traffic_convention[traffic_convention_index(traffic_side, is_rhd)] = 1
 
     vec_desire = np.zeros(ModelConstants.DESIRE_LEN, dtype=np.float32)
     if desire >= 0 and desire < ModelConstants.DESIRE_LEN:

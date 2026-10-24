@@ -129,7 +129,7 @@ def face_orientation_from_model(orient_model, pos_model, rpy_calib):
 
 
 class DriverMonitoring:
-  def __init__(self, rhd_saved=False, settings=None, always_on=False):
+  def __init__(self, rhd_saved=False, settings=None, always_on=False, wheel_side_override: bool | None = None):
     # init policy settings
     self.settings = settings if settings is not None else DRIVER_MONITOR_SETTINGS()
 
@@ -146,7 +146,10 @@ class DriverMonitoring:
     self.distracted_types = defaultdict(bool)
     self.driver_distracted = False
     self.driver_distraction_filter = FirstOrderFilter(0., self.settings._DISTRACTED_FILTER_TS, DT_DMON)
-    self.wheel_on_right = False
+    # A confirmed vehicle setting takes precedence over the cabin model's wheel-side calibration.
+    # The camera and face monitoring still run; only their wheel-side inference is bypassed.
+    self.wheel_side_override = wheel_side_override
+    self.wheel_on_right = wheel_side_override if wheel_side_override is not None else False
     self.wheel_on_right_last = None
     self.wheel_on_right_default = rhd_saved
     self.face_detected = False
@@ -245,18 +248,21 @@ class DriverMonitoring:
     self.distracted_types['sleep'] = bool(self.sleep_prob > self.settings._SLEEP_THRESH)
 
   def _update_states(self, driver_state, cal_rpy, car_speed, op_engaged, lowspeed, demo_mode=False, steering_angle_deg=0.):
-    rhd_pred = driver_state.wheelOnRightProb
-    # calibrates only when there's movement and either face detected
-    if car_speed > self.settings._WHEELPOS_CALIB_MIN_SPEED and (driver_state.leftDriverData.faceProb > self.settings._FACE_THRESHOLD or
-                                          driver_state.rightDriverData.faceProb > self.settings._FACE_THRESHOLD):
-      self.wheelpos_offsetter.push_and_update(rhd_pred)
-
-    wheelpos_calibrated = self.wheelpos_offsetter.filtered_stat.n >= self.settings._WHEELPOS_FILTER_MIN_COUNT
-
-    if wheelpos_calibrated or demo_mode:
-      self.wheel_on_right = self.wheelpos_offsetter.filtered_stat.M > self.settings._WHEELPOS_THRESHOLD
+    if self.wheel_side_override is not None:
+      self.wheel_on_right = self.wheel_side_override
     else:
-      self.wheel_on_right = self.wheel_on_right_default # use default/saved if calibration is unfinished
+      rhd_pred = driver_state.wheelOnRightProb
+      # calibrates only when there's movement and either face detected
+      if car_speed > self.settings._WHEELPOS_CALIB_MIN_SPEED and (driver_state.leftDriverData.faceProb > self.settings._FACE_THRESHOLD or
+                                            driver_state.rightDriverData.faceProb > self.settings._FACE_THRESHOLD):
+        self.wheelpos_offsetter.push_and_update(rhd_pred)
+
+      wheelpos_calibrated = self.wheelpos_offsetter.filtered_stat.n >= self.settings._WHEELPOS_FILTER_MIN_COUNT
+
+      if wheelpos_calibrated or demo_mode:
+        self.wheel_on_right = self.wheelpos_offsetter.filtered_stat.M > self.settings._WHEELPOS_THRESHOLD
+      else:
+        self.wheel_on_right = self.wheel_on_right_default # use default/saved if calibration is unfinished
     # make sure no switching when engaged
     if op_engaged and self.wheel_on_right_last is not None and self.wheel_on_right_last != self.wheel_on_right and not demo_mode:
       self.wheel_on_right = self.wheel_on_right_last

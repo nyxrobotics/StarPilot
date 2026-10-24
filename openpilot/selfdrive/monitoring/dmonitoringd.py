@@ -9,6 +9,12 @@ from openpilot.starpilot.aol.runtime import monitoring_lateral_engaged
 from openpilot.starpilot.feature_runtime import requested as feature_requested
 
 
+def confirmed_wheel_on_right(params: Params) -> bool | None:
+  """The offroad-confirmed side, or None to retain automatic calibration."""
+  side = params.get("DriverSide")
+  return True if side == "right" else False if side == "left" else None
+
+
 def dmonitoringd_thread():
   config_realtime_process([0, 1, 2, 3], 5)
 
@@ -18,7 +24,8 @@ def dmonitoringd_thread():
   required = ['driverStateV2', 'extrinsicsCalibration', 'carState', 'selfdriveState', 'modelV2']
   sm = messaging.SubMaster(required + (['aolAxisState', 'aolSafetyWire'] if aol_replay else []), poll='driverStateV2')
 
-  DM = DriverMonitoring(rhd_saved=params.get_bool("IsRhdDetected"), always_on=params.get_bool("AlwaysOnDM"))
+  DM = DriverMonitoring(rhd_saved=params.get_bool("IsRhdDetected"), always_on=params.get_bool("AlwaysOnDM"),
+                        wheel_side_override=confirmed_wheel_on_right(params))
   demo_mode=False
 
   # 20Hz <- dmonitoringmodeld
@@ -43,9 +50,10 @@ def dmonitoringd_thread():
     if sm['driverStateV2'].frameId % 40 == 1:
       DM.always_on = params.get_bool("AlwaysOnDM")
       demo_mode = params.get_bool("IsDriverViewEnabled")
+      DM.wheel_side_override = confirmed_wheel_on_right(params)
 
     # save rhd virtual toggle every 5 mins
-    if (sm['driverStateV2'].frameId % 6000 == 0 and not demo_mode and
+    if (sm['driverStateV2'].frameId % 6000 == 0 and not demo_mode and DM.wheel_side_override is None and
      DM.wheelpos_offsetter.filtered_stat.n > DM.settings._WHEELPOS_FILTER_MIN_COUNT and
      DM.wheel_on_right == (DM.wheelpos_offsetter.filtered_stat.M > DM.settings._WHEELPOS_THRESHOLD)):
       params.put_bool("IsRhdDetected", DM.wheel_on_right)

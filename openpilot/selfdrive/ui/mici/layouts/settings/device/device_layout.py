@@ -12,6 +12,7 @@ from openpilot.selfdrive.ui.mici.widgets.info import InfoLayoutMici
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigCircleButton
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigConfirmationDialog
 from openpilot.selfdrive.ui.mici.onroad.cabin_camera_dialog import CabinCameraDialog
+from openpilot.selfdrive.ui.mici.layouts.settings.device.driving_side_layout import DrivingSideLayoutMici
 from openpilot.selfdrive.ui.mici.layouts.onboarding import TrainingGuide, TermsPage
 from openpilot.system.ui.lib.application import gui_app, MousePos
 from openpilot.system.ui.lib.multilang import tr
@@ -181,10 +182,17 @@ class DeviceLayoutMici(NavScroller):
     cabin_cam_btn.set_click_callback(lambda: gui_app.push_widget(CabinCameraDialog()))
     cabin_cam_btn.set_enabled(lambda: ui_state.is_offroad())
 
+    self._driving_side_layout = DrivingSideLayoutMici()
+    driving_side_description = "Save wheel position using a confirmed camera proposal or manual choice. Road side can be set independently."
+    driving_side_btn = BigButton("wheel & road\nside", "", gui_app.texture("icons_mici/settings/device/cameras.png", 64, 64),
+                                 description=driving_side_description)
+    driving_side_btn.set_click_callback(lambda: gui_app.push_widget(self._driving_side_layout))
+    driving_side_btn.set_enabled(lambda: native_parked(ui_state) and not ui_state.engaged)
+
     reset_dm_btn = EngagedConfirmationButton("reset driver\nmonitoring", "reset driver monitoring",
                                              gui_app.texture("icons_mici/settings/device/cameras.png", 64, 64),
                                              self._reset_driver_monitoring,
-                                             description="Clear saved wheel-side detection. Automatic detection restarts next drive.")
+                                             description="Clear confirmed wheel side and saved camera detection. Automatic detection restarts next drive.")
     reset_dm_btn.set_enabled(self._can_reset_driver_monitoring)
 
     review_training_guide_btn = BigButton("review\ntraining guide", "", gui_app.texture("icons_mici/settings/device/info.png", 64, 64))
@@ -199,6 +207,7 @@ class DeviceLayoutMici(NavScroller):
       self._pairing_button,
       review_training_guide_btn,
       cabin_cam_btn,
+      driving_side_btn,
       reset_dm_btn,
       terms_btn,
       regulatory_btn,
@@ -218,6 +227,7 @@ class DeviceLayoutMici(NavScroller):
     if not self._can_reset_driver_monitoring():
       return
     ui_state.params.remove("IsRhdDetected")
+    ui_state.params.remove("DriverSide")
     ui_state.params.put_bool("OnroadCycleRequested", True, block=True)
 
   def _update_state(self):

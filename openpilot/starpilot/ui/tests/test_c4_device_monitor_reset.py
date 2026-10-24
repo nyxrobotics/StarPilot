@@ -1,9 +1,9 @@
-"""C4 reset clears only the supported saved detector state for the next start."""
+"""C4 reset clears saved wheel position and detector state for the next start."""
 
 from types import SimpleNamespace as NS
 import tempfile
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 
 from openpilot.common.params import Params
 from openpilot.selfdrive.ui.mici.layouts.settings.device import device_layout
@@ -35,13 +35,15 @@ class TestC4DriverMonitoringReset(unittest.TestCase):
       self.assertTrue(panel._can_reset_driver_monitoring())
       panel._reset_driver_monitoring()
     params.get_bool.assert_called_with("IsDriverViewEnabled")
-    params.remove.assert_called_once_with("IsRhdDetected")
+    self.assertEqual(params.remove.call_args_list, [call("IsRhdDetected"), call("DriverSide")])
     params.put_bool.assert_called_once_with("OnroadCycleRequested", True, block=True)
 
   def test_real_saved_cache_changes_next_monitoring_instance_only(self):
     with tempfile.TemporaryDirectory() as directory:
       params = Params(directory)
       params.put_bool("IsRhdDetected", True, block=True)
+      params.put("DriverSide", "right", block=True)
+      params.put("TrafficSide", "right", block=True)
       current = DriverMonitoring(rhd_saved=params.get_bool("IsRhdDetected"), always_on=False)
       panel = device_layout.DeviceLayoutMici.__new__(device_layout.DeviceLayoutMici)
       with patch.object(device_layout, "ui_state", NS(params=params)), \
@@ -50,4 +52,7 @@ class TestC4DriverMonitoringReset(unittest.TestCase):
       next_start = DriverMonitoring(rhd_saved=params.get_bool("IsRhdDetected"), always_on=False)
       self.assertTrue(current.wheel_on_right_default)
       self.assertFalse(next_start.wheel_on_right_default)
+      self.assertIsNone(params.get("IsRhdDetected"))
+      self.assertIsNone(params.get("DriverSide"))
+      self.assertEqual(params.get("TrafficSide"), "right")
       self.assertTrue(params.get_bool("OnroadCycleRequested"))
