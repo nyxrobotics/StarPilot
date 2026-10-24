@@ -61,6 +61,7 @@ from openpilot.starpilot.ui.models_state import model_page, model_profile_choice
 from openpilot.starpilot.ui.maps_state import MapStatusSource
 from openpilot.starpilot.galaxy.access import GalaxyAccessOwner, default_owner
 from openpilot.starpilot.ui.galaxy_access import GalaxyAccessFlow
+from openpilot.starpilot.ui.sidecar_flow import SidecarFlow
 from openpilot.starpilot.ui.home_state import HomeActionKind
 from openpilot.starpilot.ui.presentation import BitmapFonts, FontRole, Profile, default_font_directory
 from openpilot.starpilot.ui.startup import slc_action_transport_enabled, validate_artwork, validate_fonts
@@ -88,7 +89,8 @@ from openpilot.starpilot.feature_runtime import enabled as feature_enabled
 from openpilot.starpilot.conditional_mode.preferences import PreferenceError, SavedPreferences, decode_preferences
 from openpilot.starpilot.conditional_mode.policy import ModeChoice
 from openpilot.starpilot.conditional_mode.ui_action import ConditionalUiActionOwner
-from openpilot.starpilot.ui.settings_state import compact_menu, Destination, SettingsAction, SettingsActionKind, SettingsState
+from openpilot.starpilot.ui.settings_state import (compact_availability, compact_menu, Destination, SettingsAction, SettingsActionKind,
+                                                   SettingsState)
 from openpilot.starpilot.ui.shell import ShellInput, ShellMode, ShellRequest, ShellSnapshot, ShellView
 from openpilot.starpilot.ui.software_state import DownloadLabel, SoftwareAction, SoftwareRequest
 from openpilot.starpilot.ui.toggles_state import Personality, ToggleKey, ToggleRequest
@@ -199,6 +201,7 @@ class StarShellSession:
     self.adapter = RuntimeSnapshotAdapter(ui_state, self.galaxy_access,
                                           self.bluetooth_source.snapshot if self.bluetooth_source is not None else None)
     self.galaxy_flow = GalaxyAccessFlow(self.galaxy_access, self.confirmed_offroad)
+    self.sidecar_flow = SidecarFlow(self.configuration_allowed)
     self.feature_owner = FeatureSettingsOwner(ui_state.params, self._feature_authority,
                                                vehicle_fingerprint=lambda: getattr(ui_state.CP, "carFingerprint", None),
                                                vehicle_params=lambda: ui_state.CP,
@@ -1317,18 +1320,10 @@ class StarShellSession:
       snapshot = replace(snapshot, onroad=replace(snapshot.onroad, visual_preview=visual))
     if self.profile == Profile.COMPACT and mode == ShellMode.SETTINGS:
       drive = self.drive_state.snapshot()
-      availability = tuple(replace(item, available=item.destination in
-                                   (Destination.TOGGLES, Destination.DEVICE, Destination.SOFTWARE,
-                                    Destination.DRIVING_MODEL, Destination.DRIVING_CONTROLS, Destination.APPEARANCE, Destination.GALAXY,
-                                    Destination.NETWORK, Destination.BLUETOOTH, Destination.VEHICLE, Destination.DEVELOPER) or
-                                   (item.destination == Destination.FORCE_DRIVE and drive["available"]) or
-                                   snapshot.device.offroad and item.destination == Destination.PAIR)
-                           for item in snapshot.settings.availability)
       next_mode = DriveStateControl.next_mode(drive)
       label = ("unavailable" if not drive["available"] else
                {"offroad": "Force Off-road", "onroad": "Force On-road", "auto": "Return to Auto"}[next_mode.value])
-      availability = tuple(replace(item, request_value=next_mode.value, request_revision=drive["revision"], reason=None)
-                           if item.destination == Destination.FORCE_DRIVE else item for item in availability)
+      availability = compact_availability(snapshot.settings.availability, drive, snapshot.device.offroad, next_mode.value)
       snapshot = replace(snapshot, settings=replace(snapshot.settings, availability=availability, nav_bar_alpha=0,
                                                    force_drive_label=label))
     if self.profile == Profile.LARGE and mode == ShellMode.SETTINGS and self.selected == Destination.DRIVING_CONTROLS:
@@ -1720,6 +1715,8 @@ class StarShellSession:
     self.drive_state.physical.close()
     self.slc_actions = None
     self.galaxy_flow.close()
+    if flow := getattr(self, 'sidecar_flow', None):
+      flow.close()
     if getattr(self, 'model_manager', None) is not None:
       self.model_manager.close()
     if self.bluetooth_source is not None:
@@ -1863,9 +1860,12 @@ class StarMainLayout(MainLayout):
     device_scroller.add_widget(
       button_item("Galaxy", "OPEN", callback=self.star.galaxy_flow.open_large))
     device_scroller._items.insert(0, device_scroller._items.pop())
+    from openpilot.starpilot.ui.sidecar_large import SidecarLarge
+    device_scroller.add_widget(button_item("X10 sidecar", "OPEN", callback=SidecarLarge(self.star.sidecar_flow).open))
+    device_scroller._items.insert(1, device_scroller._items.pop())
     from openpilot.starpilot.ui.replay_settings import open_replay
     device_scroller.add_widget(button_item("Replay", "OPEN", callback=lambda: open_replay(self.star)))
-    device_scroller._items.insert(1, device_scroller._items.pop())
+    device_scroller._items.insert(2, device_scroller._items.pop())
     toggle_items = self._large_panels[Destination.TOGGLES]._scroller._items
     toggle_items.insert(2, text_item("Safe Mode", "N/A"))
     toggle_items.insert(7, text_item("Right Hand Driving", "N/A"))
@@ -2140,6 +2140,10 @@ class StarMiciMainLayout(MiciMainLayout):
       return
     if destination == Destination.GALAXY:
       self.star.galaxy_flow.open_compact()
+      return
+    if destination == Destination.X10:
+      from openpilot.starpilot.ui.sidecar_compact import SidecarCompact
+      SidecarCompact(self.star.sidecar_flow).open()
       return
     if destination == Destination.DRIVING_MODEL:
       from openpilot.starpilot.ui.models_compact import ModelsCompact

@@ -1,8 +1,9 @@
 """Immutable Settings entry data and narrow, explicit preview navigation."""
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field, replace
 from enum import StrEnum
+from typing import Any
 
 from openpilot.starpilot.ui.device_state import DeviceAction, DeviceState
 from openpilot.starpilot.ui.feature_settings_state import FEATURE_BACK_WIDTH, FEATURE_HEADER_HEIGHT
@@ -29,6 +30,7 @@ class Destination(StrEnum):
   FIREHOSE = "firehose"
   FORCE_DRIVE = "force_drive"
   GALAXY = "galaxy"
+  X10 = "x10"
   PAIR = "pair"
 
 
@@ -60,6 +62,7 @@ COMPACT_MENU = (
   (Destination.DRIVING_CONTROLS, "Driving Controls", "icons_mici/settings/device/lkas.png", 72, 56),
   (Destination.APPEARANCE, "Visuals", "icons_mici/settings/device/cameras.png", 64, 64),
   (Destination.GALAXY, "Galaxy", "icons_mici/settings/galaxy.png", 64, 64),
+  (Destination.X10, "X10 sidecar", "icons_mici/settings/network/tethering.png", 64, 54),
   (Destination.PAIR, "Pair to Connect", "icons_mici/settings/comma_icon.png", 33, 60),
   (Destination.DEVELOPER, "Developer", "icons_mici/settings/developer_icon.png", 64, 60),
 )
@@ -85,6 +88,24 @@ class SettingsState:
 def compact_menu(state: SettingsState):
   return tuple((item[0], state.force_drive_label, *item[2:]) if item[0] == Destination.FORCE_DRIVE else item
                for item in COMPACT_MENU if not (state.paired and item[0] == Destination.PAIR))
+
+
+# The compact entries that open a page whenever the menu is shown, parked or driving.
+COMPACT_PAGES = frozenset((
+  Destination.TOGGLES, Destination.DEVICE, Destination.SOFTWARE, Destination.DRIVING_MODEL, Destination.DRIVING_CONTROLS,
+  Destination.APPEARANCE, Destination.GALAXY, Destination.X10, Destination.NETWORK, Destination.BLUETOOTH, Destination.VEHICLE,
+  Destination.DEVELOPER,
+))
+
+
+def compact_availability(items: tuple[DestinationAvailability, ...], drive: Mapping[str, Any], offroad: bool,
+                         next_mode: str) -> tuple[DestinationAvailability, ...]:
+  """The compact menu as the comma four offers it now: the pages above always, Force Drive State while the drive state can be forced (its
+  request is the next mode) and Pair to Connect only while off-road."""
+  items = tuple(replace(item, available=item.destination in COMPACT_PAGES or (item.destination == Destination.FORCE_DRIVE and drive["available"]) or
+                        offroad and item.destination == Destination.PAIR) for item in items)
+  return tuple(replace(item, request_value=next_mode, request_revision=drive["revision"], reason=None)
+               if item.destination == Destination.FORCE_DRIVE else item for item in items)
 
 
 class SettingsActionKind(StrEnum):

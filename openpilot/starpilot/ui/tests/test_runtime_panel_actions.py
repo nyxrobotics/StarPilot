@@ -864,7 +864,7 @@ class TestRuntimePanelActions(unittest.TestCase):
     self.ui.started = True
     self.ui.is_offroad = lambda: False
     state = session.snapshot(ShellMode.SETTINGS).settings
-    for destination in (Destination.NETWORK, Destination.BLUETOOTH, Destination.VEHICLE, Destination.DEVELOPER):
+    for destination in (Destination.NETWORK, Destination.BLUETOOTH, Destination.VEHICLE, Destination.DEVELOPER, Destination.X10):
       self.assertTrue(state.destination(destination).available, destination)
     self.assertFalse(state.destination(Destination.PAIR).available)
 

@@ -20,6 +20,11 @@ Config file keys (all optional except "enabled"):
   port       TCP port of the route server (default 8765)
   token      sent as access_token; the route server may require it as a shared secret (default "sidecar")
 
+Token rules: the route request reader below is lenient (any printable ASCII token of 1..128 characters is sent, the route server decides
+what it accepts, and a missing key means the default). Where this device authenticates or writes a secret, the strength rule applies:
+TOKEN_MIN_LENGTH..TOKEN_MAX_LENGTH (10..128) printable ASCII characters, no spaces (token_problem). That is the Galaxy X10 bridge
+(destination commands from the X10) and the settings screen's writer (save_config).
+
 "host": "auto" (DESIGN section 2: the app must work in all three topologies, the patch assumes none):
   A  the head unit is the hotspot           -> it is the default gateway of `interface`
   B  the comma is the hotspot (head unit    -> `interface` has no default gateway; the head unit is one of its
@@ -44,14 +49,17 @@ server, exactly as it could by becoming the gateway. Use a strong hotspot passwo
 """
 from __future__ import annotations
 
+import errno
 import ipaddress
 import json
 import os
 import socket
+import stat
 import struct
 import threading
 import time
-from typing import NamedTuple
+from collections.abc import Iterable, Mapping
+from typing import NamedTuple, TypeGuard
 
 CONFIG_PATH = "/data/sidecar.json"
 CONFIG_ENV = "SIDECAR_CONFIG"
@@ -61,6 +69,8 @@ ARP_TABLE_PATH = "/proc/net/arp"
 DEFAULT_PORT = 8765
 DEFAULT_INTERFACE = "wlan0"
 DEFAULT_TOKEN = "sidecar"
+TOKEN_MIN_LENGTH = 10   # shortest token the Galaxy X10 bridge accepts and the settings screen writes (token_problem)
+TOKEN_MAX_LENGTH = 128
 DIRECTIONS_PATH = "/directions/v5/mapbox/driving-traffic"
 
 HOST_AUTO = "auto"
@@ -163,8 +173,9 @@ def sidecar_enabled() -> bool:
   return load_config().get("enabled") is True
 
 
-def sidecar_port() -> int:
-  port = load_config().get("port", DEFAULT_PORT)
+def port_of(config: Mapping[str, object]) -> int:
+  """The port a config object means: a number or text of digits in 1..65535, else the default."""
+  port = config.get("port", DEFAULT_PORT)
   if isinstance(port, str) and port.isascii() and port.isdigit():  # str.isdigit() alone also accepts "²" (int() raises) and "٣" (= port 3)
     try:
       port = int(port)
@@ -175,13 +186,47 @@ def sidecar_port() -> int:
   return DEFAULT_PORT
 
 
+def sidecar_port() -> int:
+  return port_of(load_config())
+
+
+def _is_printable_ascii(text: str) -> bool:
+  """Only 0x21-0x7e: no space, no control character (including DEL), nothing beyond ASCII."""
+  return text.isascii() and all("!" <= ch <= "~" for ch in text)
+
+
+def token_problem(token: object) -> str | None:
+  """Why `token` is not acceptable as the shared X10 token, or None when it is.
+
+  One rule for every place that checks token strength (the Galaxy X10 bridge and the settings screen's writer): a str of
+  TOKEN_MIN_LENGTH..TOKEN_MAX_LENGTH printable ASCII characters. The message names the rule and the length, never the token.
+  """
+  if type(token) is not str:
+    return "The token must be text"
+  if not _is_printable_ascii(token):
+    return "The token may only use printable ASCII characters, without spaces"
+  if len(token) < TOKEN_MIN_LENGTH:
+    return f"The token needs at least {TOKEN_MIN_LENGTH} characters (now {len(token)})"
+  if len(token) > TOKEN_MAX_LENGTH:
+    return f"The token may have at most {TOKEN_MAX_LENGTH} characters (now {len(token)})"
+  return None
+
+
+def is_valid_token(token: object) -> TypeGuard[str]:
+  return token_problem(token) is None
+
+
 def sidecar_token() -> str:
-  """Route API access_token; an explicitly invalid value disables route fetches."""
+  """Route API access_token; an explicitly invalid value disables route fetches.
+
+  Lenient on purpose (see the module docstring): this device only sends the token, so a short legacy value (and the default for a
+  missing key) keeps working. The strength rule, is_valid_token(), guards what this device accepts and writes.
+  """
   config = load_config()
   if "token" not in config:
     return DEFAULT_TOKEN
   token = config["token"]
-  if isinstance(token, str) and 1 <= len(token) <= 128 and token.isascii() and all("!" <= ch <= "~" for ch in token):
+  if isinstance(token, str) and 1 <= len(token) <= TOKEN_MAX_LENGTH and _is_printable_ascii(token):
     return token
   return ""
 
@@ -464,3 +509,320 @@ def directions_base_url() -> str | None:
   """http://HOST:PORT/directions/v5/mapbox/driving-traffic, or None when sidecar mode is off/unusable."""
   server = sidecar_route_server()
   return server.directions_url if server is not None else None
+
+
+# ---------------------------------------------------------------- writing the config (the comma settings screen)
+#
+# save_config() is the only writer of the file. Reads and writes are serialized in this process. Every write goes through a temp file
+# next to the target (same filesystem), is flushed to disk and chmod 0600 BEFORE it is renamed over the target, so a failure at any
+# step leaves the existing file untouched. Unknown keys are preserved. A file that cannot be read as a JSON object is never overwritten
+# silently: the writer refuses, or (replace_corrupt=True) keeps it as <path>.bak-<mtime> first. The token is never logged, returned in
+# a message or put in an exception text.
+
+CONFIG_FILE_MODE = 0o600
+WRITABLE_KEYS = ("enabled", "host", "port", "token")  # in the order a new file lists them
+REMOVABLE_KEYS = ("host", "port", "token")
+TEMP_PREFIX = ".sidecar-"
+TEMP_SUFFIX = ".tmp"
+STALE_TEMP_SECONDS = 60       # a leftover temp file from a crashed write is removed by the next save once it is this old
+BACKUP_INFIX = ".bak-"
+MAX_BACKUP_BYTES = 1 << 20
+
+DOC_MISSING = "missing"
+DOC_OK = "ok"
+DOC_CORRUPT = "corrupt"       # not UTF-8, not JSON, not an object, or larger than MAX_CONFIG_BYTES
+DOC_UNREADABLE = "unreadable"  # the OS refused to read it (permissions, a directory, ...)
+
+SAVE_SAVED = "saved"
+SAVE_UNCHANGED = "unchanged"
+SAVE_INVALID = "invalid"
+SAVE_CORRUPT = "corrupt"      # the existing file is damaged; it was left alone
+SAVE_CHANGED = "changed"      # something else replaced the file while this save ran; nothing was written
+SAVE_IO_ERROR = "io_error"
+
+_write_lock = threading.Lock()
+_UNCHECKED = object()
+
+
+class ConfigDocument(NamedTuple):
+  """The config file as it is on disk right now (no cache): DOC_* state, the parsed object (only for DOC_OK), the file signature."""
+  state: str
+  config: dict
+  signature: tuple | None  # (st_mtime_ns, st_size, st_ino) of the bytes that were read
+
+
+class SaveResult(NamedTuple):
+  ok: bool                   # SAVE_SAVED or SAVE_UNCHANGED
+  code: str                  # SAVE_*
+  message: str               # one short sentence for the screen; never contains the token
+  errors: dict               # setting name -> reason (SAVE_INVALID)
+  backup: str | None = None  # where a damaged file was kept (replace_corrupt)
+
+
+def read_config_document(path: str | None = None) -> ConfigDocument:
+  """Read the config file without the load_config() cache, saying why it is unusable (missing, damaged or unreadable)."""
+  path = path or config_path()
+  try:
+    with open(path, "rb") as f:
+      status = os.fstat(f.fileno())
+      raw = f.read(MAX_CONFIG_BYTES + 1)
+  except FileNotFoundError:
+    return ConfigDocument(DOC_MISSING, {}, None)
+  except OSError:
+    return ConfigDocument(DOC_UNREADABLE, {}, None)
+  signature = (status.st_mtime_ns, status.st_size, status.st_ino)
+  if len(raw) > MAX_CONFIG_BYTES:
+    return ConfigDocument(DOC_CORRUPT, {}, signature)
+  try:
+    parsed = json.loads(raw.decode("utf-8"))
+  except (ValueError, RecursionError):
+    return ConfigDocument(DOC_CORRUPT, {}, signature)
+  if not isinstance(parsed, dict):
+    return ConfigDocument(DOC_CORRUPT, {}, signature)
+  return ConfigDocument(DOC_OK, parsed, signature)
+
+
+def host_problem(host: object) -> str | None:
+  """Why `host` cannot be saved as the fixed X10 address, or None.
+
+  The settings screen writes a fixed LAN IPv4 address only (the same is_lan_address() rule the readers apply). "auto" stays readable in
+  an existing file but is never written: the X10 destination bridge rejects it.
+  """
+  if type(host) is not str:
+    return "The X10 address must be text"
+  text = host.strip()
+  if not text:
+    return "Enter the X10's IPv4 address, for example 192.168.1.20"
+  if text.lower() == HOST_AUTO:
+    return "Enter the X10's own address; auto discovery cannot send destinations"
+  try:
+    ipaddress.IPv4Address(text)
+  except ValueError:
+    return "That is not an IPv4 address, for example 192.168.1.20"
+  if not is_lan_address(text):
+    return "Use a private network address (10.x.x.x, 172.16-31.x.x or 192.168.x.x)"
+  return None
+
+
+def normalize_host(host: str) -> str:
+  """The canonical text of a host that passed host_problem(): no blanks, no leading zeros."""
+  return str(ipaddress.IPv4Address(host.strip()))
+
+
+def port_problem(port: object) -> str | None:
+  """Why `port` cannot be saved, or None: an int from 1 to 65535 (bool is not a number here)."""
+  if type(port) is not int or not 0 < port < 65536:
+    return "The port must be a number from 1 to 65535"
+  return None
+
+
+def parse_port(text: str) -> int | None:
+  """The port a user typed: ASCII digits only, 1..65535; None for anything else."""
+  text = text.strip()
+  if not (text.isascii() and text.isdigit()) or len(text) > 5:
+    return None
+  port = int(text)
+  return port if port_problem(port) is None else None
+
+
+def _change_problems(updates: Mapping[str, object], remove: tuple[str, ...]) -> dict:
+  errors: dict[str, str] = {}
+  for key, value in updates.items():
+    if key not in WRITABLE_KEYS:
+      errors[str(key)] = "Unsupported setting"
+      continue
+    problem = None
+    if key == "enabled":
+      problem = None if type(value) is bool else "Enabled must be on or off"
+    elif key == "host":
+      problem = host_problem(value)
+    elif key == "port":
+      problem = port_problem(value)
+    elif key == "token":
+      problem = token_problem(value)
+    if problem is not None:
+      errors[key] = problem
+  for key in remove:
+    if key not in REMOVABLE_KEYS:
+      errors[str(key)] = "This setting cannot be removed"
+    elif key in updates:
+      errors[key] = "A setting cannot be changed and removed at once"
+  return errors
+
+
+def _enable_problem(merged: Mapping[str, object]) -> str | None:
+  """Turning the sidecar on needs what the readers need for the whole integration: a fixed LAN address and a strong token."""
+  host = merged.get("host")
+  if type(host) is not str or not is_lan_address(host):
+    return "Set the X10 address before turning the sidecar on"
+  if not is_valid_token(merged.get("token")):
+    return "Set a token of 10 to 128 characters before turning the sidecar on"
+  return None
+
+
+def _canonical(config: Mapping[str, object]) -> str:
+  """Type-aware text of a config (JSON tells true from 1), independent of key order."""
+  return json.dumps(config, sort_keys=True)
+
+
+def _signature(path: str) -> tuple | None:
+  try:
+    status = os.stat(path)
+  except FileNotFoundError:
+    return None
+  return (status.st_mtime_ns, status.st_size, status.st_ino)
+
+
+def _sync_directory(directory: str) -> None:
+  try:
+    fd = os.open(directory, os.O_RDONLY | os.O_DIRECTORY)
+  except OSError:
+    return
+  try:
+    os.fsync(fd)
+  except OSError:
+    pass
+  finally:
+    os.close(fd)
+
+
+def _remove_stale_temp_files(directory: str) -> None:
+  """Delete our own temp files that a crashed write left behind (they can hold a token); recent ones may belong to a live write."""
+  limit = time.time_ns() - STALE_TEMP_SECONDS * 1_000_000_000
+  try:
+    names = os.listdir(directory)
+  except OSError:
+    return
+  for name in names:
+    if not (name.startswith(TEMP_PREFIX) and name.endswith(TEMP_SUFFIX)):
+      continue
+    full = os.path.join(directory, name)
+    try:
+      status = os.lstat(full)
+      if stat.S_ISREG(status.st_mode) and status.st_uid == os.getuid() and status.st_mtime_ns < limit:
+        os.unlink(full)
+    except OSError:
+      continue
+
+
+class _ChangedWhileSaving(Exception):
+  pass
+
+
+def _write_atomically(path: str, data: bytes, expected: object = _UNCHECKED) -> None:
+  """Write `data` to `path` so that either the old or the new bytes exist, never a mix.
+
+  `expected` is the signature the caller read (None: the file did not exist); if the file differs just before the rename, another
+  writer got in between and _ChangedWhileSaving is raised without touching it. Any failure removes the temp file.
+  """
+  import tempfile  # lazy: Galaxy, navigationd and the UI import this module, only the settings screen writes
+  directory = os.path.dirname(path) or "."
+  fd, temp = tempfile.mkstemp(prefix=TEMP_PREFIX, suffix=TEMP_SUFFIX, dir=directory)
+  try:
+    try:
+      os.fchmod(fd, CONFIG_FILE_MODE)  # before any byte of the token is written, and before the rename
+      view = memoryview(data)
+      while view:
+        view = view[os.write(fd, view):]
+      os.fsync(fd)
+    finally:
+      os.close(fd)
+    if expected is not _UNCHECKED and _signature(path) != expected:
+      raise _ChangedWhileSaving()
+    os.replace(temp, path)
+  except BaseException:
+    try:
+      os.unlink(temp)
+    except OSError:
+      pass
+    raise
+  _sync_directory(directory)
+
+
+def _keep_backup(path: str) -> str:
+  """Copy a damaged config to <path>.bak-<mtime_ns>[-n] (mode 0600) and return the name; an identical copy is reused."""
+  with open(path, "rb") as f:
+    status = os.fstat(f.fileno())
+    data = f.read(MAX_BACKUP_BYTES + 1)
+  if len(data) > MAX_BACKUP_BYTES:
+    raise OSError(errno.EFBIG, "too large to back up")
+  base = f"{path}{BACKUP_INFIX}{status.st_mtime_ns}"
+  for number in range(10):
+    candidate = base if number == 0 else f"{base}-{number}"
+    try:
+      with open(candidate, "rb") as existing:
+        if existing.read(MAX_BACKUP_BYTES + 1) == data:
+          return candidate
+      continue
+    except FileNotFoundError:
+      pass
+    _write_atomically(candidate, data)
+    return candidate
+  raise OSError(errno.EEXIST, "too many backups")
+
+
+def _save_locked(target: str, updates: Mapping[str, object], remove: tuple[str, ...], replace_corrupt: bool) -> SaveResult:
+  global _cache
+  document = read_config_document(target)
+  if document.state == DOC_UNREADABLE:
+    return SaveResult(False, SAVE_IO_ERROR, "Could not read the X10 settings file", {})
+  backup = None
+  existing = document.config
+  if document.state == DOC_CORRUPT:
+    if not replace_corrupt:
+      return SaveResult(False, SAVE_CORRUPT, "The X10 settings file is damaged; clear it to start again (a backup is kept)", {})
+    backup = _keep_backup(target)
+    existing = {}
+
+  merged = dict(existing)
+  for key in WRITABLE_KEYS:
+    if key in updates:
+      value = updates[key]
+      merged[key] = normalize_host(value) if key == "host" and isinstance(value, str) else value
+  for key in remove:
+    merged.pop(key, None)
+  if merged.get("enabled") is True and ({"enabled", "host", "token"} & {*updates, *remove}):
+    problem = _enable_problem(merged)
+    if problem is not None:
+      return SaveResult(False, SAVE_INVALID, problem, {"enabled": problem})
+  if document.state != DOC_CORRUPT and _canonical(merged) == _canonical(existing):
+    return SaveResult(True, SAVE_UNCHANGED, "Nothing to change", {})
+
+  try:
+    data = (json.dumps(merged, indent=2, ensure_ascii=True, allow_nan=False) + "\n").encode("ascii")
+  except (ValueError, RecursionError):
+    return SaveResult(False, SAVE_CORRUPT, "The X10 settings file holds values that cannot be saved again", {})
+  if len(data) > MAX_CONFIG_BYTES:
+    return SaveResult(False, SAVE_IO_ERROR, "The X10 settings file would become too large", {})
+  _remove_stale_temp_files(os.path.dirname(target) or ".")
+  try:
+    _write_atomically(target, data, None if document.state == DOC_MISSING else document.signature)
+  except _ChangedWhileSaving:
+    return SaveResult(False, SAVE_CHANGED, "The X10 settings file changed while saving; try again", {})
+  _cache = (None, {})  # the next load_config() reads the new file even on a filesystem with coarse timestamps
+  return SaveResult(True, SAVE_SAVED, "Saved", {}, backup)
+
+
+def save_config(updates: Mapping[str, object], *, remove: Iterable[str] = (), path: str | None = None,
+                replace_corrupt: bool = False) -> SaveResult:
+  """Validate `updates` (enabled, host, port, token), merge them into the config file and write it atomically.
+
+  Every expected failure comes back as a SaveResult (code, short message, per-setting errors) instead of an exception.
+
+  Every value must pass the rule the readers apply: enabled is a bool, host a fixed LAN IPv4 address (never "auto"), port 1..65535,
+  token 10..128 printable ASCII characters. `remove` drops host, port or token. Turning the sidecar on needs a usable host and token
+  in the result. Keys this function does not manage (interface, anything else) are kept as they are. The file is mode 0600, replaced
+  by rename after the new bytes are on disk; on any error the existing file is untouched. A damaged file is refused, or (replace_corrupt)
+  copied to <path>.bak-<mtime> first. Safe to call from any thread.
+  """
+  removals = tuple(remove)
+  errors = _change_problems(updates, removals)
+  if errors:
+    return SaveResult(False, SAVE_INVALID, next(iter(errors.values())), errors)
+  target = os.path.realpath(path or config_path())
+  try:
+    with _write_lock:
+      return _save_locked(target, updates, removals, replace_corrupt)
+  except OSError as error:
+    reason = errno.errorcode.get(error.errno or 0, "I/O error")
+    return SaveResult(False, SAVE_IO_ERROR, f"Could not save the X10 settings ({reason})", {})
