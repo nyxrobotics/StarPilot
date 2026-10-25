@@ -2,6 +2,7 @@
 import base64
 from http.cookies import SimpleCookie
 import json
+import re
 import time
 import urllib.error
 import urllib.parse
@@ -50,16 +51,62 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 
 class GalaxyProxy:
-  def __init__(self, port=8082):
+  def __init__(self, port=8082, route_broker=None):
     if type(port) is not int or not 1 <= port <= 65535:
       raise ValueError('Invalid Galaxy port')
     self.port = port
     self.base = f'http://127.0.0.1:{port}'
     self.opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
     self.cookie = ''
+    self.route_broker = route_broker
 
   def new_session(self):
-    return GalaxyProxy(self.port)
+    return GalaxyProxy(self.port, self.route_broker)
+
+  @staticmethod
+  def bridge_response(request_id, status, value=None):
+    body = b'' if value is None else json.dumps(value, separators=(',', ':')).encode()
+    return {'id': request_id, 'status': status, 'headers': {'content-type': 'application/json'},
+            'body': base64.b64encode(body).decode()}
+
+  def handle_route(self, request, request_id):
+    """Only an authenticated GATT session can reach these bridge-local paths."""
+    if self.route_broker is None:
+      return error_response(request_id, 503, 'Sidecar BLE route exchange is unavailable')
+    target = request.get('path')
+    method = request.get('method', 'GET')
+    if type(target) is not str or len(target) > 256:
+      return error_response(request_id, 400, 'Invalid Sidecar BLE path')
+    parts = urllib.parse.urlsplit(target)
+    if parts.scheme or parts.netloc or parts.fragment:
+      return error_response(request_id, 400, 'Invalid Sidecar BLE path')
+    if parts.path == '/_bridge/sidecar/poll' and method == 'GET' and not parts.query:
+      job = self.route_broker.poll()
+      return self.bridge_response(request_id, 200, job) if job is not None else self.bridge_response(request_id, 204)
+    match = re.fullmatch(r'/_bridge/sidecar/chunk/([0-9a-f]{32})/([0-9]{1,6})', parts.path)
+    if match and method == 'POST':
+      query = urllib.parse.parse_qs(parts.query, strict_parsing=True)
+      if set(query) != {'last', 'status', 'encoding'} or any(len(value) != 1 for value in query.values()):
+        return error_response(request_id, 400, 'Invalid Sidecar BLE chunk options')
+      if query['last'][0] not in ('0', '1') or query['status'][0] != '200' or query['encoding'][0] != 'gzip':
+        return error_response(request_id, 400, 'Unsupported Sidecar BLE chunk')
+      try:
+        body = base64.b64decode(request.get('body', ''), validate=True)
+        next_sequence = self.route_broker.chunk(match[1], int(match[2]), body, last=query['last'][0] == '1',
+                                                status=200, encoding='gzip')
+      except KeyError:
+        return error_response(request_id, 404, 'Route job expired')
+      except (ValueError, TypeError):
+        return error_response(request_id, 400, 'Invalid Sidecar BLE chunk')
+      return self.bridge_response(request_id, 200, {'next': next_sequence})
+    match = re.fullmatch(r'/_bridge/sidecar/fail/([0-9a-f]{32})', parts.path)
+    if match and method == 'POST' and not parts.query:
+      try:
+        self.route_broker.fail(match[1])
+      except KeyError:
+        return error_response(request_id, 404, 'Route job expired')
+      return self.bridge_response(request_id, 200, {'failed': True})
+    return error_response(request_id, 400, 'Invalid Sidecar BLE path')
 
   def send(self, target, method, body, headers):
     request = urllib.request.Request(self.base + target, data=body if body else None, method=method, headers=headers)
@@ -108,6 +155,8 @@ class GalaxyProxy:
         health = {'protocol': 1, 'transport': 'bluetooth', 'readStream': True, 'notificationStream': True, 'galaxy': 'secretgood'}
         return {'id': request_id, 'status': 200, 'headers': {'content-type': 'application/json'},
                 'body': base64.b64encode(json.dumps(health).encode()).decode()}
+      if isinstance(request.get('path'), str) and request['path'].startswith('/_bridge/sidecar/'):
+        return self.handle_route(request, request_id)
       target = validate_target(request.get('path'))
       path = urllib.parse.unquote(urllib.parse.urlsplit(target).path)
       if any(path == prefix or path.startswith(prefix + '/') for prefix in WIFI_PATHS):
@@ -124,17 +173,26 @@ class GalaxyProxy:
       headers = {str(k): str(v) for k, v in supplied.items() if str(k).lower() in REQUEST_HEADERS}
       if any('\r' in v or '\n' in v for v in headers.values()):
         raise ValueError('Invalid header value')
-      if not self.cookie:
+      sidecar_bridge = path == '/api/navigation'
+      if sidecar_bridge:
+        authorization = [str(v) for k, v in supplied.items() if str(k).lower() == 'authorization']
+        if len(authorization) != 1 or not re.fullmatch(r'Bearer [!-~]{10,128}', authorization[0]):
+          return error_response(request_id, 401, 'Sidecar navigation unavailable')
+        headers['Authorization'] = authorization[0]
+        headers['X-StarPilot-Ble-Bridge'] = '1'
+      if not sidecar_bridge and not self.cookie:
         self.authenticate()
       if method not in ('GET', 'HEAD'):
-        headers['Origin'] = self.base
+        if not sidecar_bridge:
+          headers['Origin'] = self.base
         headers['Content-Type'] = 'application/json'
       for attempt in range(2):
-        headers['Cookie'] = self.cookie
+        if not sidecar_bridge:
+          headers['Cookie'] = self.cookie
         status, response_headers, data, _ = self.send(target, method, body, headers)
         # Only the explicit pre-execution authentication rejection can
         # be retried. Never replay a mutation after a network failure.
-        if status == 401 and attempt == 0:
+        if not sidecar_bridge and status == 401 and attempt == 0:
           try:
             expired = json.loads(data).get('error') == 'Refresh the local Galaxy session'
           except (ValueError, AttributeError):

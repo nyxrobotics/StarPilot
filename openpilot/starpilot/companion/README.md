@@ -82,9 +82,17 @@ Companion caches the line and adds these extras to **every active** `CATEGORY_NA
 | `routeKey` | `String` | Galaxy's current route version. |
 | `routeCoordinates` | `DoubleArray` | Up to 512 interleaved `[longitude, latitude]` pairs; empty means clear the line. |
 
-The map extras are present only while Companion has current `guiding` or `arrived` maneuver guidance; it cancels that notification while waiting for a route. This BLE display feed can work while the X10 Wi-Fi belongs to T11, but navigation still needs its normal connection to the X10 Sidecar route server to calculate or refresh an X10 route.
+The map extras are present only while Companion has current `guiding` or `arrived` maneuver guidance; it cancels that notification while waiting for a route.
 
 As of 2026-10-24, the bounded route and incremental reply passed Galaxy tests, and Companion unit tests and a debug APK build passed. Projection with a **live selected route** on the T11 has not yet been checked.
+
+### Sidecar over Bluetooth while T11 uses Wi-Fi
+
+Pair the X10 Companion with comma, then in Companion → **Connections** enable **Use Sidecar over Bluetooth**. In the X10 Sidecar app, select its Bluetooth connection option. Companion keeps a foreground service running and binds `127.0.0.1:8082` on the X10 only. The Sidecar app sends its existing token-protected `GET`, `POST`, and `DELETE /api/navigation` calls to that local listener; Companion forwards these calls over the authenticated BLE session to comma. The relay switch is saved and the service restarts after X10 boots. If port 8082 is briefly occupied, the service retries binding it. **Stop Sidecar Bluetooth relay** closes the local listener. StarPilot guidance has a separate switch and can run at the same time.
+
+When comma needs an X10 route while their Wi-Fi link is unavailable, it queues one relative directions URL for Companion. Companion requests that URL from the X10 Sidecar server on `127.0.0.1:8765`, compresses the bounded response, and sends numbered 2 KiB chunks over the same BLE pairing. The route request has a 90-second deadline and an 8 MiB uncompressed limit. After a transient GATT disconnect, Companion keeps the exact compressed payload and resumes from the broker's first uncommitted chunk. If the Companion process lost that payload, it fails the partial job instead of combining bytes from separate downloads. Map tiles and large media stay on local storage or Wi-Fi; this route transfer carries only the directions response.
+
+As of 2026-10-26, the loopback relay and route target validation have host unit tests, and the Android debug build compiles. A live Sidecar destination and route transfer with X10 Wi-Fi connected to T11 still need an end-to-end check.
 
 Install: join the Galaxy hotspot, open Galaxy → **Galaxy Access & Install** →
 **Android companion**, and install the APK. Later updates install from inside

@@ -16,6 +16,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
 import org.json.JSONObject
+import java.io.IOException
 import java.util.Base64
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -33,7 +34,9 @@ class NavigationGuidanceService : Service() {
         private const val EXTRA_DESTINATION_LONGITUDE = "link.firestar.companion.destinationLongitude"
         private const val EXTRA_ROUTE_KEY = "link.firestar.companion.routeKey"
         private const val EXTRA_ROUTE_COORDINATES = "link.firestar.companion.routeCoordinates"
-        fun enabled(prefs: android.content.SharedPreferences) = prefs.getBoolean("androidAutoGuidance", false)
+        fun guidanceEnabled(prefs: android.content.SharedPreferences) = prefs.getBoolean("androidAutoGuidance", false)
+        fun relayEnabled(prefs: android.content.SharedPreferences) = prefs.getBoolean("sidecarRelay", false)
+        fun enabled(prefs: android.content.SharedPreferences) = guidanceEnabled(prefs) || relayEnabled(prefs)
     }
 
     private val prefs by lazy { getSharedPreferences("companion", MODE_PRIVATE) }
@@ -44,6 +47,9 @@ class NavigationGuidanceService : Service() {
     @Volatile private var lastSample = 0L
     private var lastConnectAttempt = 0L
     private var own: BleTransport? = null
+    @Volatile private var sidecarRelay: SidecarLoopbackServer? = null
+    private var routeWorker: SidecarRouteWorker? = null
+    private var lastRelayBindAttempt = -10_000L
     private val routeCache = NavigationRouteCache()
     private var status = ""
     private val staleCheck = object : Runnable {
@@ -68,6 +74,7 @@ class NavigationGuidanceService : Service() {
             stopSelf()
             return
         }
+        refreshRelay()
         handler.post(staleCheck)
         worker.scheduleWithFixedDelay({ tick() }, 0, 3, TimeUnit.SECONDS)
     }
@@ -75,14 +82,49 @@ class NavigationGuidanceService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == "stop" || !enabled(prefs)) {
             prefs.edit().putBoolean("androidAutoGuidance", false).apply()
+            prefs.edit().putBoolean("sidecarRelay", false).apply()
             stopSelf()
             return START_NOT_STICKY
         }
+        refreshRelay()
         return START_STICKY
+    }
+
+    @Synchronized private fun refreshRelay() {
+        if (!relayEnabled(prefs)) {
+            sidecarRelay?.close()
+            sidecarRelay = null
+            routeWorker?.close()
+            routeWorker = null
+            return
+        }
+        if (routeWorker == null) routeWorker = SidecarRouteWorker {
+            // The guidance service owns reconnects. Idle route polling must not
+            // start another GATT handshake while Sidecar is waiting for status.
+            BleTransport.active?.takeIf { it.open }
+        }
+        val now = SystemClock.elapsedRealtime()
+        if (sidecarRelay == null && now - lastRelayBindAttempt >= 10_000L) {
+            lastRelayBindAttempt = now
+            sidecarRelay = try {
+                SidecarLoopbackServer { request ->
+                    val transport = BleTransport.active?.takeIf { it.open } ?: connect()
+                        ?: throw IOException("comma Bluetooth unavailable")
+                    val reply = transport.request(request, 15)
+                    if (request.optString("method") == "POST" && reply.optInt("status") == 200)
+                        routeWorker?.routeSelected()
+                    reply
+                }
+            } catch (error: IOException) {
+                android.util.Log.w("StarPilotSidecarBLE", "Could not bind Sidecar loopback relay", error)
+                null
+            }
+        }
     }
 
     private fun tick() {
         if (stopped) return
+        if (relayEnabled(prefs) && sidecarRelay == null) refreshRelay()
         if (Build.VERSION.SDK_INT >= 31 && checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             updateStatus("Allow Nearby devices in StarPilot")
             clearGuidance()
@@ -90,6 +132,11 @@ class NavigationGuidanceService : Service() {
         }
         val transport = BleTransport.active?.takeIf { it.open } ?: connect() ?: run {
             clearGuidance()
+            return
+        }
+        if (!guidanceEnabled(prefs)) {
+            clearGuidance()
+            updateStatus(if (sidecarRelay == null) "Sidecar Bluetooth relay unavailable" else "Sidecar Bluetooth ready")
             return
         }
         try {
@@ -109,7 +156,8 @@ class NavigationGuidanceService : Service() {
                 notifications.notify(GUIDANCE_ID, guidanceNotice(guidance, sample.destinationCoordinates))
                 updateStatus("Connected to comma")
             }
-        } catch (_: Exception) {
+        } catch (error: Exception) {
+            android.util.Log.w("StarPilotSidecarBLE", "Guidance poll failed (${error.javaClass.simpleName})")
             if (transport === own) { transport.close(); own = null }
             clearGuidance()
             updateStatus("Waiting for comma")
@@ -117,20 +165,46 @@ class NavigationGuidanceService : Service() {
     }
 
     /** Reuses Galaxy's authenticated BLE session, including one held by the companion UI or phone GPS. */
-    private fun connect(): BleTransport? {
+    @Synchronized private fun connect(): BleTransport? {
         val now = SystemClock.elapsedRealtime()
         if (BleTransport.active != null || BleTransport.busy || now - lastConnectAttempt < 10_000L) return null
         val pairing = PairingStore(this)
         if (pairing.stale()) { updateStatus("Pair comma again in StarPilot"); return null }
         val key = pairing.load() ?: run { updateStatus("Pair comma in StarPilot"); return null }
         lastConnectAttempt = now
-        val transport = BleTransport(this, key)
+        var phase = "start"
+        fun newTransport() = BleTransport(this, key).apply {
+            onPhase = { text -> phase = when {
+                text.startsWith("Looking") -> "scan"
+                text.startsWith("Found") -> "gatt-connect"
+                text.startsWith("Checking") -> "service-discovery"
+                text.startsWith("Reading") -> "challenge-read"
+                text.startsWith("Authenticating") -> "bridge-health"
+                else -> "other"
+            } }
+        }
+        fun failure(error: Exception): String {
+            val gatt = error as? GattEventFailure
+            return "${error.javaClass.simpleName}, phase=$phase" +
+                (gatt?.let { ", expected=${it.expected}, observed=${it.observed}, status=${it.status}" } ?: "")
+        }
+        var transport = newTransport()
         return try {
-            val address = transport.connect(pairing.deviceAddress())
+            val saved = pairing.deviceAddress()
+            val address = try { transport.connect(saved) } catch (first: Exception) {
+                if (saved == null || first is PairingNotRecognized || first is GattDenied) throw first
+                android.util.Log.w("StarPilotSidecarBLE", "BLE direct connect failed (${failure(first)}); scanning")
+                transport.close()
+                pairing.forgetDeviceAddress()
+                phase = "start"
+                transport = newTransport()
+                transport.connect()
+            }
             pairing.rememberDevice(address)
             own = transport
             transport
-        } catch (_: Exception) {
+        } catch (error: Exception) {
+            android.util.Log.w("StarPilotSidecarBLE", "BLE connect failed (${failure(error)})")
             transport.close()
             updateStatus("Waiting for comma")
             null
@@ -181,6 +255,8 @@ class NavigationGuidanceService : Service() {
 
     override fun onDestroy() {
         stopped = true
+        sidecarRelay?.close()
+        routeWorker?.close()
         handler.removeCallbacks(staleCheck)
         worker.shutdownNow()
         clearGuidance()

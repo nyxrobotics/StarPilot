@@ -49,13 +49,15 @@ class SidecarNavigationHttpTest(unittest.TestCase):
     self.config_path.write_text(json.dumps(values), encoding='utf-8')
     sidecar_config._cache = (None, {})
 
-  def request(self, method='GET', *, payload=None, token=TOKEN, origin=None, host=None, remote=False):
+  def request(self, method='GET', *, payload=None, token=TOKEN, origin=None, host=None, remote=False, ble=False):
     server = self.remote if remote else self.server
     headers = {'Host': host or f'127.0.0.1:{server.server_port}'}
     if token is not None:
       headers['Authorization'] = 'Bearer ' + token
     if origin is not None:
       headers['Origin'] = origin
+    if ble:
+      headers['X-StarPilot-Ble-Bridge'] = '1'
     if payload is not None:
       headers['Content-Type'] = 'application/json'
     connection = http.client.HTTPConnection('127.0.0.1', server.server_port, timeout=2)
@@ -114,6 +116,16 @@ class SidecarNavigationHttpTest(unittest.TestCase):
     finally:
       connection.close()
     self.assertIsNone(self.navigation.read()['destination'])
+
+  def test_ble_bridge_marker_accepts_only_loopback_with_valid_bearer(self):
+    self.config(enabled=True, host='192.168.50.84', token=TOKEN)
+    self.assertEqual(self.request(ble=True)[0], 200)
+    self.assertEqual(self.request('POST', payload=PLACE, ble=True)[0], 200)
+    self.assertEqual(self.navigation.read()['destination']['name'], PLACE['name'])
+    self.assertEqual(self.request(token='wrong-but-long-token', ble=True)[0], 401)
+    self.assertEqual(self.request(ble=True, origin='https://evil.example')[0], 403)
+    self.assertEqual(self.request(ble=True, remote=True)[0], 403)
+    self.assertEqual(self.request()[0], 403)  # the old LAN rule still checks the X10 peer address
 
   def test_minimal_state_and_destination_round_trip_without_mapbox_key(self):
     status, initial = self.request()

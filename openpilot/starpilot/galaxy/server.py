@@ -535,7 +535,12 @@ def make_server(*, port=8082, host='127.0.0.1', monitor=None, owner=None, crashe
           self.json(status, {'message': 'Sidecar navigation unavailable'})
         return None
 
-      if getattr(self.server, 'remote_transport', False) or urlsplit(self.path).query or self.headers.get('Origin') is not None:
+      bridge_markers = self.headers.get_all('X-StarPilot-Ble-Bridge', [])
+      if bridge_markers not in ([], ['1']):
+        return denied(403)
+      via_ble = bridge_markers == ['1']
+      if (getattr(self.server, 'remote_transport', False) or urlsplit(self.path).query or
+          self.headers.get('Origin') is not None):
         return denied(403)
       destination = self.connection.getsockname()[0]
       peer = self.client_address[0]
@@ -550,7 +555,10 @@ def make_server(*, port=8082, host='127.0.0.1', monitor=None, owner=None, crashe
           not sidecar_config.is_valid_token(token)):  # 10-128 printable ASCII characters, the settings screen's rule
         return denied(403)
       try:
-        if ip_address(peer) != ip_address(host):
+        if via_ble:
+          if ip_address(peer) != ip_address('127.0.0.1') or ip_address(destination) != ip_address('127.0.0.1'):
+            return denied(403)
+        elif ip_address(peer) != ip_address(host):
           return denied(403)
       except ValueError:
         return denied(403)

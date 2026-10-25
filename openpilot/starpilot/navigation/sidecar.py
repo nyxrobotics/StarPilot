@@ -12,11 +12,13 @@ from urllib.parse import urlencode, urlsplit
 from openpilot.starpilot.navigation.owner import ValidationError
 from openpilot.starpilot.navigation.route_engine import EARTH_RADIUS, MapboxRouteEngine, NavigationRoute
 from openpilot.starpilot.navigation.sidecar_config import (
-  SOURCE_FIXED, SOURCE_VERIFIED, DeadlineSocket, RouteServer, invalidate_discovery, is_lan_address,
+  DIRECTIONS_PATH, SOURCE_FIXED, SOURCE_VERIFIED, DeadlineSocket, RouteServer, invalidate_discovery, is_lan_address,
   sidecar_enabled, sidecar_route_server,
 )
+from openpilot.starpilot.galaxy_bluetooth.bridge.ble_route import fetch_route as fetch_ble_route
 
 ERROR_LOG_INTERVAL_S = 30.0
+LAN_FAILURE_COOLDOWN_S = 15.0  # avoid paying a 5 s LAN timeout on every BLE reroute
 NO_SERVER_MESSAGE = "sidecar: no route server (sidecar off, unusable host setting, or no gateway and nothing answered GET /status)"
 
 # --- the exchange with the route server (RouteSession)
@@ -421,6 +423,8 @@ class SidecarRouteEngine(MapboxRouteEngine):
   def __init__(self, session=None):
     super().__init__(session or RouteSession())
     self._last_log = {}
+    self._lan_failed_until = 0.0
+    self._lan_failed_server = None
 
   def _warn(self, kind: str, message: str) -> None:
     now = time.monotonic()
@@ -439,20 +443,54 @@ class SidecarRouteEngine(MapboxRouteEngine):
       if not sidecar_enabled():
         raise SidecarUnavailable('sidecar mode is off')
       server = sidecar_route_server()
-      if server is None:
-        raise SidecarUnavailable('no LAN route server address')
-      self._warn('server:' + server.host, describe_route_server(server))
       start = (float(position[1]), float(position[0]))
       end = (float(destination['latitude']), float(destination['longitude']))
-      url = (server.directions_url + '/' +
-             f'{position[0]},{position[1]};{destination["longitude"]},{destination["latitude"]}')
+      route_path = DIRECTIONS_PATH + '/' + f'{position[0]},{position[1]};{destination["longitude"]},{destination["latitude"]}'
       params = {'access_token': token, 'geometries': 'geojson', 'steps': 'true', 'overview': 'full', 'banner_instructions': 'true',
                 'alternatives': 'true' if _haversine(start, end) <= ALTERNATIVES_MAX_DISTANCE_M else 'false'}  # inf (not finite) -> false
       if exclusions:
         params['exclude'] = ','.join(exclusions)
       if bearing is not None:
         params['bearings'] = f'{int(bearing % 360)},90;'
-      response = self.session.get(url, params=params, timeout=ROUTE_DEADLINE_S)
+      # The normal route server is fastest while the X10 and comma share Wi-Fi.
+      # When T11 projection occupies the X10 Wi-Fi radio, the paired Companion
+      # fetches exactly the same local Sidecar route through encrypted BLE.
+      response = None
+      lan_key = (server.host, server.port) if server is not None else None
+      lan_skipped = lan_key == self._lan_failed_server and time.monotonic() < self._lan_failed_until
+      lan_failed = False
+      if server is not None and not lan_skipped:
+        self._warn('server:' + server.host, describe_route_server(server))
+        try:
+          response = self.session.get('http://' + server.host + ':' + str(server.port) + route_path,
+                                      params=params, timeout=ROUTE_DEADLINE_S)
+          if response.status_code != 200:
+            response = None  # A stale fixed LAN address may now belong to another device.
+        except RouteFetchError:
+          response = None
+        lan_failed = response is None
+        if response is not None:
+          self._lan_failed_until = 0.0
+          self._lan_failed_server = None
+      if response is None:
+        target = route_path + '?' + urlencode(params)
+        try:
+          status, body = fetch_ble_route(target)
+        except (OSError, ValueError, RuntimeError) as error:
+          if not lan_skipped or server is None:
+            raise RouteFetchError(f'LAN and Bluetooth route transports failed ({type(error).__name__})') from None
+          # BLE stopped during the short cooldown; the X10 may already have
+          # returned to the local network, so retry LAN before reporting no route.
+          response = self.session.get('http://' + server.host + ':' + str(server.port) + route_path,
+                                      params=params, timeout=ROUTE_DEADLINE_S)
+          if response.status_code == 200:
+            self._lan_failed_until = 0.0
+            self._lan_failed_server = None
+        else:
+          response = RouteResponse(status, body)
+          if lan_failed:
+            self._lan_failed_server = lan_key
+            self._lan_failed_until = time.monotonic() + LAN_FAILURE_COOLDOWN_S
       if response.status_code != 200:
         raise RouteFetchError(f'the route server answered HTTP {response.status_code}')
       data = response.json()

@@ -23,6 +23,7 @@ from protocol import (Assembler, INFO_UUID, RX_UUID, SERVICE_UUID, TX_UUID, NOTI
 from proxy import GalaxyProxy
 from pairing import add_phone, introduce, link_address, load_keys, mark_used, remove_phone
 from setup_health import write_ready, clear_ready
+from ble_route import RouteBrokerServer
 
 ROOT = "/link/galaxy/ble"
 SERVICE_PATH = ROOT + "/service0"
@@ -178,7 +179,11 @@ class Gateway:
     state = self.sessions[path]
     state.last_seen = time.monotonic()
     if "mtu" in options:
-      state.packet_size = min(512, max(20, int(options["mtu"].value) - 3))
+      # BlueZ can report its own 517-byte MTU here even when Android negotiated
+      # 247. A larger ReadValue is then truncated and BlueZ retries at a nonzero
+      # offset, which this packet protocol cannot accept. Keep one value within
+      # the client's 244-byte ATT write/read payload and one 251-byte ACL PDU.
+      state.packet_size = min(244, max(20, int(options["mtu"].value) - 3))
     return state
 
   def write(self, value, options):
@@ -488,7 +493,8 @@ async def serve(args):
   clear_ready(key_path.parent)
   keys = load_keys(key_path)
   bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
-  gateway = Gateway(keys, GalaxyProxy(args.galaxy_port), key_path, claim.CLAIM_PATH)
+  route_server = RouteBrokerServer()
+  gateway = Gateway(keys, GalaxyProxy(args.galaxy_port, route_server.broker), key_path, claim.CLAIM_PATH)
   objects = {
       SERVICE_PATH: GattService(),
       SERVICE_PATH + "/rx": Characteristic(RX_UUID, ["write"], gateway, "rx"),
@@ -522,6 +528,7 @@ async def serve(args):
   await gatt.call_register_application(ROOT, {})
   watcher = asyncio.create_task(gateway.watch_key())
   try:
+    route_server.start()
     LOG.info("Registering Galaxy BLE advertisement")
     await advertising.call_register_advertisement(ad_path, {})
     write_ready(key_path.parent)
@@ -550,6 +557,7 @@ async def serve(args):
       await asyncio.gather(monitor, stop_waiter, disconnected, return_exceptions=True)
   finally:
     LOG.info("Stopping Galaxy bridge; clearing ready status and Bluetooth sessions")
+    route_server.close()
     clear_ready(key_path.parent)
     watcher.cancel()
     try:

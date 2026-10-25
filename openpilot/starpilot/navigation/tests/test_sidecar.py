@@ -291,6 +291,43 @@ def test_route_fetch_uses_only_the_configured_lan_server(monkeypatch):
   assert calls[0][2] == 5.
 
 
+@pytest.mark.parametrize('failure', ('socket', 'stale_host'))
+def test_route_fetch_falls_back_to_ble_and_recovers_lan_after_short_cooldown(monkeypatch, failure):
+  from openpilot.starpilot.navigation import sidecar
+
+  body = json.dumps(route_document()).encode()
+  calls, ble_calls = [], []
+  class Session:
+    def get(self, url, params, timeout):
+      calls.append(url)
+      if len(calls) == 1:
+        if failure == 'socket':
+          raise RouteFetchError('the LAN socket is unavailable')
+        return RouteResponse(404, b'')
+      return RouteResponse(200, body)
+
+  def ble_fetch(target):
+    ble_calls.append(target)
+    return 200, body
+
+  monkeypatch.setattr(sidecar, 'sidecar_enabled', lambda: True)
+  monkeypatch.setattr(sidecar, 'sidecar_route_server', lambda: RouteServer('192.168.1.10', 8765, SOURCE_FIXED))
+  monkeypatch.setattr(sidecar, 'fetch_ble_route', ble_fetch)
+  engine = SidecarRouteEngine(Session())
+  destination = {'name': 'Shibuya', 'latitude': END[0], 'longitude': END[1]}
+  for _ in range(2):
+    assert engine.fetch('shared-secret', (START[1], START[0]), destination).steps
+  assert len(calls) == 1  # a reroute while T11 has X10 Wi-Fi does not spend another 5 s on LAN
+  assert len(ble_calls) == 2
+  assert ble_calls[0].startswith('/directions/v5/mapbox/driving-traffic/')
+  assert 'access_token=shared-secret' in ble_calls[0]
+
+  engine._lan_failed_until = 0.0
+  assert engine.fetch('shared-secret', (START[1], START[0]), destination).steps
+  assert len(calls) == 2  # once the cooldown passes, the normal LAN path resumes
+  assert len(ble_calls) == 2
+
+
 def test_bad_x10_answer_invalidates_discovery_and_never_yields_a_route(monkeypatch):
   from openpilot.starpilot.navigation import sidecar
 

@@ -50,6 +50,8 @@ class PairingStore(context: Context) {
     fun deviceAddress(): String? = prefs.getString("deviceAddress", null)?.takeIf {
         it.matches(Regex("(?i)[0-9a-f]{2}(?::[0-9a-f]{2}){5}"))
     }
+    /** Keep the pairing key but discard a possibly rotated or unreachable LE address. */
+    fun forgetDeviceAddress() { prefs.edit().remove("deviceAddress").apply() }
     /** Comma's audio address once this phone bonded with it, so forgetting comma in Bluetooth settings can drop the app pairing too. */
     fun rememberMusic(address: String) {
         if (address.matches(Regex("(?i)[0-9a-f]{2}(?::[0-9a-f]{2}){5}"))) prefs.edit().putString("musicAddress", address.uppercase()).apply()

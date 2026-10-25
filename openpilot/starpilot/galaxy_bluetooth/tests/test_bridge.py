@@ -159,7 +159,7 @@ class GatewayTests(unittest.IsolatedAsyncioTestCase):
     self.options["mtu"] = Variant("q", 517)
     self.gateway.session(self.options)
     no_mtu = {"device": self.options["device"]}
-    self.assertEqual(self.gateway.session(no_mtu).packet_size, 512)
+    self.assertEqual(self.gateway.session(no_mtu).packet_size, 244)
     body = json.dumps([{ "repeated_setting": n, "label": "Galaxy ✨" } for n in range(1000)]).encode()
     def response(request):
       return {"id": request["id"], "status": 200, "headers": {}, "body": base64.b64encode(body).decode()}
@@ -169,7 +169,8 @@ class GatewayTests(unittest.IsolatedAsyncioTestCase):
     legacy_count = len(self.state.response)
     self.drain()
     await self.submit(counter=2, response_codec=2)
-    self.assertEqual(len(self.state.response[0]), 512)
+    self.assertEqual(len(self.state.response[0]), 244)
+    self.assertTrue(all(len(packet) <= 244 for packet in self.state.response))
     self.assertLess(len(self.state.response), legacy_count)
     self.assertEqual(base64.b64decode(self.drain()["body"]), body)
     self.options["mtu"] = Variant("q", 23)
