@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.util.Log
 import android.view.ViewGroup
 import android.webkit.*
 import android.widget.*
@@ -57,7 +58,17 @@ class MainActivity : Activity() {
                 if (idle() || mayPreemptBluetooth) connect()
             }
         }
-        override fun onLost(network: Network) { knownWifi.remove(network) }
+        override fun onLost(network: Network) {
+            knownWifi.remove(network)
+            // The guidance service shares this process. If the Wi-Fi used for
+            // Galaxy disappears while this activity is in the background,
+            // a process-wide binding would also strand its localhost route GET.
+            val manager = Networks.manager(this@MainActivity)
+            if (manager.boundNetworkForProcess == network) {
+                manager.bindProcessToNetwork(null)
+                Log.i("StarPilotSidecarBLE", "Released lost Wi-Fi process binding")
+            }
+        }
     }
 
     private var origin = Networks.ORIGIN

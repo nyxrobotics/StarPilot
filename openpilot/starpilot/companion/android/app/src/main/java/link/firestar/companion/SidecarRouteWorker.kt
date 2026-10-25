@@ -5,8 +5,11 @@ import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.IOException
+import java.net.MalformedURLException
 import java.net.HttpURLConnection
 import java.net.Proxy
+import java.net.SocketException
+import java.net.SocketTimeoutException
 import java.net.URI
 import java.net.URL
 import java.util.Base64
@@ -19,6 +22,11 @@ interface RouteLink {
     fun request(value: JSONObject, deadlineSeconds: Long = 90): JSONObject
     fun routePriority(high: Boolean)
 }
+
+/** A complete HTTP response was received, but it cannot be used as a route. */
+internal class RouteFetchRejected(val reason: String, val status: Int? = null) : IllegalStateException()
+/** No complete HTTP response was received, so a fresh local GET is safe. */
+internal class RouteFetchIo(val stage: String, val origin: String, cause: IOException) : IOException(cause)
 
 /** Carries one local Sidecar directions reply back to comma over the paired, encrypted GATT session. */
 internal class SidecarRouteWorker internal constructor(
@@ -61,7 +69,11 @@ internal class SidecarRouteWorker internal constructor(
             val id = job.getString("id")
             if (!ID.matches(id)) return
             val target = job.getString("target")
-            if (!validTarget(target)) throw IOException("Invalid Sidecar route target")
+            if (!validTarget(target)) {
+                warning("Route fetch rejected (reason=invalid-target)")
+                try { fail(link, id) } catch (_: Exception) { /* broker deadline still applies */ }
+                return
+            }
             // comma reports the first uncommitted chunk. In particular, if the
             // previous GATT ACK was lost, repeating that chunk is safe because
             // the broker's sequence check returns its already-advanced cursor.
@@ -76,8 +88,22 @@ internal class SidecarRouteWorker internal constructor(
                     try { fail(link, id) } catch (_: Exception) { /* broker deadline still applies */ }
                     return
                 }
-                transfer = try { Transfer(id, target, gzip(routeFetcher(target))) } catch (error: Exception) {
-                    warning("Route fetch failed (${error.javaClass.simpleName})")
+                val route = try { routeFetcher(target) } catch (error: IOException) {
+                    // No compressed bytes or BLE chunks exist yet. Keep the
+                    // broker job open and re-fetch on its next poll.
+                    val origin = (error as? RouteFetchIo)?.origin ?: error.javaClass.simpleName
+                    val stage = (error as? RouteFetchIo)?.stage ?: "fetch"
+                    warning("Route fetch deferred ($origin, stage=$stage)")
+                    return
+                } catch (error: Exception) {
+                    if (error is RouteFetchRejected)
+                        warning("Route fetch rejected (reason=${error.reason}, status=${error.status ?: "none"})")
+                    else warning("Route fetch failed (${error.javaClass.simpleName})")
+                    try { fail(link, id) } catch (_: Exception) { /* broker deadline still applies */ }
+                    return
+                }
+                transfer = try { Transfer(id, target, gzip(route)) } catch (error: Exception) {
+                    warning("Route compression failed (${error.javaClass.simpleName})")
                     try { fail(link, id) } catch (_: Exception) { /* broker deadline still applies */ }
                     return
                 }
@@ -128,30 +154,58 @@ internal class SidecarRouteWorker internal constructor(
         if (response.optInt("status") !in setOf(200, 404)) throw IOException("Sidecar route failure was not acknowledged")
     }
 
-    private fun fetch(target: String): ByteArray {
-        val connection = URL("http://127.0.0.1:8765$target").openConnection(Proxy.NO_PROXY) as HttpURLConnection
-        connection.requestMethod = "GET"
-        connection.connectTimeout = 3_000
-        connection.readTimeout = 10_000
-        connection.instanceFollowRedirects = false
-        connection.useCaches = false
-        connection.setRequestProperty("Accept-Encoding", "identity")
+    internal fun fetch(target: String, port: Int = 8765): ByteArray {
+        var retriedPreResponseSocket = false
+        while (true) {
+            try { return fetchOnce(target, port) } catch (error: RouteFetchIo) {
+                if (!retriedPreResponseSocket && error.stage == "response" && error.cause is SocketException) {
+                    // Sidecar closes idle keep-alive sockets after five seconds.
+                    // HttpURLConnection may select one just as it goes stale.
+                    retriedPreResponseSocket = true
+                    warning("Route fetch retrying fresh connection (${error.origin}, stage=response)")
+                    continue
+                }
+                throw error
+            }
+        }
+    }
+
+    private fun fetchOnce(target: String, port: Int): ByteArray {
+        val endpoint = try { URL("http://127.0.0.1:$port$target") }
+            catch (_: MalformedURLException) { throw RouteFetchRejected("invalid-target") }
+        val connection = endpoint.openConnection(Proxy.NO_PROXY) as HttpURLConnection
+        var stage = "setup"
         try {
-            if (connection.responseCode != 200 || connection.contentLengthLong > MAX_BODY)
-                throw IOException("Sidecar directions unavailable")
+            connection.requestMethod = "GET"
+            connection.connectTimeout = 3_000
+            connection.readTimeout = 10_000
+            connection.instanceFollowRedirects = false
+            connection.useCaches = false
+            connection.setRequestProperty("Accept-Encoding", "identity")
+            connection.setRequestProperty("Connection", "close")
+            stage = "response"
+            val status = connection.responseCode
+            if (status != 200) throw RouteFetchRejected("http-status", status)
+            val declared = connection.contentLengthLong
+            if (declared > MAX_BODY) throw RouteFetchRejected("oversize")
             val result = ByteArrayOutputStream()
             val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(45)
+            stage = "body"
             connection.inputStream.use { input ->
                 val buffer = ByteArray(32 * 1024)
                 while (true) {
-                    if (!running || System.nanoTime() > deadline) throw IOException("Sidecar directions timed out")
+                    if (!running || System.nanoTime() > deadline) throw SocketTimeoutException("Sidecar directions timed out")
                     val count = input.read(buffer)
                     if (count < 0) break
-                    if (result.size() + count > MAX_BODY) throw IOException("Sidecar directions too large")
+                    if (result.size() + count > MAX_BODY) throw RouteFetchRejected("oversize")
                     result.write(buffer, 0, count)
                 }
             }
+            if (result.size() == 0 || (declared >= 0 && result.size().toLong() != declared))
+                throw RouteFetchRejected("invalid-body")
             return result.toByteArray()
+        } catch (error: IOException) {
+            throw RouteFetchIo(stage, error.javaClass.simpleName, error)
         } finally { connection.disconnect() }
     }
 

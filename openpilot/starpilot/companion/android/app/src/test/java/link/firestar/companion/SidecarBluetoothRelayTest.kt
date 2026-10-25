@@ -1,5 +1,6 @@
 package link.firestar.companion
 
+import com.sun.net.httpserver.HttpServer
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertArrayEquals
@@ -9,6 +10,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.net.InetSocketAddress
+import java.net.SocketException
 import java.net.Socket
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -162,5 +164,79 @@ class SidecarBluetoothRelayTest {
             worker.tick()
         }
         assertTrue(failed)
+    }
+
+    @Test fun routeWorkerKeepsBrokerJobOpenAfterTransientLocalSocketFailure() {
+        val id = "0123456789abcdef0123456789abcdef"
+        val target = "/directions/v5/mapbox/driving-traffic/139.0,35.0;139.1,35.1?steps=true"
+        var fetches = 0
+        var chunks = 0
+        var failed = false
+        var completed = false
+        val notices = mutableListOf<String>()
+        val link = object : RouteLink {
+            override fun routePriority(high: Boolean) = Unit
+            override fun request(value: JSONObject, deadlineSeconds: Long): JSONObject {
+                val path = value.getString("path")
+                if (path == "/_bridge/sidecar/poll") {
+                    val job = JSONObject().put("id", id).put("target", target).put("next_sequence", chunks)
+                    return JSONObject().put("status", if (completed) 204 else 200)
+                        .put("body", Base64.getEncoder().encodeToString(job.toString().toByteArray()))
+                }
+                if (path == "/_bridge/sidecar/fail/$id") {
+                    failed = true
+                    return JSONObject().put("status", 200)
+                }
+                assertTrue(path.startsWith("/_bridge/sidecar/chunk/$id/"))
+                chunks++
+                if (path.contains("last=1")) completed = true
+                val ack = JSONObject().put("next", chunks)
+                return JSONObject().put("status", 200)
+                    .put("body", Base64.getEncoder().encodeToString(ack.toString().toByteArray()))
+            }
+        }
+        SidecarRouteWorker({ link }, autoStart = false).use { worker ->
+            worker.routeFetcher = {
+                fetches++
+                if (fetches == 1) throw SocketException("connection reset")
+                ByteArray(5000).also { java.util.Random(19).nextBytes(it) }
+            }
+            worker.warning = { notices += it }
+            worker.tick()
+            assertEquals(1, fetches)
+            assertEquals(0, chunks)
+            assertFalse(failed)
+            worker.tick()
+            assertEquals(2, fetches)
+            assertTrue(completed)
+            assertFalse(failed)
+            assertTrue(notices.any { it.contains("SocketException") && !it.contains(target) })
+        }
+    }
+
+    @Test fun localRouteFetchClosesHttpConnectionAndRejectsNon200WithoutRetry() {
+        val target = "/directions/v5/mapbox/driving-traffic/139.0,35.0;139.1,35.1?steps=true"
+        val calls = AtomicInteger()
+        val closeHeader = AtomicReference<String>()
+        val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 1)
+        server.createContext("/directions/v5/mapbox/driving-traffic/") { exchange ->
+            calls.incrementAndGet()
+            closeHeader.set(exchange.requestHeaders.getFirst("Connection"))
+            exchange.sendResponseHeaders(503, -1)
+            exchange.close()
+        }
+        server.start()
+        try {
+            SidecarRouteWorker({ null }, autoStart = false).use { worker ->
+                worker.warning = {}
+                val rejected = assertThrows(RouteFetchRejected::class.java) {
+                    worker.fetch(target, server.address.port)
+                }
+                assertEquals("http-status", rejected.reason)
+                assertEquals(503, rejected.status)
+            }
+            assertEquals(1, calls.get())
+            assertEquals("close", closeHeader.get()?.lowercase())
+        } finally { server.stop(0) }
     }
 }

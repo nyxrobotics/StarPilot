@@ -102,6 +102,15 @@ class NavigationGuidanceService : Service() {
             // The guidance service owns reconnects. Idle route polling must not
             // start another GATT handshake while Sidecar is waiting for status.
             BleTransport.active?.takeIf { it.open }
+        }.apply {
+            warning = { message ->
+                val binding = if (message.startsWith("Route fetch")) {
+                    val manager = Networks.manager(this@NavigationGuidanceService)
+                    val bound = manager.boundNetworkForProcess
+                    " (boundNetwork=${bound ?: "none"}, boundActive=${bound == null || manager.getNetworkCapabilities(bound) != null})"
+                } else ""
+                android.util.Log.w("StarPilotSidecarBLE", message + binding)
+            }
         }
         val now = SystemClock.elapsedRealtime()
         if (sidecarRelay == null && now - lastRelayBindAttempt >= 10_000L) {
