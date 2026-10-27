@@ -136,6 +136,26 @@ class MapContractVectorsTest {
         assertFalse(Allowlist.check("GET", "/sidecar/v1/roadtiles?z=14&t=1.1&access_token=$token", "x".toByteArray()).ok)
     }
 
+    @Test fun everyKeyBelongsToItsShapeAloneAndEveryGroupAndHyphenOfTheSessionTokenIsChecked() {
+        val token = "TokenForTests"
+        fun ok(target: String) = Allowlist.check("GET", target).ok
+        val session = "abcdef12-abcd-4abc-8abc-abcdefabcdef"
+        val geocode = "/search/geocode/v6/forward?q=a&access_token=$token&limit=5&autocomplete=true&permanent=false&proximity=139.7%2C35.6"
+        val suggest = "/search/searchbox/v1/suggest?q=a&access_token=$token&session_token=$session&types=poi%2Caddress&limit=5&proximity=139.7,35.6"
+        assertTrue(ok(geocode)); assertTrue(ok(suggest))
+        for (foreign in listOf("session_token=$session", "types=poi")) assertFalse("geocode with $foreign", ok("$geocode&$foreign"))
+        for (foreign in listOf("autocomplete=true", "permanent=false")) assertFalse("suggest with $foreign", ok("$suggest&$foreign"))
+        for (twice in listOf("q=b", "access_token=$token", "limit=6", "proximity=1,2")) { assertFalse("geocode twice $twice", ok("$geocode&$twice")); assertFalse("suggest twice $twice", ok("$suggest&$twice")) }
+        // the session token: lower case in every group, a hyphen in every place
+        val retrieve = { s: String -> "/search/searchbox/v1/retrieve/abc?access_token=$token&session_token=$s" }
+        assertTrue(ok(retrieve(session)))
+        val groups = session.split("-")
+        for (i in groups.indices) assertFalse("group $i in upper case", ok(retrieve(groups.mapIndexed { j, g -> if (j == i) g.uppercase() else g }.joinToString("-"))))
+        for (i in 1 until groups.size) assertFalse("hyphen $i missing", ok(retrieve(groups.take(i).joinToString("-") + groups.drop(i).joinToString("-"))))
+        for (i in groups.indices) assertFalse("group $i too short", ok(retrieve(groups.mapIndexed { j, g -> if (j == i) g.dropLast(1) else g }.joinToString("-"))))
+        assertFalse("one hyphen too many", ok(retrieve(session.replaceFirst("-", "--"))))
+    }
+
     // ---- results: all 121 cases --------------------------------------------------------------------------------------------------------
 
     private fun payloadOf(case: StrictJson.Obj): ByteArray {

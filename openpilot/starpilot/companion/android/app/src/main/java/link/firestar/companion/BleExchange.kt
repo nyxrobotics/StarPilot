@@ -40,7 +40,7 @@ internal object BleExchange {
             if (noResponse) { burstEnd = nanoTime(); burstFrameBytes += packet.size - 5 } // 5 bytes of header per packet (BleWire.packets)
         }
         // The burst of the packets that went without a response: the body they carried over the time they took (the bridge's `up_kb_s` rule, seen from this end).
-        if (onBurst != null && quick && burstFrameBytes > 0L) onBurst((body!!.size.toLong() * burstFrameBytes / frame.size).toInt(), (burstEnd - burstStart) / 1e9)
+        if (onBurst != null && burstFrameBytes > 0L) onBurst((body!!.size.toLong() * burstFrameBytes / frame.size).toInt(), (burstEnd - burstStart) / 1e9)
         val assembler = BleWire.Assembler()
         val deadline = nanoTime() + TimeUnit.SECONDS.toNanos(deadlineSeconds)
         while (nanoTime() < deadline) {

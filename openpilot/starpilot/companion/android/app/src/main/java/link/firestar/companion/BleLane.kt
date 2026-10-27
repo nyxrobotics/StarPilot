@@ -135,7 +135,7 @@ internal class BleLane(
     private val link: LaneLink,
     private val clock: () -> Long = System::nanoTime,
     private val watchdogEnabled: Boolean = true,
-    val planner: ChunkPlanner = ChunkPlanner(),
+    val planner: ChunkPlanner = ChunkPlanner.forRoute(),
     private val policy: PriorityPolicy = PriorityPolicy(),
     private val watchdogGraceSeconds: Long = 5,
     /** The planner of the class `map` (1 s, 4,096 bytes at the start and at least). */
@@ -293,7 +293,7 @@ internal class BleLane(
             inFlight = null
             policy.activity(ended / 1_000_000)
         }
-        if (answer != null && ticket.bodyBytes > 0) when (ticket.cls) {
+        if (answer != null) when (ticket.cls) {
             LaneClass.BULK -> planner
             LaneClass.MAP -> mapPlanner
             LaneClass.SMALL -> searchPlanner

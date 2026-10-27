@@ -118,7 +118,7 @@ internal object Allowlist {
             val reason = vehicleBodyProblem(body)
             return if (reason.isNotEmpty()) refuse(reason) else Verdict(true, Shape.VEHICLE, "")
         }
-        if (version >= 3) mapVerdict(method, path, hasQuery, query, body)?.let { return it }
+        if (version >= 3) mapVerdict(method, path, query, body)?.let { return it }
         return refuse("path")
     }
 
@@ -288,7 +288,8 @@ internal object Allowlist {
 
     private fun typesOk(value: String): Boolean {
         val words = splitComma(value)
-        return words.size in 1..SUGGEST_TYPES.size && words.toSet().size == words.size && words.all { it in SUGGEST_TYPES }
+        // one to six distinct words of the six types (a distinct set of members cannot be larger; `split` never gives fewer than one item)
+        return words.toSet().size == words.size && words.all { it in SUGGEST_TYPES }
     }
 
     private fun searchValueOk(key: String, value: String): Boolean = when (key) {
@@ -320,7 +321,7 @@ internal object Allowlist {
         if (z != ROADTILES_ZOOM) return "roadtiles zoom"
         val seen = HashSet<Long>()
         val items = t.split(",")
-        if (items.size !in 1..ROADTILES_MAX_PAIRS) return "roadtiles pair count"
+        if (items.size > ROADTILES_MAX_PAIRS) return "roadtiles pair count" // `split` never gives fewer than one item: an empty list is one empty item, which is no pair
         for (item in items) {
             val match = PAIR_INT.matchEntire(item)
             if (match == null || match.groupValues[1].length > 5 || match.groupValues[2].length > 5) return "roadtiles pair"
@@ -349,13 +350,13 @@ internal object Allowlist {
 
     private fun retrieveProblem(path: String, pairs: List<Pair<String, String>>?): String {
         val id = path.substring(RETRIEVE_PREFIX.length)
-        if (id.length !in 1..RETRIEVE_ID_CHARS || !RETRIEVE_ID.matches(id)) return "retrieve id"
+        if (id.length > RETRIEVE_ID_CHARS || !RETRIEVE_ID.matches(id)) return "retrieve id" // the pattern needs at least one character
         if (pairs == null || pairs.map { it.first } != listOf("access_token", "session_token")) return "retrieve query"
         return if (tokenOk(pairs[0].second) && UUID4.matches(pairs[1].second)) "" else "retrieve value"
     }
 
     /** The verdict for a path that belongs to one of the five map shapes, null for a path that belongs to none. Every map shape is a bodiless GET with a query. */
-    private fun mapVerdict(method: String, path: String, hasQuery: Boolean, query: String, body: ByteArray): Verdict? {
+    private fun mapVerdict(method: String, path: String, query: String, body: ByteArray): Verdict? {
         val shape = when {
             path == ROADTILES_PATH -> Shape.ROADTILES
             path.startsWith(STILE_PREFIX) -> Shape.STILE
@@ -365,8 +366,7 @@ internal object Allowlist {
             else -> return null
         }
         if (method != "GET" || body.isNotEmpty()) return refuse("${shape.wire} is a bodiless GET")
-        if (!hasQuery) return refuse("${shape.wire} needs a query")
-        val pairs = queryPairs(query)
+        val pairs = queryPairs(query) // null for a missing or empty query: every shape refuses it
         val reason = when (shape) {
             Shape.ROADTILES -> roadtilesProblem(pairs)
             Shape.STILE -> stileProblem(path, pairs)
@@ -552,12 +552,10 @@ internal object JobContract {
      * decoded again with [decodeResult] before it is returned, so a fault of the encoder ends the job here.
      */
     fun encode(kind: String, status: Int, body: ByteArray, preferXz: Boolean): Encoded {
-        Shape.ofWire(kind)?.takeIf { it.isMap }?.let { shape ->
+        if (Shape.ofWire(kind)?.isMap == true) {
             // a map answer is carried as it is: no gzip, no xz (a bundle holds zlib streams, a PNG is compressed)
-            if (status !in MAP_STATUSES) throw ContractError("status not carried")
-            if (body.size > mapLimit(shape, status)) throw ContractError("body too large")
             val sha = sha256Hex(body)
-            decodeMapResult(kind, status, "identity", body, body.size, sha)
+            decodeMapResult(kind, status, "identity", body, body.size, sha) // refuses a status that is not carried and a body over the limit of its kind
             return Encoded(status, "identity", body, body.size, sha)
         }
         if (status !in ALLOWED_STATUS) throw ContractError("status not carried")

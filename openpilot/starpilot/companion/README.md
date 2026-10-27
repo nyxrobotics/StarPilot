@@ -124,6 +124,25 @@ without the flags is the old one: the poll and chunk calls described above stay 
   `age_ms` raised by the wait). A `wake` frame ("a job is waiting") starts a job poll at once.
 - **Reconnect.** After a drop the service retries at once, then after 1, 2, 4 and 8 s, then every 10 s.
 
+### Map data over Bluetooth (Companion 1.1.41, contract version 3)
+
+With a bridge whose health answer has the flag `maps` (and `poll2`, `results2`), Companion carries five more request shapes of the comma's map client, all bodiless `GET`s fetched
+from `127.0.0.1:8765` only: `roadtiles` (a bundle of up to 16 road tiles), `stile` (a style tile, a PNG), and the three searches `geocode`, `suggest` and `retrieve`. The allow-list
+(`SidecarContract.kt`, 779 shared vectors) takes them in canonical percent-encoding only; a phone that did not announce `maps` judges as a phone of version 2 and refuses them.
+
+- **Announcement.** After a health answer with `maps`, the body of `push-enable` is `{"maps":true}`, or `{"nav":true,"maps":true}` with `pushNav`. A bridge without the flag gets
+  `{"nav":true}` or no body, as before, so nothing changes for an older bridge or an older Companion.
+- **A fourth class, `map`.** Tile chunks go below the route (interactive, small, route, map), first come first served, never preempting. A map chunk is the rate measured on map chunks
+  times 1 s, in whole packets, 4,096 bytes at the start and at least; the answer of a search is cut by the same one-second cap; the route keeps 5 s. Anything else waits at most one
+  map chunk. A map chunk asks for the high priority like a route chunk.
+- **The answer is carried as the X10 gave it** (`identity`): a bundle at most 524,288 bytes, a PNG 2 MiB, a search 64 KiB, the body of any status but 200 at most 4 KiB, with the status
+  of the X10 (200, 400, 401, 404, 422, 429, 503; other statuses fail the job). A 4xx is an answer and is never fetched again. A redirect, an encoded answer, a body over its limit or a
+  cut answer is never carried. The bundle is not read: the comma checks it whole.
+- **Deadlines.** A map job is dropped when its own deadline has passed (120 s `roadtiles`, 30 s `stile`, 15 s a search; counted from the first poll that listed it, the comma's 404 ends
+  it in any case); after a link loss the upload resumes at the comma's cursor.
+- **Flags and meter.** Companion reads `maps`, `wwr` and `up_kb_s` of the health answer (`BridgeFeatures`, `MapAdmission`: what the comma's tile client will do with them) and keeps its
+  own measure of the burst of write-without-response packets (`UplinkMeter`); the bridge's figure decides, this one is for the status and the tests. Not seen on a unit: 【未検証】.
+
 Tests: `app/src/test/java/link/firestar/companion/` (`BleLaneTest`, `BleExchangeTest`, `SidecarJobsTest`, `VehiclePushTest`, `AllowlistTest`, `JobContractTest`,
 `ContractVectorsTest`, `BleWireRawTest`, `StrictJsonTest`, `LinkMiscTest`) with the shared vectors of the Sidecar project in `app/src/test/resources/btlink/` (see the
 README there). `tests/test_ble_wire_vectors.py` opens the raw-body frames that the app makes with the bridge's own `open_message`. Not yet seen on a unit or in a car.

@@ -218,7 +218,7 @@ class BleLaneMapTest {
             // a small request that is not a chunk (the poll, the failure) says nothing about the rate
             lane.call(LaneClass.SMALL, 10, req, label = "poll2")
             assertEquals(11_950, lane.planChunk(LaneClass.SMALL, 1_000_000))
-            lane.call(LaneClass.INTERACTIVE, 10, req, ByteArray(6_000), 6_000)
+            lane.call(LaneClass.INTERACTIVE, 10, req, ByteArray(100), 100) // 200 B/s: it would move any planner it fed
             assertEquals("an interactive request is not a chunk", 11_950, lane.planChunk(LaneClass.SMALL, 1_000_000))
             assertEquals("and does not move the route's planner either", 65_486, lane.planChunk(LaneClass.BULK, 1_000_000))
             assertEquals("nor the map planner", 11_950, lane.planChunk(LaneClass.MAP, 1_000_000))

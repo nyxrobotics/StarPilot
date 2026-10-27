@@ -341,6 +341,39 @@ class SidecarMapJobsTest {
         }
     }
 
+    @Test fun aStyleTileThatPassesItsDeadlineInTheMiddleOfTheUploadSendsNothingMore() {
+        val clock = java.util.concurrent.atomic.AtomicLong()
+        val comma = comma(); val target = targets.getValue(Shape.STILE); val job = comma.submit(Shape.STILE, target)
+        val body = bytes(200_000, 11)
+        val fetcher = FakeFetcher(mutableMapOf(target to { LocalAnswer(200, body) }))
+        val lane = lane(TimedLink(comma, 5_000.0, clock), clock::get) // 5 KB/s: the whole tile would take 40 s, its deadline is 30
+        val worker = jobs({ lane }, fetcher, clock = clock::get)
+        worker.pollOnce(lane)
+        val sent = job.chunks.sumOf { it.second }
+        assertNull(job.result); assertFalse(job.finished); assertFalse("the comma ends it, the Companion does not call fail", job.failed)
+        assertEquals(1, worker.jobsLost)
+        assertTrue("part of the tile went, not all of it ($sent bytes)", sent in 1 until body.size)
+        val seconds = clock.get() / 1e9
+        assertTrue("the last chunk started before the deadline and nothing went after it ($seconds s)", seconds in 30.0..32.0)
+        assertEquals(1, fetcher.fetched.size)
+        assertEquals("the bytes of the lost job are gone", 0, worker.heldTransfers)
+    }
+
+    @Test fun theBytesOfATileBatchAreHeldForItsDeadlineAndTenSecondsMoreSoAResumeAfter110SecondsContinues() {
+        val clock = java.util.concurrent.atomic.AtomicLong()
+        val comma = comma(); val target = targets.getValue(Shape.ROADTILES); val job = comma.submit(Shape.ROADTILES, target)
+        val body = bytes(200_000, 13)
+        val fetcher = FakeFetcher(mutableMapOf(target to { LocalAnswer(200, body) }))
+        val worker = jobs({ null }, fetcher, clock = clock::get)
+        worker.pollOnce(lane(CommaLink(comma).apply { failAfterChunk = 0 }, clock::get))
+        assertEquals(1, job.next)
+        clock.addAndGet(TimeUnit.SECONDS.toNanos(110)) // past the 100 s a route's bytes are held, inside the 120 s of a tile batch
+        worker.pollOnce(lane(CommaLink(comma), clock::get))
+        assertTrue("the upload continued from the comma's cursor", job.finished); assertFalse(job.failed)
+        assertArrayEquals(body, job.result!!.second)
+        assertEquals("no second fetch", 1, fetcher.fetched.size)
+    }
+
     @Test fun aSearchIsLostAfter15SecondsAndTheBytesOfALostJobAreForgotten() {
         val clock = java.util.concurrent.atomic.AtomicLong()
         val comma = comma(); val target = targets.getValue(Shape.GEOCODE); val job = comma.submit(Shape.GEOCODE, target)
