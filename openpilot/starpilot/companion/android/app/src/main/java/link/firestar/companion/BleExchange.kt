@@ -26,12 +26,21 @@ internal class ResponseTimeout : IOException("Bluetooth response timed out. Chec
  */
 internal object BleExchange {
     fun run(io: GattIo, key: ByteArray, session: String, counter: Long, id: String, meta: JSONObject, body: ByteArray?, deadlineSeconds: Long,
-            packetSize: Int, writeNoResponse: Boolean, nanoTime: () -> Long = System::nanoTime): JSONObject {
+            packetSize: Int, writeNoResponse: Boolean, nanoTime: () -> Long = System::nanoTime, onBurst: ((bodyBytes: Int, seconds: Double) -> Unit)? = null): JSONObject {
         val request = JSONObject(meta.toString()).put("id", id).put("session", session).put("counter", counter).put("responseCodec", 2).put("responseFlow", "read-stream")
         val frame = if (body == null) BleWire.seal(request.toString().toByteArray(), key) else BleWire.sealRaw(request.toString().toByteArray(), body, key)
         val packets = BleWire.packets(frame, packetSize)
         val quick = body != null && writeNoResponse
-        for ((index, packet) in packets.withIndex()) io.write(packet, quick && index < packets.size - 1)
+        val burstStart = nanoTime()
+        var burstEnd = burstStart
+        var burstFrameBytes = 0L
+        for ((index, packet) in packets.withIndex()) {
+            val noResponse = quick && index < packets.size - 1
+            io.write(packet, noResponse)
+            if (noResponse) { burstEnd = nanoTime(); burstFrameBytes += packet.size }
+        }
+        // The burst of the packets that went without a response: the body they carried over the time they took (the bridge's `up_kb_s` rule, seen from this end).
+        if (onBurst != null && quick && burstFrameBytes > 0L) onBurst((body!!.size.toLong() * burstFrameBytes / frame.size).toInt(), (burstEnd - burstStart) / 1e9)
         val assembler = BleWire.Assembler()
         val deadline = nanoTime() + TimeUnit.SECONDS.toNanos(deadlineSeconds)
         while (nanoTime() < deadline) {

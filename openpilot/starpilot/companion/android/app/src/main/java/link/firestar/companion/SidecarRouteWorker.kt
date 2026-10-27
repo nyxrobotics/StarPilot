@@ -37,6 +37,8 @@ internal class SidecarRouteWorker internal constructor(
     private val jobsLane: () -> BleLane? = { (transport() as? BleTransport)?.takeIf { it.jobsV2 }?.lane },
     private val preferXz: () -> Boolean = { (transport() as? BleTransport)?.preferXz == true },
     private val fetcher: LocalFetcher = LoopbackFetcher(),
+    /** The phone announced `maps` to this bridge (see `BleTransport.announcesMaps`): the five map shapes of contract version 3 are carried. */
+    private val mapsAnnounced: () -> Boolean = { (transport() as? BleTransport)?.announcesMaps == true },
 ) : Closeable {
     constructor(transport: () -> RouteLink?) : this(transport, true)
     private val worker = Executors.newSingleThreadScheduledExecutor { task ->
@@ -68,6 +70,7 @@ internal class SidecarRouteWorker internal constructor(
         fetcher = fetcher,
         preferXz = preferXz,
         warn = { warning(it) },
+        mapsAnnounced = mapsAnnounced,
     ).also { jobs = it }
 
     /** The push channel says a job is waiting (the wake-up frame), or a connection was just made: poll now instead of at the next tick. */

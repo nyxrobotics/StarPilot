@@ -233,15 +233,28 @@ internal class Forwarder<T : Any> {
 
 /**
  * The `push-enable` request (a SMALL request of the lane). A bridge that announced `pushNav` in its health answer is told that this phone forwards the beacon's `nav`
- * object: the request body is `{"nav":true}` (codec 0: the base64 `body` member). A bridge that did not announce it gets the request it always got, with no body.
+ * object, and a bridge that announced `maps` is told that this phone carries the map shapes (contract version 3): the request body is `{"nav":true}`, `{"maps":true}` or
+ * `{"nav":true,"maps":true}` (codec 0: the base64 `body` member), the exact bytes of `announce_body` of `tools/btlab/contract/mapjobs.py`. `maps` is announced only to a bridge that said
+ * `maps`: a bridge of version 2 reads any body but `{"nav":true}` as no announcement at all and would drop the nav announcement with it. A bridge that announced neither gets the
+ * request it always got, with no body.
  */
 internal object PushEnable {
     const val PATH = "/_bridge/push/enable"
     const val NAV_BODY = "{\"nav\":true}"
+    const val MAPS_BODY = "{\"maps\":true}"
+    const val NAV_MAPS_BODY = "{\"nav\":true,\"maps\":true}"
 
-    fun request(announceNav: Boolean): org.json.JSONObject {
+    /** The announcement of a phone, or null for none. */
+    fun body(announceNav: Boolean, announceMaps: Boolean): String? = when {
+        announceNav && announceMaps -> NAV_MAPS_BODY
+        announceMaps -> MAPS_BODY
+        announceNav -> NAV_BODY
+        else -> null
+    }
+
+    fun request(announceNav: Boolean, announceMaps: Boolean = false): org.json.JSONObject {
         val request = laneRequest("POST", PATH)
-        if (announceNav) request.put("body", java.util.Base64.getEncoder().encodeToString(NAV_BODY.toByteArray(Charsets.US_ASCII)))
+        body(announceNav, announceMaps)?.let { request.put("body", java.util.Base64.getEncoder().encodeToString(it.toByteArray(Charsets.US_ASCII))) }
         return request
     }
 }

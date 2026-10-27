@@ -1,0 +1,1303 @@
+{
+ "version": 1,
+ "note": "hand-written expectations; see tools/btlab/contract/vectors_maps.py",
+ "planner": {
+  "constants": {
+   "min_chunk": 1024,
+   "map_min_chunk": 4096,
+   "map_start_bytes": 4096,
+   "max_chunk": 65536,
+   "packet_data": 239,
+   "start_bytes": 6144,
+   "ewma": 0.5,
+   "route_cap_s": 5.0,
+   "map_cap_s": 1.0
+  },
+  "rule": "size = int(rate * cap_s) (start_bytes before the first measurement); size = max(min_chunk, min(65536, size)); size -= size % 239; chunk = min(max(size, min_chunk), remaining); 0 when nothing remains. min_chunk is 1024 for the route and for the answers of searches and 4096 for the class map",
+  "cases": [
+   {
+    "min_chunk": 4096,
+    "start_bytes": 4096,
+    "name": "map-first-chunk",
+    "cap_s": 1.0,
+    "observations": [],
+    "remaining": 1000000,
+    "expect": 4096,
+    "note": "no rate yet: the class map starts at its minimum (the route starts at 6,144, which is 25 packets of 239: 5,975)"
+   },
+   {
+    "min_chunk": 4096,
+    "name": "map-first-chunk-short-job",
+    "cap_s": 1.0,
+    "observations": [],
+    "remaining": 3000,
+    "expect": 3000
+   },
+   {
+    "min_chunk": 4096,
+    "name": "map-45-kb-s",
+    "cap_s": 1.0,
+    "observations": [
+     [
+      45600,
+      1.0
+     ]
+    ],
+    "remaining": 1000000,
+    "expect": 45410,
+    "note": "45,600 bytes in one second: 190 packets"
+   },
+   {
+    "min_chunk": 4096,
+    "name": "map-rate-is-smoothed",
+    "cap_s": 1.0,
+    "observations": [
+     [
+      40000,
+      1.0
+     ],
+     [
+      20000,
+      1.0
+     ]
+    ],
+    "remaining": 1000000,
+    "expect": 29875,
+    "note": "(40,000 + 20,000) / 2 = 30,000: 125 packets"
+   },
+   {
+    "min_chunk": 4096,
+    "name": "map-12-9-kb-s",
+    "cap_s": 1.0,
+    "observations": [
+     [
+      12900,
+      1.0
+     ]
+    ],
+    "remaining": 1000000,
+    "expect": 12667,
+    "note": "53 packets"
+   },
+   {
+    "min_chunk": 4096,
+    "name": "map-slow-link-hits-the-minimum",
+    "cap_s": 1.0,
+    "observations": [
+     [
+      900,
+      3.0
+     ]
+    ],
+    "remaining": 1000000,
+    "expect": 4096,
+    "note": "300 bytes per second: the chunk is the 4 KiB minimum of the class map (whole packets would be 4,063)"
+   },
+   {
+    "min_chunk": 1024,
+    "name": "route-slow-link-hits-the-minimum",
+    "cap_s": 5.0,
+    "observations": [
+     [
+      900,
+      10.0
+     ]
+    ],
+    "remaining": 1000000,
+    "expect": 1024,
+    "note": "90 bytes per second: 450 in five seconds"
+   },
+   {
+    "min_chunk": 4096,
+    "name": "map-3-8-kb-s-is-lifted-to-4-kib",
+    "cap_s": 1.0,
+    "observations": [
+     [
+      3800,
+      1.0
+     ]
+    ],
+    "remaining": 1000000,
+    "expect": 4096,
+    "note": "3,800 bytes: below the minimum, so every chunk after the first is a sample of the meter"
+   },
+   {
+    "min_chunk": 4096,
+    "name": "map-just-above-the-minimum",
+    "cap_s": 1.0,
+    "observations": [
+     [
+      4400,
+      1.0
+     ]
+    ],
+    "remaining": 1000000,
+    "expect": 4302,
+    "note": "4,400 is 18 packets of 239 and 98 over: 4,302"
+   },
+   {
+    "min_chunk": 4096,
+    "name": "map-last-chunk-is-the-rest",
+    "cap_s": 1.0,
+    "observations": [
+     [
+      45600,
+      1.0
+     ]
+    ],
+    "remaining": 777,
+    "expect": 777
+   },
+   {
+    "min_chunk": 4096,
+    "name": "map-nothing-left",
+    "cap_s": 1.0,
+    "observations": [
+     [
+      45600,
+      1.0
+     ]
+    ],
+    "remaining": 0,
+    "expect": 0
+   },
+   {
+    "min_chunk": 1024,
+    "name": "route-first-chunk",
+    "cap_s": 5.0,
+    "observations": [],
+    "remaining": 1000000,
+    "expect": 5975
+   },
+   {
+    "min_chunk": 1024,
+    "name": "route-45-kb-s-is-capped-by-64-kib",
+    "cap_s": 5.0,
+    "observations": [
+     [
+      45600,
+      1.0
+     ]
+    ],
+    "remaining": 1000000,
+    "expect": 65486,
+    "note": "228,000 is above 65,536: 274 packets"
+   },
+   {
+    "min_chunk": 1024,
+    "name": "route-12-9-kb-s",
+    "cap_s": 5.0,
+    "observations": [
+     [
+      12900,
+      1.0
+     ]
+    ],
+    "remaining": 1000000,
+    "expect": 64291,
+    "note": "64,500: 269 packets"
+   },
+   {
+    "min_chunk": 1024,
+    "name": "route-3-kb-s",
+    "cap_s": 5.0,
+    "observations": [
+     [
+      3000,
+      1.0
+     ]
+    ],
+    "remaining": 1000000,
+    "expect": 14818,
+    "note": "15,000: 62 packets"
+   },
+   {
+    "min_chunk": 1024,
+    "name": "zero-seconds-is-not-a-measurement",
+    "cap_s": 1.0,
+    "observations": [
+     [
+      45600,
+      0.0
+     ]
+    ],
+    "remaining": 1000000,
+    "expect": 5975
+   }
+  ]
+ },
+ "lane_scripts": [
+  {
+   "name": "strict-priority-at-one-instant",
+   "requests": [
+    [
+     "m1",
+     "map",
+     0.0,
+     0.1
+    ],
+    [
+     "r1",
+     "bulk",
+     0.0,
+     0.1
+    ],
+    [
+     "s1",
+     "small",
+     0.0,
+     0.1
+    ],
+    [
+     "i1",
+     "interactive",
+     0.0,
+     0.1
+    ]
+   ],
+   "expect_start_order": [
+    "i1",
+    "s1",
+    "r1",
+    "m1"
+   ],
+   "note": "interactive, small, the route, then the map"
+  },
+  {
+   "name": "a-map-chunk-in-flight-is-never-preempted",
+   "requests": [
+    [
+     "m1",
+     "map",
+     0.0,
+     1.0
+    ],
+    [
+     "i1",
+     "interactive",
+     0.1,
+     0.1
+    ],
+    [
+     "r1",
+     "bulk",
+     0.2,
+     0.5
+    ]
+   ],
+   "expect_start_order": [
+    "m1",
+    "i1",
+    "r1"
+   ],
+   "expect_wait_s": {
+    "i1": 0.9,
+    "r1": 0.9
+   },
+   "note": "the interactive request waits for the rest of the chunk (0.9 s), no more"
+  },
+  {
+   "name": "the-route-goes-before-a-waiting-map-chunk",
+   "requests": [
+    [
+     "m1",
+     "map",
+     0.0,
+     1.0
+    ],
+    [
+     "m2",
+     "map",
+     0.1,
+     1.0
+    ],
+    [
+     "r1",
+     "bulk",
+     0.2,
+     0.5
+    ]
+   ],
+   "expect_start_order": [
+    "m1",
+    "r1",
+    "m2"
+   ],
+   "expect_wait_s": {
+    "r1": 0.8
+   }
+  },
+  {
+   "name": "first-come-first-served-inside-the-map-class",
+   "requests": [
+    [
+     "m1",
+     "map",
+     0.0,
+     0.5
+    ],
+    [
+     "m2",
+     "map",
+     0.0,
+     0.5
+    ],
+    [
+     "m3",
+     "map",
+     0.1,
+     0.5
+    ]
+   ],
+   "expect_start_order": [
+    "m1",
+    "m2",
+    "m3"
+   ]
+  },
+  {
+   "name": "a-search-waits-for-one-map-chunk-at-most",
+   "requests": [
+    [
+     "m1",
+     "map",
+     0.0,
+     1.0
+    ],
+    [
+     "m2",
+     "map",
+     0.0,
+     1.0
+    ],
+    [
+     "g1",
+     "small",
+     0.5,
+     0.2
+    ]
+   ],
+   "expect_start_order": [
+    "m1",
+    "g1",
+    "m2"
+   ],
+   "expect_wait_s": {
+    "g1": 0.5
+   },
+   "note": "a geocode is a small request: it goes after the chunk in flight and before the next one"
+  },
+  {
+   "name": "a-style-tile-chunk-is-a-map-request",
+   "requests": [
+    [
+     "s1",
+     "map",
+     0.0,
+     0.5
+    ],
+    [
+     "r1",
+     "bulk",
+     0.0,
+     0.5
+    ]
+   ],
+   "expect_start_order": [
+    "r1",
+    "s1"
+   ]
+  }
+ ],
+ "admission": [
+  {
+   "name": "all-flags-fast",
+   "health": {
+    "maps": true,
+    "wwr": true,
+    "up_kb_s": 41.3
+   },
+   "expect": "full"
+  },
+  {
+   "name": "exactly-10",
+   "health": {
+    "maps": true,
+    "wwr": true,
+    "up_kb_s": 10
+   },
+   "expect": "full",
+   "note": "the limit is inclusive"
+  },
+  {
+   "name": "exactly-10-float",
+   "health": {
+    "maps": true,
+    "wwr": true,
+    "up_kb_s": 10.0
+   },
+   "expect": "full"
+  },
+  {
+   "name": "just-below-10",
+   "health": {
+    "maps": true,
+    "wwr": true,
+    "up_kb_s": 9.9
+   },
+   "expect": "closed"
+  },
+  {
+   "name": "slow-3-8",
+   "health": {
+    "maps": true,
+    "wwr": true,
+    "up_kb_s": 3.8
+   },
+   "expect": "closed",
+   "note": "the slow balanced regime of note 7"
+  },
+  {
+   "name": "zero",
+   "health": {
+    "maps": true,
+    "wwr": true,
+    "up_kb_s": 0
+   },
+   "expect": "closed"
+  },
+  {
+   "name": "negative",
+   "health": {
+    "maps": true,
+    "wwr": true,
+    "up_kb_s": -1
+   },
+   "expect": "closed"
+  },
+  {
+   "name": "very-fast",
+   "health": {
+    "maps": true,
+    "wwr": true,
+    "up_kb_s": 1000
+   },
+   "expect": "full"
+  },
+  {
+   "name": "not-measured-yet",
+   "health": {
+    "maps": true,
+    "wwr": true
+   },
+   "expect": "probe",
+   "note": "one job of at most two tiles, which gives the bridge its first sample"
+  },
+  {
+   "name": "up-kb-s-is-a-string",
+   "health": {
+    "maps": true,
+    "wwr": true,
+    "up_kb_s": "41.3"
+   },
+   "expect": "closed"
+  },
+  {
+   "name": "up-kb-s-is-null",
+   "health": {
+    "maps": true,
+    "wwr": true,
+    "up_kb_s": null
+   },
+   "expect": "closed"
+  },
+  {
+   "name": "up-kb-s-is-true",
+   "health": {
+    "maps": true,
+    "wwr": true,
+    "up_kb_s": true
+   },
+   "expect": "closed",
+   "note": "true is not a number"
+  },
+  {
+   "name": "up-kb-s-is-a-list",
+   "health": {
+    "maps": true,
+    "wwr": true,
+    "up_kb_s": [
+     41
+    ]
+   },
+   "expect": "closed"
+  },
+  {
+   "name": "maps-missing",
+   "health": {
+    "wwr": true,
+    "up_kb_s": 41.3
+   },
+   "expect": "closed",
+   "note": "an old bridge"
+  },
+  {
+   "name": "maps-false",
+   "health": {
+    "maps": false,
+    "wwr": true,
+    "up_kb_s": 41.3
+   },
+   "expect": "closed"
+  },
+  {
+   "name": "maps-one",
+   "health": {
+    "maps": 1,
+    "wwr": true,
+    "up_kb_s": 41.3
+   },
+   "expect": "closed",
+   "note": "only the literal true"
+  },
+  {
+   "name": "maps-string",
+   "health": {
+    "maps": "true",
+    "wwr": true,
+    "up_kb_s": 41.3
+   },
+   "expect": "closed"
+  },
+  {
+   "name": "wwr-missing",
+   "health": {
+    "maps": true,
+    "up_kb_s": 41.3
+   },
+   "expect": "closed"
+  },
+  {
+   "name": "wwr-false",
+   "health": {
+    "maps": true,
+    "wwr": false,
+    "up_kb_s": 41.3
+   },
+   "expect": "closed"
+  },
+  {
+   "name": "wwr-one",
+   "health": {
+    "maps": true,
+    "wwr": 1,
+    "up_kb_s": 41.3
+   },
+   "expect": "closed"
+  },
+  {
+   "name": "probe-needs-wwr",
+   "health": {
+    "maps": true
+   },
+   "expect": "closed"
+  },
+  {
+   "name": "probe-needs-maps",
+   "health": {
+    "wwr": true
+   },
+   "expect": "closed"
+  },
+  {
+   "name": "empty-health",
+   "health": {},
+   "expect": "closed"
+  },
+  {
+   "name": "health-is-a-list",
+   "health": [],
+   "expect": "closed"
+  },
+  {
+   "name": "health-is-null",
+   "health": null,
+   "expect": "closed"
+  },
+  {
+   "name": "old-bridge-health",
+   "health": {
+    "protocol": 1,
+    "sidecarProtocol": 2,
+    "poll2": true,
+    "results2": true,
+    "push": true,
+    "pushNav": true
+   },
+   "expect": "closed"
+  }
+ ],
+ "announcement": [
+  {
+   "name": "nav-only",
+   "body": "{\"nav\":true}",
+   "expect": {
+    "nav": true,
+    "maps": false
+   },
+   "note": "contract version 2, byte for byte"
+  },
+  {
+   "name": "maps-only",
+   "body": "{\"maps\":true}",
+   "expect": {
+    "nav": false,
+    "maps": true
+   }
+  },
+  {
+   "name": "both",
+   "body": "{\"nav\":true,\"maps\":true}",
+   "expect": {
+    "nav": true,
+    "maps": true
+   },
+   "note": "what a Companion of version 3 sends to a bridge that said maps and pushNav"
+  },
+  {
+   "name": "both-reversed",
+   "body": "{\"maps\":true,\"nav\":true}",
+   "expect": {
+    "nav": true,
+    "maps": true
+   },
+   "note": "read as JSON, as the bridge reads {\"nav\":true} today: the order is free"
+  },
+  {
+   "name": "spaces",
+   "body": "{\"nav\": true, \"maps\": true}",
+   "expect": {
+    "nav": true,
+    "maps": true
+   }
+  },
+  {
+   "name": "nav-with-a-space",
+   "body": "{\"nav\": true}",
+   "expect": {
+    "nav": true,
+    "maps": false
+   },
+   "note": "as the bridge of version 2 reads it"
+  },
+  {
+   "name": "trailing-newline",
+   "body": "{\"maps\":true}\n",
+   "expect": {
+    "nav": false,
+    "maps": true
+   }
+  },
+  {
+   "name": "empty-body",
+   "body": "",
+   "expect": {
+    "nav": false,
+    "maps": false
+   }
+  },
+  {
+   "name": "empty-object",
+   "body": "{}",
+   "expect": {
+    "nav": false,
+    "maps": false
+   }
+  },
+  {
+   "name": "maps-false",
+   "body": "{\"maps\":false}",
+   "expect": {
+    "nav": false,
+    "maps": false
+   }
+  },
+  {
+   "name": "maps-one",
+   "body": "{\"maps\":1}",
+   "expect": {
+    "nav": false,
+    "maps": false
+   }
+  },
+  {
+   "name": "maps-string",
+   "body": "{\"maps\":\"true\"}",
+   "expect": {
+    "nav": false,
+    "maps": false
+   }
+  },
+  {
+   "name": "maps-null",
+   "body": "{\"maps\":null}",
+   "expect": {
+    "nav": false,
+    "maps": false
+   }
+  },
+  {
+   "name": "nav-true-maps-false",
+   "body": "{\"nav\":true,\"maps\":false}",
+   "expect": {
+    "nav": false,
+    "maps": false
+   },
+   "note": "a body with a value that is not the literal true announces nothing at all"
+  },
+  {
+   "name": "another-key",
+   "body": "{\"nav\":true,\"x\":1}",
+   "expect": {
+    "nav": false,
+    "maps": false
+   }
+  },
+  {
+   "name": "another-key-with-true",
+   "body": "{\"maps\":true,\"push\":true}",
+   "expect": {
+    "nav": false,
+    "maps": false
+   }
+  },
+  {
+   "name": "maps-twice",
+   "body": "{\"maps\":true,\"maps\":true}",
+   "expect": {
+    "nav": false,
+    "maps": false
+   }
+  },
+  {
+   "name": "not-json",
+   "body": "maps",
+   "expect": {
+    "nav": false,
+    "maps": false
+   }
+  },
+  {
+   "name": "array",
+   "body": "[true]",
+   "expect": {
+    "nav": false,
+    "maps": false
+   }
+  },
+  {
+   "name": "upper-case-key",
+   "body": "{\"Maps\":true}",
+   "expect": {
+    "nav": false,
+    "maps": false
+   }
+  },
+  {
+   "name": "nan-value",
+   "body": "{\"maps\":NaN}",
+   "expect": {
+    "nav": false,
+    "maps": false
+   }
+  },
+  {
+   "name": "65-bytes",
+   "body": "{\"maps\":true}                                                    ",
+   "expect": {
+    "nav": false,
+    "maps": false
+   },
+   "note": "at most 64 bytes"
+  },
+  {
+   "name": "64-bytes",
+   "body": "{\"maps\":true}                                                   ",
+   "expect": {
+    "nav": false,
+    "maps": true
+   }
+  },
+  {
+   "name": "non-ascii",
+   "body": "{\"maps\":true,\"é\":true}",
+   "expect": {
+    "nav": false,
+    "maps": false
+   }
+  }
+ ],
+ "uplink_meter": [
+  {
+   "name": "no-sample",
+   "chunks": [],
+   "expect": null
+  },
+  {
+   "name": "one-chunk",
+   "chunks": [
+    [
+     45410,
+     1.0
+    ]
+   ],
+   "expect": 45.4
+  },
+  {
+   "name": "median-of-three",
+   "chunks": [
+    [
+     40000,
+     1.0
+    ],
+    [
+     10000,
+     1.0
+    ],
+    [
+     50000,
+     1.0
+    ]
+   ],
+   "expect": 40.0
+  },
+  {
+   "name": "small-chunks-do-not-count",
+   "chunks": [
+    [
+     4095,
+     0.01
+    ],
+    [
+     1000,
+     0.01
+    ],
+    [
+     2000,
+     0.5
+    ]
+   ],
+   "expect": null,
+   "note": "below 4,096 body bytes a chunk says more about the cost of a request than about the link"
+  },
+  {
+   "name": "exactly-4096-counts",
+   "chunks": [
+    [
+     4096,
+     1.0
+    ]
+   ],
+   "expect": 4.1
+  },
+  {
+   "name": "only-the-last-five",
+   "chunks": [
+    [
+     100000,
+     1.0
+    ],
+    [
+     1000000,
+     1.0
+    ],
+    [
+     20000,
+     1.0
+    ],
+    [
+     20000,
+     1.0
+    ],
+    [
+     20000,
+     1.0
+    ],
+    [
+     20000,
+     1.0
+    ],
+    [
+     20000,
+     1.0
+    ]
+   ],
+   "expect": 20.0
+  },
+  {
+   "name": "the-window-is-five-not-three-not-nine",
+   "chunks": [
+    [
+     40000,
+     1.0
+    ],
+    [
+     40000,
+     1.0
+    ],
+    [
+     40000,
+     1.0
+    ],
+    [
+     40000,
+     1.0
+    ],
+    [
+     10000,
+     1.0
+    ],
+    [
+     10000,
+     1.0
+    ],
+    [
+     10000,
+     1.0
+    ],
+    [
+     40000,
+     1.0
+    ],
+    [
+     40000,
+     1.0
+    ]
+   ],
+   "expect": 10.0,
+   "note": "the last five are 10, 10, 10, 40, 40: the median is 10 (the last three would give 40, all nine 40)"
+  },
+  {
+   "name": "median-of-two-is-the-mean",
+   "chunks": [
+    [
+     10000,
+     1.0
+    ],
+    [
+     20000,
+     1.0
+    ]
+   ],
+   "expect": 15.0
+  },
+  {
+   "name": "zero-seconds-is-ignored",
+   "chunks": [
+    [
+     45000,
+     0.0
+    ],
+    [
+     20000,
+     1.0
+    ]
+   ],
+   "expect": 20.0
+  },
+  {
+   "name": "the-route-counts-too",
+   "chunks": [
+    [
+     65486,
+     1.5
+    ],
+    [
+     45410,
+     1.0
+    ]
+   ],
+   "expect": 44.5,
+   "note": "median of 43.7 and 45.4, rounded to one decimal"
+  }
+ ],
+ "queue_limits": {
+  "max_open_jobs_per_kind": 2,
+  "cases": [
+   {
+    "name": "third-roadtiles-job-is-refused",
+    "submit": [
+     "roadtiles",
+     "roadtiles",
+     "roadtiles"
+    ],
+    "expect": [
+     "ok",
+     "ok",
+     "refused"
+    ]
+   },
+   {
+    "name": "kinds-are-counted-apart",
+    "submit": [
+     "roadtiles",
+     "roadtiles",
+     "stile",
+     "stile",
+     "geocode",
+     "geocode",
+     "suggest",
+     "suggest",
+     "retrieve",
+     "retrieve"
+    ],
+    "expect": [
+     "ok",
+     "ok",
+     "ok",
+     "ok",
+     "ok",
+     "ok",
+     "ok",
+     "ok",
+     "ok",
+     "ok"
+    ]
+   },
+   {
+    "name": "a-search-is-never-blocked-by-tiles",
+    "submit": [
+     "roadtiles",
+     "roadtiles",
+     "roadtiles",
+     "geocode"
+    ],
+    "expect": [
+     "ok",
+     "ok",
+     "refused",
+     "ok"
+    ]
+   },
+   {
+    "name": "route-and-tiles-are-apart",
+    "submit": [
+     "route",
+     "route",
+     "roadtiles",
+     "roadtiles",
+     "route"
+    ],
+    "expect": [
+     "ok",
+     "ok",
+     "ok",
+     "ok",
+     "refused"
+    ]
+   },
+   {
+    "name": "third-stile-is-refused",
+    "submit": [
+     "stile",
+     "stile",
+     "stile"
+    ],
+    "expect": [
+     "ok",
+     "ok",
+     "refused"
+    ]
+   }
+  ]
+ },
+ "reprobe": {
+  "intervals_s": [
+   30,
+   60,
+   120,
+   240,
+   480,
+   600
+  ],
+  "rule": "the first time the client learns that the link is slow it looks again after 30 s; every re-probe is one job of at most two tiles; after it ends (a result or a failure) the next one comes after the next interval, the last interval repeats; a link that measures fast resets the schedule; a closed answer for a missing flag is never probed",
+  "steps": [
+   {
+    "at": 0.0,
+    "ask": "slow",
+    "expect": "none",
+    "note": "up_kb_s 3.8: closed; the first look is scheduled for 30 s"
+   },
+   {
+    "at": 29.9,
+    "ask": "slow",
+    "expect": "none"
+   },
+   {
+    "at": 30.0,
+    "ask": "slow",
+    "expect": "probe"
+   },
+   {
+    "at": 31.0,
+    "end": "result"
+   },
+   {
+    "at": 90.9,
+    "ask": "slow",
+    "expect": "none",
+    "note": "31 + 60"
+   },
+   {
+    "at": 91.0,
+    "ask": "slow",
+    "expect": "probe"
+   },
+   {
+    "at": 92.0,
+    "end": "failure"
+   },
+   {
+    "at": 211.9,
+    "ask": "slow",
+    "expect": "none",
+    "note": "92 + 120"
+   },
+   {
+    "at": 212.0,
+    "ask": "slow",
+    "expect": "probe"
+   },
+   {
+    "at": 213.0,
+    "end": "failure"
+   },
+   {
+    "at": 452.9,
+    "ask": "slow",
+    "expect": "none",
+    "note": "213 + 240"
+   },
+   {
+    "at": 453.0,
+    "ask": "slow",
+    "expect": "probe"
+   },
+   {
+    "at": 454.0,
+    "end": "result"
+   },
+   {
+    "at": 933.9,
+    "ask": "slow",
+    "expect": "none",
+    "note": "454 + 480"
+   },
+   {
+    "at": 934.0,
+    "ask": "slow",
+    "expect": "probe"
+   },
+   {
+    "at": 935.0,
+    "end": "failure"
+   },
+   {
+    "at": 1534.9,
+    "ask": "slow",
+    "expect": "none",
+    "note": "935 + 600"
+   },
+   {
+    "at": 1535.0,
+    "ask": "slow",
+    "expect": "probe"
+   },
+   {
+    "at": 1536.0,
+    "end": "failure"
+   },
+   {
+    "at": 2135.9,
+    "ask": "slow",
+    "expect": "none",
+    "note": "the interval stops growing at 600 s"
+   },
+   {
+    "at": 2136.0,
+    "ask": "slow",
+    "expect": "probe"
+   },
+   {
+    "at": 2137.0,
+    "end": "result"
+   },
+   {
+    "at": 2200.0,
+    "ask": "fast",
+    "expect": "full",
+    "note": "up_kb_s 41.3: open, the schedule starts again"
+   },
+   {
+    "at": 2201.0,
+    "end": "result"
+   },
+   {
+    "at": 2300.0,
+    "ask": "slow",
+    "expect": "none"
+   },
+   {
+    "at": 2329.9,
+    "ask": "slow",
+    "expect": "none"
+   },
+   {
+    "at": 2330.0,
+    "ask": "slow",
+    "expect": "probe"
+   }
+  ],
+  "never_probed": [
+   {
+    "maps": true,
+    "wwr": true,
+    "up_kb_s": 3.8,
+    "without": "maps"
+   },
+   {
+    "maps": true,
+    "wwr": true,
+    "up_kb_s": 3.8,
+    "without": "wwr"
+   },
+   {
+    "maps": true,
+    "wwr": false,
+    "up_kb_s": 3.8
+   }
+  ]
+ },
+ "deadlines_s": {
+  "route": 90,
+  "status": 15,
+  "health": 15,
+  "roadtiles": 120,
+  "stile": 30,
+  "geocode": 15,
+  "suggest": 15,
+  "retrieve": 15
+ },
+ "classes": {
+  "route": "bulk",
+  "status": "small",
+  "health": "small",
+  "roadtiles": "map",
+  "stile": "map",
+  "geocode": "small",
+  "suggest": "small",
+  "retrieve": "small"
+ },
+ "probe_max_tiles": 2,
+ "min_up_kb_s": 10
+}

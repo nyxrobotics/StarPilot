@@ -1,0 +1,1406 @@
+{
+ "version": 1,
+ "note": "hand-written expectations; see tools/btlab/contract/vectors_maps.py",
+ "cases": [
+  {
+   "name": "roadtiles-200",
+   "kind": "roadtiles",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "525442310101d73819190019000000535052540101789c63626460606082620848816200056b00d0",
+   "size": 40,
+   "sha256": "839dbd7bab055b75f60e6f2e8cf2671cbe4785b8fa2fcd68455b1a328fd278af",
+   "expect": "accept",
+   "note": ""
+  },
+  {
+   "name": "roadtiles-200-empty-body",
+   "kind": "roadtiles",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "accept",
+   "note": "the result layer carries it; the client refuses a bundle or a PNG that is empty"
+  },
+  {
+   "name": "roadtiles-200-at-the-limit",
+   "kind": "roadtiles",
+   "status": 200,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 65,
+    "count": 524288
+   },
+   "size": 524288,
+   "sha256": "5f7a26e1d78cd171b1aab0208da133e996c75285b94aa8ef06c6578ea0b26903",
+   "expect": "accept",
+   "note": "the limit is inclusive"
+  },
+  {
+   "name": "roadtiles-200-over-the-limit",
+   "kind": "roadtiles",
+   "status": 200,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 65,
+    "count": 524289
+   },
+   "size": 524289,
+   "sha256": "5a1fb17e8f35dbe368b8c70609a8f0085cb131703e84e3224cf111f80cb3b29c",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "roadtiles-digest-wrong",
+   "kind": "roadtiles",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "525442310101d73819190019000000535052540101789c63626460606082620848816200056b00d0",
+   "size": 40,
+   "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "roadtiles-size-too-small",
+   "kind": "roadtiles",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "525442310101d73819190019000000535052540101789c63626460606082620848816200056b00d0",
+   "size": 39,
+   "sha256": "839dbd7bab055b75f60e6f2e8cf2671cbe4785b8fa2fcd68455b1a328fd278af",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "roadtiles-size-too-large",
+   "kind": "roadtiles",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "525442310101d73819190019000000535052540101789c63626460606082620848816200056b00d0",
+   "size": 41,
+   "sha256": "839dbd7bab055b75f60e6f2e8cf2671cbe4785b8fa2fcd68455b1a328fd278af",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "roadtiles-gzip",
+   "kind": "roadtiles",
+   "status": 200,
+   "encoding": "gzip",
+   "payload_hex": "789c0b0a71326464bc6e2129c920c9c0c0101c1014c2c85831273929252121a12989c3a3318981359be10200bf010a75",
+   "size": 40,
+   "sha256": "839dbd7bab055b75f60e6f2e8cf2671cbe4785b8fa2fcd68455b1a328fd278af",
+   "expect": "reject",
+   "note": "map answers are not compressed"
+  },
+  {
+   "name": "roadtiles-xz",
+   "kind": "roadtiles",
+   "status": 200,
+   "encoding": "xz",
+   "payload_hex": "525442310101d73819190019000000535052540101789c63626460606082620848816200056b00d0",
+   "size": 40,
+   "sha256": "839dbd7bab055b75f60e6f2e8cf2671cbe4785b8fa2fcd68455b1a328fd278af",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "roadtiles-unknown-encoding",
+   "kind": "roadtiles",
+   "status": 200,
+   "encoding": "brotli",
+   "payload_hex": "525442310101d73819190019000000535052540101789c63626460606082620848816200056b00d0",
+   "size": 40,
+   "sha256": "839dbd7bab055b75f60e6f2e8cf2671cbe4785b8fa2fcd68455b1a328fd278af",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "roadtiles-status-400",
+   "kind": "roadtiles",
+   "status": 400,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "roadtiles-status-401",
+   "kind": "roadtiles",
+   "status": 401,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "roadtiles-status-404",
+   "kind": "roadtiles",
+   "status": 404,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "roadtiles-status-422",
+   "kind": "roadtiles",
+   "status": 422,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "roadtiles-status-429",
+   "kind": "roadtiles",
+   "status": 429,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "roadtiles-status-503",
+   "kind": "roadtiles",
+   "status": 503,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "roadtiles-status-503-4096-bytes",
+   "kind": "roadtiles",
+   "status": 503,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 66,
+    "count": 4096
+   },
+   "size": 4096,
+   "sha256": "725bcd6c66d02acf6ebeab9c92410e010ea22e336876256aaf05a211f4ce1902",
+   "expect": "accept",
+   "note": "an error body is at most 4 KiB"
+  },
+  {
+   "name": "roadtiles-status-503-4097-bytes",
+   "kind": "roadtiles",
+   "status": 503,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 66,
+    "count": 4097
+   },
+   "size": 4097,
+   "sha256": "e9b66ae7cb510f0ad5cb78b88084b5769bd2d684204cb9293063923f7232c09c",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "roadtiles-status-204",
+   "kind": "roadtiles",
+   "status": 204,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "roadtiles-status-302",
+   "kind": "roadtiles",
+   "status": 302,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "roadtiles-status-403",
+   "kind": "roadtiles",
+   "status": 403,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "roadtiles-status-500",
+   "kind": "roadtiles",
+   "status": 500,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "roadtiles-status-504",
+   "kind": "roadtiles",
+   "status": 504,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "stile-200",
+   "kind": "stile",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "89504e470d0a1a0a78787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878",
+   "size": 108,
+   "sha256": "a4faa983b5f97e29bff000de388c2b0d0baf9c67cc9d0ad1183a114a6a1bed54",
+   "expect": "accept",
+   "note": ""
+  },
+  {
+   "name": "stile-200-empty-body",
+   "kind": "stile",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "accept",
+   "note": "the result layer carries it; the client refuses a bundle or a PNG that is empty"
+  },
+  {
+   "name": "stile-200-at-the-limit",
+   "kind": "stile",
+   "status": 200,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 65,
+    "count": 2097152
+   },
+   "size": 2097152,
+   "sha256": "5b766f6d76a999636fd93b4e039d5a32187f84a19c0950449f0c721da0223914",
+   "expect": "accept",
+   "note": "the limit is inclusive"
+  },
+  {
+   "name": "stile-200-over-the-limit",
+   "kind": "stile",
+   "status": 200,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 65,
+    "count": 2097153
+   },
+   "size": 2097153,
+   "sha256": "c57608b985501e36c9d656d5d169c2955f9e757a18e4555f3550339077a1ec02",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "stile-digest-wrong",
+   "kind": "stile",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "89504e470d0a1a0a78787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878",
+   "size": 108,
+   "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "stile-size-too-small",
+   "kind": "stile",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "89504e470d0a1a0a78787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878",
+   "size": 107,
+   "sha256": "a4faa983b5f97e29bff000de388c2b0d0baf9c67cc9d0ad1183a114a6a1bed54",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "stile-size-too-large",
+   "kind": "stile",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "89504e470d0a1a0a78787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878",
+   "size": 109,
+   "sha256": "a4faa983b5f97e29bff000de388c2b0d0baf9c67cc9d0ad1183a114a6a1bed54",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "stile-gzip",
+   "kind": "stile",
+   "status": 200,
+   "encoding": "gzip",
+   "payload_hex": "789ceb0cf073e7e592e2aaa0030000f066308a",
+   "size": 108,
+   "sha256": "a4faa983b5f97e29bff000de388c2b0d0baf9c67cc9d0ad1183a114a6a1bed54",
+   "expect": "reject",
+   "note": "map answers are not compressed"
+  },
+  {
+   "name": "stile-xz",
+   "kind": "stile",
+   "status": 200,
+   "encoding": "xz",
+   "payload_hex": "89504e470d0a1a0a78787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878",
+   "size": 108,
+   "sha256": "a4faa983b5f97e29bff000de388c2b0d0baf9c67cc9d0ad1183a114a6a1bed54",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "stile-unknown-encoding",
+   "kind": "stile",
+   "status": 200,
+   "encoding": "brotli",
+   "payload_hex": "89504e470d0a1a0a78787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878",
+   "size": 108,
+   "sha256": "a4faa983b5f97e29bff000de388c2b0d0baf9c67cc9d0ad1183a114a6a1bed54",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "stile-status-400",
+   "kind": "stile",
+   "status": 400,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "stile-status-401",
+   "kind": "stile",
+   "status": 401,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "stile-status-404",
+   "kind": "stile",
+   "status": 404,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "stile-status-422",
+   "kind": "stile",
+   "status": 422,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "stile-status-429",
+   "kind": "stile",
+   "status": 429,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "stile-status-503",
+   "kind": "stile",
+   "status": 503,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "stile-status-503-4096-bytes",
+   "kind": "stile",
+   "status": 503,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 66,
+    "count": 4096
+   },
+   "size": 4096,
+   "sha256": "725bcd6c66d02acf6ebeab9c92410e010ea22e336876256aaf05a211f4ce1902",
+   "expect": "accept",
+   "note": "an error body is at most 4 KiB"
+  },
+  {
+   "name": "stile-status-503-4097-bytes",
+   "kind": "stile",
+   "status": 503,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 66,
+    "count": 4097
+   },
+   "size": 4097,
+   "sha256": "e9b66ae7cb510f0ad5cb78b88084b5769bd2d684204cb9293063923f7232c09c",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "stile-status-204",
+   "kind": "stile",
+   "status": 204,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "stile-status-302",
+   "kind": "stile",
+   "status": 302,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "stile-status-403",
+   "kind": "stile",
+   "status": 403,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "stile-status-500",
+   "kind": "stile",
+   "status": 500,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "stile-status-504",
+   "kind": "stile",
+   "status": 504,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "geocode-200",
+   "kind": "geocode",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "7b2274797065223a2246656174757265436f6c6c656374696f6e222c226665617475726573223a5b5d2c226174747269627574696f6e223a224f70656e5374726565744d6170227d",
+   "size": 72,
+   "sha256": "bbb07ccc3f18f8fec1eeb8b681bc20423b66b7fac1e989063ba2b10633ab2a6e",
+   "expect": "accept",
+   "note": ""
+  },
+  {
+   "name": "geocode-200-empty-body",
+   "kind": "geocode",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "accept",
+   "note": "the result layer carries it; the client refuses a bundle or a PNG that is empty"
+  },
+  {
+   "name": "geocode-200-at-the-limit",
+   "kind": "geocode",
+   "status": 200,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 65,
+    "count": 65536
+   },
+   "size": 65536,
+   "sha256": "156c38442089c1323d3e3ba549a6ac24341c47e8b6367bec4740c9b8c865826e",
+   "expect": "accept",
+   "note": "the limit is inclusive"
+  },
+  {
+   "name": "geocode-200-over-the-limit",
+   "kind": "geocode",
+   "status": 200,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 65,
+    "count": 65537
+   },
+   "size": 65537,
+   "sha256": "ac72112c832fa4683b15ebff51a8f5f2ca08226c0d59bdb9ac739c2cdc28a05c",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "geocode-digest-wrong",
+   "kind": "geocode",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "7b2274797065223a2246656174757265436f6c6c656374696f6e222c226665617475726573223a5b5d2c226174747269627574696f6e223a224f70656e5374726565744d6170227d",
+   "size": 72,
+   "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "geocode-size-too-small",
+   "kind": "geocode",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "7b2274797065223a2246656174757265436f6c6c656374696f6e222c226665617475726573223a5b5d2c226174747269627574696f6e223a224f70656e5374726565744d6170227d",
+   "size": 71,
+   "sha256": "bbb07ccc3f18f8fec1eeb8b681bc20423b66b7fac1e989063ba2b10633ab2a6e",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "geocode-size-too-large",
+   "kind": "geocode",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "7b2274797065223a2246656174757265436f6c6c656374696f6e222c226665617475726573223a5b5d2c226174747269627574696f6e223a224f70656e5374726565744d6170227d",
+   "size": 73,
+   "sha256": "bbb07ccc3f18f8fec1eeb8b681bc20423b66b7fac1e989063ba2b10633ab2a6e",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "geocode-gzip",
+   "kind": "geocode",
+   "status": 200,
+   "encoding": "gzip",
+   "payload_hex": "789cab562aa92c4855b252724b4d2c292d4a75cecfc9494d2ec9cccf53d2514a8388152b5945c7ea282596941465269582e5ac94fc0b52f3824b8a52534b7c130b946a01a99519e0",
+   "size": 72,
+   "sha256": "bbb07ccc3f18f8fec1eeb8b681bc20423b66b7fac1e989063ba2b10633ab2a6e",
+   "expect": "reject",
+   "note": "map answers are not compressed"
+  },
+  {
+   "name": "geocode-xz",
+   "kind": "geocode",
+   "status": 200,
+   "encoding": "xz",
+   "payload_hex": "7b2274797065223a2246656174757265436f6c6c656374696f6e222c226665617475726573223a5b5d2c226174747269627574696f6e223a224f70656e5374726565744d6170227d",
+   "size": 72,
+   "sha256": "bbb07ccc3f18f8fec1eeb8b681bc20423b66b7fac1e989063ba2b10633ab2a6e",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "geocode-unknown-encoding",
+   "kind": "geocode",
+   "status": 200,
+   "encoding": "brotli",
+   "payload_hex": "7b2274797065223a2246656174757265436f6c6c656374696f6e222c226665617475726573223a5b5d2c226174747269627574696f6e223a224f70656e5374726565744d6170227d",
+   "size": 72,
+   "sha256": "bbb07ccc3f18f8fec1eeb8b681bc20423b66b7fac1e989063ba2b10633ab2a6e",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "geocode-status-400",
+   "kind": "geocode",
+   "status": 400,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "geocode-status-401",
+   "kind": "geocode",
+   "status": 401,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "geocode-status-404",
+   "kind": "geocode",
+   "status": 404,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "geocode-status-422",
+   "kind": "geocode",
+   "status": 422,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "geocode-status-429",
+   "kind": "geocode",
+   "status": 429,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "geocode-status-503",
+   "kind": "geocode",
+   "status": 503,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "geocode-status-503-4096-bytes",
+   "kind": "geocode",
+   "status": 503,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 66,
+    "count": 4096
+   },
+   "size": 4096,
+   "sha256": "725bcd6c66d02acf6ebeab9c92410e010ea22e336876256aaf05a211f4ce1902",
+   "expect": "accept",
+   "note": "an error body is at most 4 KiB"
+  },
+  {
+   "name": "geocode-status-503-4097-bytes",
+   "kind": "geocode",
+   "status": 503,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 66,
+    "count": 4097
+   },
+   "size": 4097,
+   "sha256": "e9b66ae7cb510f0ad5cb78b88084b5769bd2d684204cb9293063923f7232c09c",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "geocode-status-204",
+   "kind": "geocode",
+   "status": 204,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "geocode-status-302",
+   "kind": "geocode",
+   "status": 302,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "geocode-status-403",
+   "kind": "geocode",
+   "status": 403,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "geocode-status-500",
+   "kind": "geocode",
+   "status": 500,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "geocode-status-504",
+   "kind": "geocode",
+   "status": 504,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "suggest-200",
+   "kind": "suggest",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "7b2273756767657374696f6e73223a5b5d2c226174747269627574696f6e223a224f70656e5374726565744d6170222c22726573706f6e73655f6964223a2272227d",
+   "size": 66,
+   "sha256": "272009cd5c4d114ffb36305aebcb16ab132b62498b536ff3f2249bb4413d7ae4",
+   "expect": "accept",
+   "note": ""
+  },
+  {
+   "name": "suggest-200-empty-body",
+   "kind": "suggest",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "accept",
+   "note": "the result layer carries it; the client refuses a bundle or a PNG that is empty"
+  },
+  {
+   "name": "suggest-200-at-the-limit",
+   "kind": "suggest",
+   "status": 200,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 65,
+    "count": 65536
+   },
+   "size": 65536,
+   "sha256": "156c38442089c1323d3e3ba549a6ac24341c47e8b6367bec4740c9b8c865826e",
+   "expect": "accept",
+   "note": "the limit is inclusive"
+  },
+  {
+   "name": "suggest-200-over-the-limit",
+   "kind": "suggest",
+   "status": 200,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 65,
+    "count": 65537
+   },
+   "size": 65537,
+   "sha256": "ac72112c832fa4683b15ebff51a8f5f2ca08226c0d59bdb9ac739c2cdc28a05c",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "suggest-digest-wrong",
+   "kind": "suggest",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "7b2273756767657374696f6e73223a5b5d2c226174747269627574696f6e223a224f70656e5374726565744d6170222c22726573706f6e73655f6964223a2272227d",
+   "size": 66,
+   "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "suggest-size-too-small",
+   "kind": "suggest",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "7b2273756767657374696f6e73223a5b5d2c226174747269627574696f6e223a224f70656e5374726565744d6170222c22726573706f6e73655f6964223a2272227d",
+   "size": 65,
+   "sha256": "272009cd5c4d114ffb36305aebcb16ab132b62498b536ff3f2249bb4413d7ae4",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "suggest-size-too-large",
+   "kind": "suggest",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "7b2273756767657374696f6e73223a5b5d2c226174747269627574696f6e223a224f70656e5374726565744d6170222c22726573706f6e73655f6964223a2272227d",
+   "size": 67,
+   "sha256": "272009cd5c4d114ffb36305aebcb16ab132b62498b536ff3f2249bb4413d7ae4",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "suggest-gzip",
+   "kind": "suggest",
+   "status": 200,
+   "encoding": "gzip",
+   "payload_hex": "789cab562a2e4d4f4f2d2ec9cccf2b56b28a8ed5514a2c2929ca4c2a0589285929f917a4e6059714a5a696f8261628e92815a516170095a6c667a600658b946a012c0a17af",
+   "size": 66,
+   "sha256": "272009cd5c4d114ffb36305aebcb16ab132b62498b536ff3f2249bb4413d7ae4",
+   "expect": "reject",
+   "note": "map answers are not compressed"
+  },
+  {
+   "name": "suggest-xz",
+   "kind": "suggest",
+   "status": 200,
+   "encoding": "xz",
+   "payload_hex": "7b2273756767657374696f6e73223a5b5d2c226174747269627574696f6e223a224f70656e5374726565744d6170222c22726573706f6e73655f6964223a2272227d",
+   "size": 66,
+   "sha256": "272009cd5c4d114ffb36305aebcb16ab132b62498b536ff3f2249bb4413d7ae4",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "suggest-unknown-encoding",
+   "kind": "suggest",
+   "status": 200,
+   "encoding": "brotli",
+   "payload_hex": "7b2273756767657374696f6e73223a5b5d2c226174747269627574696f6e223a224f70656e5374726565744d6170222c22726573706f6e73655f6964223a2272227d",
+   "size": 66,
+   "sha256": "272009cd5c4d114ffb36305aebcb16ab132b62498b536ff3f2249bb4413d7ae4",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "suggest-status-400",
+   "kind": "suggest",
+   "status": 400,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "suggest-status-401",
+   "kind": "suggest",
+   "status": 401,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "suggest-status-404",
+   "kind": "suggest",
+   "status": 404,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "suggest-status-422",
+   "kind": "suggest",
+   "status": 422,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "suggest-status-429",
+   "kind": "suggest",
+   "status": 429,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "suggest-status-503",
+   "kind": "suggest",
+   "status": 503,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "suggest-status-503-4096-bytes",
+   "kind": "suggest",
+   "status": 503,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 66,
+    "count": 4096
+   },
+   "size": 4096,
+   "sha256": "725bcd6c66d02acf6ebeab9c92410e010ea22e336876256aaf05a211f4ce1902",
+   "expect": "accept",
+   "note": "an error body is at most 4 KiB"
+  },
+  {
+   "name": "suggest-status-503-4097-bytes",
+   "kind": "suggest",
+   "status": 503,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 66,
+    "count": 4097
+   },
+   "size": 4097,
+   "sha256": "e9b66ae7cb510f0ad5cb78b88084b5769bd2d684204cb9293063923f7232c09c",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "suggest-status-204",
+   "kind": "suggest",
+   "status": 204,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "suggest-status-302",
+   "kind": "suggest",
+   "status": 302,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "suggest-status-403",
+   "kind": "suggest",
+   "status": 403,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "suggest-status-500",
+   "kind": "suggest",
+   "status": 500,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "suggest-status-504",
+   "kind": "suggest",
+   "status": 504,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "retrieve-200",
+   "kind": "retrieve",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "7b2274797065223a2246656174757265436f6c6c656374696f6e222c226665617475726573223a5b5d7d",
+   "size": 42,
+   "sha256": "ed778c73ea51338d6576fb5992b189f2b94d9f3d5e199f46c1af520d6b0b3e6c",
+   "expect": "accept",
+   "note": ""
+  },
+  {
+   "name": "retrieve-200-empty-body",
+   "kind": "retrieve",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "accept",
+   "note": "the result layer carries it; the client refuses a bundle or a PNG that is empty"
+  },
+  {
+   "name": "retrieve-200-at-the-limit",
+   "kind": "retrieve",
+   "status": 200,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 65,
+    "count": 65536
+   },
+   "size": 65536,
+   "sha256": "156c38442089c1323d3e3ba549a6ac24341c47e8b6367bec4740c9b8c865826e",
+   "expect": "accept",
+   "note": "the limit is inclusive"
+  },
+  {
+   "name": "retrieve-200-over-the-limit",
+   "kind": "retrieve",
+   "status": 200,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 65,
+    "count": 65537
+   },
+   "size": 65537,
+   "sha256": "ac72112c832fa4683b15ebff51a8f5f2ca08226c0d59bdb9ac739c2cdc28a05c",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "retrieve-digest-wrong",
+   "kind": "retrieve",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "7b2274797065223a2246656174757265436f6c6c656374696f6e222c226665617475726573223a5b5d7d",
+   "size": 42,
+   "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "retrieve-size-too-small",
+   "kind": "retrieve",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "7b2274797065223a2246656174757265436f6c6c656374696f6e222c226665617475726573223a5b5d7d",
+   "size": 41,
+   "sha256": "ed778c73ea51338d6576fb5992b189f2b94d9f3d5e199f46c1af520d6b0b3e6c",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "retrieve-size-too-large",
+   "kind": "retrieve",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "7b2274797065223a2246656174757265436f6c6c656374696f6e222c226665617475726573223a5b5d7d",
+   "size": 43,
+   "sha256": "ed778c73ea51338d6576fb5992b189f2b94d9f3d5e199f46c1af520d6b0b3e6c",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "retrieve-gzip",
+   "kind": "retrieve",
+   "status": 200,
+   "encoding": "gzip",
+   "payload_hex": "789cab562aa92c4855b252724b4d2c292d4a75cecfc9494d2ec9cccf53d2514a8388152b5945c7d60200429e0f16",
+   "size": 42,
+   "sha256": "ed778c73ea51338d6576fb5992b189f2b94d9f3d5e199f46c1af520d6b0b3e6c",
+   "expect": "reject",
+   "note": "map answers are not compressed"
+  },
+  {
+   "name": "retrieve-xz",
+   "kind": "retrieve",
+   "status": 200,
+   "encoding": "xz",
+   "payload_hex": "7b2274797065223a2246656174757265436f6c6c656374696f6e222c226665617475726573223a5b5d7d",
+   "size": 42,
+   "sha256": "ed778c73ea51338d6576fb5992b189f2b94d9f3d5e199f46c1af520d6b0b3e6c",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "retrieve-unknown-encoding",
+   "kind": "retrieve",
+   "status": 200,
+   "encoding": "brotli",
+   "payload_hex": "7b2274797065223a2246656174757265436f6c6c656374696f6e222c226665617475726573223a5b5d7d",
+   "size": 42,
+   "sha256": "ed778c73ea51338d6576fb5992b189f2b94d9f3d5e199f46c1af520d6b0b3e6c",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "retrieve-status-400",
+   "kind": "retrieve",
+   "status": 400,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "retrieve-status-401",
+   "kind": "retrieve",
+   "status": 401,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "retrieve-status-404",
+   "kind": "retrieve",
+   "status": 404,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "retrieve-status-422",
+   "kind": "retrieve",
+   "status": 422,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "retrieve-status-429",
+   "kind": "retrieve",
+   "status": 429,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "retrieve-status-503",
+   "kind": "retrieve",
+   "status": 503,
+   "encoding": "identity",
+   "payload_hex": "7b226d657373616765223a224e6f206d61702064617461206f6620746869732061726561206f6e207468697320756e6974227d",
+   "size": 51,
+   "sha256": "a2968dea194a6cafda8795f176b90bd99a21946ca061b0a2682eb7f2ed2b10e8",
+   "expect": "accept",
+   "note": "the X10's status is carried"
+  },
+  {
+   "name": "retrieve-status-503-4096-bytes",
+   "kind": "retrieve",
+   "status": 503,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 66,
+    "count": 4096
+   },
+   "size": 4096,
+   "sha256": "725bcd6c66d02acf6ebeab9c92410e010ea22e336876256aaf05a211f4ce1902",
+   "expect": "accept",
+   "note": "an error body is at most 4 KiB"
+  },
+  {
+   "name": "retrieve-status-503-4097-bytes",
+   "kind": "retrieve",
+   "status": 503,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 66,
+    "count": 4097
+   },
+   "size": 4097,
+   "sha256": "e9b66ae7cb510f0ad5cb78b88084b5769bd2d684204cb9293063923f7232c09c",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "retrieve-status-204",
+   "kind": "retrieve",
+   "status": 204,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "retrieve-status-302",
+   "kind": "retrieve",
+   "status": 302,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "retrieve-status-403",
+   "kind": "retrieve",
+   "status": 403,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "retrieve-status-500",
+   "kind": "retrieve",
+   "status": 500,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "retrieve-status-504",
+   "kind": "retrieve",
+   "status": 504,
+   "encoding": "identity",
+   "payload_hex": "",
+   "size": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+   "expect": "reject",
+   "note": "not a status of the X10's map routes"
+  },
+  {
+   "name": "roadtiles-empty-bundle-200",
+   "kind": "roadtiles",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "525442310101010001000100000000",
+   "size": 15,
+   "sha256": "3d8435d13c6b8117a63d93ac4da8dfcb5bf3cfaa50f78b11cd92c9c22376dd4b",
+   "expect": "accept",
+   "note": "a bundle of one sea tile"
+  },
+  {
+   "name": "roadtiles-bundle-exactly-524288",
+   "kind": "roadtiles",
+   "status": 200,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 0,
+    "count": 524288
+   },
+   "size": 524288,
+   "sha256": "07854d2fef297a06ba81685e660c332de36d5d18d546927d30daad6d7fda1541",
+   "expect": "accept",
+   "note": "the result limit is the bundle limit"
+  },
+  {
+   "name": "roadtiles-bundle-524289",
+   "kind": "roadtiles",
+   "status": 200,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 0,
+    "count": 524289
+   },
+   "size": 524289,
+   "sha256": "eda6e9fb7e8bed184a10de09683556f9fc1720ffc1af5fa73f4891c7dec70bca",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "stile-png-exactly-2-mib",
+   "kind": "stile",
+   "status": 200,
+   "encoding": "identity",
+   "payload_fill": {
+    "byte": 137,
+    "count": 2097152
+   },
+   "size": 2097152,
+   "sha256": "cd1be18af8b9fc838c704f9fcfd3cced066f33709fd38281bc0b043007c882fc",
+   "expect": "accept",
+   "note": ""
+  },
+  {
+   "name": "kind-unknown",
+   "kind": "tiles",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "525442310101d73819190019000000535052540101789c63626460606082620848816200056b00d0",
+   "size": 40,
+   "sha256": "839dbd7bab055b75f60e6f2e8cf2671cbe4785b8fa2fcd68455b1a328fd278af",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "kind-route-with-the-map-rule",
+   "kind": "route",
+   "status": 200,
+   "encoding": "identity",
+   "payload_hex": "525442310101d73819190019000000535052540101789c63626460606082620848816200056b00d0",
+   "size": 40,
+   "sha256": "839dbd7bab055b75f60e6f2e8cf2671cbe4785b8fa2fcd68455b1a328fd278af",
+   "expect": "reject",
+   "note": "this table is for the five map kinds"
+  }
+ ]
+}

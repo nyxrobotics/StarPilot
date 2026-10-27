@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
-/** The three classes of the lane, highest priority first (docs/dev/bluetooth-link.md section 7.1). */
+/** The four classes of the lane, highest priority first (docs/dev/bluetooth-link.md sections 7.1 and 16). */
 enum class LaneClass {
     /** The relay's POST, DELETE and state calls, the guidance poll, the phone GPS, the Galaxy screens. */
     INTERACTIVE,
@@ -17,6 +17,8 @@ enum class LaneClass {
     SMALL,
     /** Route chunks. */
     BULK,
+    /** Contract version 3: the chunks of a road tile batch or a style tile; strictly below the route, so a tile never delays a route, a search, a position or a guidance poll by more than one chunk. */
+    MAP,
 }
 
 /** The one physical link under a lane. [exchange] is one request and its answer; it fails by throwing, and a failure ends the link. */
@@ -36,11 +38,13 @@ internal class LaneClosed(message: String, cause: Throwable? = null) : IOExcepti
 internal class LaneWaitExceeded : IOException("Bluetooth request waited too long behind other traffic")
 
 /**
- * Chooses the next bulk chunk from the rate the lane has measured: body bytes per second of a finished chunk, smoothed (EWMA 0.5), times a cap of [capSeconds]
- * seconds, in whole packets, between 1 KiB and 64 KiB; the first chunk is [startBytes]. So no interactive or small request waits longer than about one chunk
- * (docs/dev/bluetooth-link.md sections 6 L5 and 7.1; the reference is `tools/btlab/contract/lane.py` `ChunkPlanner`).
+ * Chooses the next chunk of a transfer from the rate the lane has measured: body bytes per second of a finished chunk of the same class, smoothed (EWMA 0.5), times a cap of
+ * [capSeconds] seconds, in whole packets, between [minChunk] and 64 KiB; the first chunk is [startBytes]. So no interactive or small request waits longer than about one chunk
+ * (docs/dev/bluetooth-link.md sections 6 L5, 7.1 and 16; the reference is `tools/btlab/contract/lane.py` `ChunkPlanner`). Each class has its own planner: the route keeps 5 s,
+ * 6,144 bytes at the start and 1,024 at least; the class `map` has 1 s, and starts and stays at 4,096 bytes or more, so that every chunk after the first is a sample of the bridge's
+ * uplink meter (a chunk below 4,096 bytes of body is not one); the answers of the searches have 1 s and the route's start and minimum.
  */
-internal class ChunkPlanner(val capSeconds: Double = DEFAULT_CAP_S, private val startBytes: Int = 6 * 1024) {
+internal class ChunkPlanner(val capSeconds: Double = DEFAULT_CAP_S, private val startBytes: Int = 6 * 1024, val minChunk: Int = MIN_CHUNK) {
     /** Bytes per second of the last chunks, null before the first measurement. */
     @Volatile var rate: Double? = null
         private set
@@ -55,9 +59,9 @@ internal class ChunkPlanner(val capSeconds: Double = DEFAULT_CAP_S, private val 
         if (remaining <= 0) return 0
         val measured = rate
         var size = if (measured == null) startBytes else (measured * capSeconds).toLong().coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
-        size = maxOf(MIN_CHUNK, minOf(MAX_CHUNK, size))
+        size = maxOf(minChunk, minOf(MAX_CHUNK, size))
         size -= size % PACKET_DATA // fill whole packets
-        return minOf(maxOf(size, MIN_CHUNK), remaining)
+        return minOf(maxOf(size, minChunk), remaining)
     }
 
     companion object {
@@ -66,6 +70,15 @@ internal class ChunkPlanner(val capSeconds: Double = DEFAULT_CAP_S, private val 
         const val MAX_CHUNK = 64 * 1024
         /** Frame bytes per data packet: ATT payload 244 minus the 5-byte header. */
         const val PACKET_DATA = 239
+        /** The class `map`: the measured rate times one second. */
+        const val MAP_CAP_S = 1.0
+        /** The first chunk of a map job, and the smallest one (`MAP_START_BYTES`, `MAP_MIN_CHUNK` of lane.py). */
+        const val MAP_START_BYTES = 4096
+        const val MAP_MIN_CHUNK = 4096
+
+        fun forRoute() = ChunkPlanner()
+        fun forMap() = ChunkPlanner(MAP_CAP_S, MAP_START_BYTES, MAP_MIN_CHUNK)
+        fun forSearch() = ChunkPlanner(MAP_CAP_S)
     }
 }
 
@@ -106,9 +119,10 @@ internal class LaneEvent(val cls: LaneClass, val label: String, val submittedAt:
 }
 
 /**
- * The lane: one link, one request in flight, three classes (docs/dev/bluetooth-link.md section 7.1). One owner thread runs the requests; callers block (or take a
- * [Ticket]). Strict priority INTERACTIVE > SMALL > BULK, first come first served inside a class, never preempting a request that has started. A bulk request is
- * one chunk sized by [planner], so the wait of anything else is at most one chunk plus the request in front of it.
+ * The lane: one link, one request in flight, four classes (docs/dev/bluetooth-link.md sections 7.1 and 16). One owner thread runs the requests; callers block (or take a
+ * [Ticket]). Strict priority INTERACTIVE > SMALL > BULK > MAP, first come first served inside a class, never preempting a request that has started. A bulk or map request is
+ * one chunk sized by the planner of its class ([planner] for the route, [mapPlanner] for the tiles, [searchPlanner] for the answers of the searches), so the wait of anything else
+ * is at most one chunk plus the request in front of it.
  *
  * Fail closed: when a request fails, or runs past its deadline (plus [watchdogGraceSeconds]), the link is closed, **every request that is queued or in flight
  * fails at once**, nothing is replayed (the framing cannot recover and a mutating request must not be repeated), and the lane stays closed: the next
@@ -124,6 +138,10 @@ internal class BleLane(
     val planner: ChunkPlanner = ChunkPlanner(),
     private val policy: PriorityPolicy = PriorityPolicy(),
     private val watchdogGraceSeconds: Long = 5,
+    /** The planner of the class `map` (1 s, 4,096 bytes at the start and at least). */
+    val mapPlanner: ChunkPlanner = ChunkPlanner.forMap(),
+    /** The planner of the answers of `geocode`, `suggest` and `retrieve` (class `small`: 1 s). */
+    val searchPlanner: ChunkPlanner = ChunkPlanner.forSearch(),
 ) : Closeable {
 
     /** The handle of one request. */
@@ -161,7 +179,7 @@ internal class BleLane(
 
     val isOpen: Boolean get() = lock.withLock { !closed }
 
-    /** Queues a request. [bodyBytes] (bulk only) is the chunk's body size: its duration feeds the chunk planner. */
+    /** Queues a request. [bodyBytes] (a chunk of a route, a map job or a search answer; 0 for any other request) is the chunk's body size: its duration feeds the planner of its class. */
     fun submit(cls: LaneClass, deadlineSeconds: Long, meta: JSONObject, body: ByteArray? = null, bodyBytes: Int = 0, label: String = ""): Ticket =
         enqueue(Ticket(cls, label, meta, body, bodyBytes, deadlineSeconds))
 
@@ -175,7 +193,7 @@ internal class BleLane(
             if (closed) { ticket.future.completeExceptionally(LaneClosed("Bluetooth link is closed")); return ticket }
             ticket.submittedAt = clock()
             queues[cls.ordinal].addLast(ticket)
-            if (cls == LaneClass.BULK) ask = policy.wantHigh(ticket.submittedAt / 1_000_000)
+            if (cls == LaneClass.BULK || cls == LaneClass.MAP) ask = policy.wantHigh(ticket.submittedAt / 1_000_000) // a map chunk is treated as a route chunk
             if (owner == null) {
                 owner = Thread({ run() }, "SidecarBLE-Lane").apply { isDaemon = true; start() }
                 if (watchdogEnabled) startWatchdog()
@@ -192,6 +210,14 @@ internal class BleLane(
 
     /** The size of the next bulk chunk of a transfer with [remaining] bytes left. */
     fun planBulkChunk(remaining: Int): Int = planner.nextBytes(remaining)
+
+    /** The size of the next chunk of a transfer of class [cls] with [remaining] bytes left: the route (BULK), a tile (MAP) or the answer of a search (SMALL) has its own planner. */
+    fun planChunk(cls: LaneClass, remaining: Int): Int = when (cls) {
+        LaneClass.BULK -> planner.nextBytes(remaining)
+        LaneClass.MAP -> mapPlanner.nextBytes(remaining)
+        LaneClass.SMALL -> searchPlanner.nextBytes(remaining)
+        LaneClass.INTERACTIVE -> remaining
+    }
 
     /** The caller knows traffic is coming (a job list was not empty): ask for the high priority now. */
     fun wantHigh() {
@@ -267,7 +293,12 @@ internal class BleLane(
             inFlight = null
             policy.activity(ended / 1_000_000)
         }
-        if (answer != null && ticket.cls == LaneClass.BULK) planner.observe(ticket.bodyBytes, (ended - ticket.startedAt) / 1e9)
+        if (answer != null && ticket.bodyBytes > 0) when (ticket.cls) {
+            LaneClass.BULK -> planner
+            LaneClass.MAP -> mapPlanner
+            LaneClass.SMALL -> searchPlanner
+            LaneClass.INTERACTIVE -> null
+        }?.observe(ticket.bodyBytes, (ended - ticket.startedAt) / 1e9)
         observer?.invoke(LaneEvent(ticket.cls, ticket.label, ticket.submittedAt, ticket.startedAt, ended, answer == null))
         if (answer != null) ticket.future.complete(answer) else if (error != null) ticket.future.completeExceptionally(error)
         return true
