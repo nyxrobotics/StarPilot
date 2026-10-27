@@ -33,6 +33,10 @@ internal class RouteFetchIo(val stage: String, val origin: String, cause: IOExce
 internal class SidecarRouteWorker internal constructor(
     private val transport: () -> RouteLink?,
     autoStart: Boolean,
+    /** The lane of a connection whose bridge speaks `poll2` and the v2 results (SidecarJobs); null for an old bridge, which keeps the legacy poll and chunk calls. */
+    private val jobsLane: () -> BleLane? = { (transport() as? BleTransport)?.takeIf { it.jobsV2 }?.lane },
+    private val preferXz: () -> Boolean = { (transport() as? BleTransport)?.preferXz == true },
+    private val fetcher: LocalFetcher = LoopbackFetcher(),
 ) : Closeable {
     constructor(transport: () -> RouteLink?) : this(transport, true)
     private val worker = Executors.newSingleThreadScheduledExecutor { task ->
@@ -60,8 +64,9 @@ internal class SidecarRouteWorker internal constructor(
 
     /** The job poll of a bridge that speaks `poll2` and the v2 results; made on the first tick that finds one. */
     @Synchronized private fun jobsEngine(): SidecarJobs = jobs ?: SidecarJobs(
-        laneSource = { (transport() as? BleTransport)?.takeIf { it.jobsV2 }?.lane },
-        preferXz = { (transport() as? BleTransport)?.preferXz == true },
+        laneSource = jobsLane,
+        fetcher = fetcher,
+        preferXz = preferXz,
         warn = { warning(it) },
     ).also { jobs = it }
 
@@ -74,7 +79,7 @@ internal class SidecarRouteWorker internal constructor(
     internal fun tick() {
         if (!running) return
         val link = try { transport() } catch (_: Exception) { null } ?: return
-        if ((link as? BleTransport)?.jobsV2 == true) {
+        if (jobsLane() != null) {
             try { jobsEngine().pollNow() } catch (error: Exception) { warning("Route poll failed (${error.javaClass.simpleName})") }
             return
         }

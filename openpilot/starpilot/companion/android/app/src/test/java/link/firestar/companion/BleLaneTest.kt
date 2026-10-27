@@ -3,8 +3,6 @@ package link.firestar.companion
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
@@ -401,8 +399,6 @@ class BleLaneTest {
         assertTrue("a control operation waits for the request in flight", ran.isEmpty())
         link.gate!!.countDown(); running.settle(); control.join(5000)
         assertEquals(listOf("control:subscribe:after=1"), ran.toList())
-        assertNotNull(lane)
-        assertNull(null)
         lane.close()
     }
 }

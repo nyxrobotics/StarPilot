@@ -1,0 +1,114 @@
+package link.firestar.companion
+
+import org.json.JSONObject
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.util.Base64
+import java.util.concurrent.CopyOnWriteArrayList
+
+/**
+ * comma's job broker as the contract describes it (`tools/btlab/contract/jobs.py` `JobBroker`), at the level of the lane: it answers `poll2`, the v2 chunk call
+ * and `fail`, checks every chunk with the contract's own rules and decodes the finished result. Used by the job tests, never by the app.
+ */
+internal class FakeComma {
+    class Job(val id: String, val kind: Shape, val target: String) {
+        var next = 0
+        var status: Int? = null
+        var encoding: String? = null
+        val data = ByteArrayOutputStream()
+        var finished = false
+        var failed = false
+        var result: Pair<Int, ByteArray>? = null
+        var chunks = ArrayList<Pair<Int, Int>>() // (sequence, bytes) as committed
+    }
+
+    val jobs = LinkedHashMap<String, Job>()
+    val calls = CopyOnWriteArrayList<String>()
+    val rejected = CopyOnWriteArrayList<String>()
+    val expired = HashSet<String>()
+    var claimedByAnotherPhone = false
+    var nextPollMs = 10_000
+    private var counter = 0
+
+    @Synchronized fun submit(kind: Shape, target: String): Job {
+        val id = (++counter).toString(16).padStart(32, '0')
+        return Job(id, kind, target).also { jobs[id] = it }
+    }
+
+    private fun reply(status: Int, json: JSONObject? = null) =
+        JSONObject().put("status", status).put("body", Base64.getEncoder().encodeToString((json?.toString() ?: "").toByteArray()))
+
+    @Synchronized fun handle(meta: JSONObject, body: ByteArray?): JSONObject {
+        val method = meta.getString("method")
+        val path = meta.getString("path")
+        if (meta.has("body")) rejected += "a body member in a raw request"
+        when {
+            method == "GET" && path == "/_bridge/sidecar/poll2" -> {
+                calls += "poll2"
+                val open = jobs.values.filter { !it.finished && !it.failed && it.id !in expired }.sortedBy { it.kind == Shape.ROUTE }
+                val rows = org.json.JSONArray()
+                for (job in open) rows.put(JSONObject().put("id", job.id).put("kind", job.kind.wire).put("target", job.target).put("next_sequence", job.next)
+                    .put("claimed", claimedByAnotherPhone).put("lease_ms", 15_000))
+                return reply(200, JSONObject().put("v", 2).put("jobs", rows).put("next_poll_ms", nextPollMs))
+            }
+            method == "POST" && path.startsWith("/_bridge/sidecar/fail/") -> {
+                val job = jobs[path.substringAfterLast('/')] ?: return reply(404)
+                calls += "fail:${job.kind.wire}"
+                job.failed = true
+                return reply(200, JSONObject().put("failed", true))
+            }
+            method == "POST" && path.startsWith("/_bridge/sidecar/chunk/") -> return chunk(path, body ?: ByteArray(0))
+        }
+        rejected += "unknown call $method"
+        return reply(400)
+    }
+
+    private fun chunk(path: String, data: ByteArray): JSONObject {
+        val target = try { JobContract.parseChunkTarget(path) } catch (_: ContractError) { rejected += "chunk path"; return reply(400) }
+        val job = jobs[target.jobId]
+        if (job == null || job.finished || job.failed || job.id in expired) return reply(404)
+        if (data.size > JobContract.MAX_CHUNK_BYTES) { rejected += "chunk too large"; return reply(400) }
+        if (target.sequence < job.next) return reply(200, JSONObject().put("next", job.next))
+        if (target.sequence != job.next) { rejected += "chunk out of order"; return reply(400) }
+        if (job.status == null) { job.status = target.status; job.encoding = target.encoding }
+        else if (job.status != target.status || job.encoding != target.encoding) { job.failed = true; rejected += "status changed"; return reply(400) }
+        job.data.write(data)
+        job.chunks += target.sequence to data.size
+        job.next++
+        calls += "chunk:${job.kind.wire}:${target.sequence}${if (target.last) ":last" else ""}"
+        if (target.last) {
+            try {
+                val decoded = JobContract.decodeResult(job.kind.wire, job.status!!, job.encoding!!, job.data.toByteArray(), target.size!!, target.sha256!!)
+                job.result = job.status!! to decoded
+                job.finished = true
+            } catch (_: ContractError) { job.failed = true; rejected += "invalid result"; return reply(400) }
+        }
+        return reply(200, JSONObject().put("next", job.next))
+    }
+}
+
+/** A link to [FakeComma] that can lose the link around a chunk: before comma has seen it, or after comma committed it (the acknowledgement is lost). */
+internal class CommaLink(val comma: FakeComma) : LaneLink {
+    var failBeforeChunk: Int? = null
+    var failAfterChunk: Int? = null
+    var chunkDelayMs = 0L
+    val priorities = CopyOnWriteArrayList<Boolean>()
+    val bodies = CopyOnWriteArrayList<Int>()
+    @Volatile var closed = false
+
+    override fun exchange(meta: JSONObject, body: ByteArray?, deadlineSeconds: Long): JSONObject {
+        val path = meta.getString("path")
+        val chunk = if (path.startsWith("/_bridge/sidecar/chunk/")) path.substringAfterLast('/').substringBefore('?').toInt() else null
+        if (chunk != null) {
+            body?.let { bodies += it.size }
+            if (chunkDelayMs > 0) Thread.sleep(chunkDelayMs)
+            if (failBeforeChunk == chunk) { failBeforeChunk = null; throw IOException("link lost before the chunk reached comma") }
+        }
+        val answer = comma.handle(meta, body)
+        if (chunk != null && failAfterChunk == chunk) { failAfterChunk = null; throw IOException("link lost: comma committed the chunk, its acknowledgement did not arrive") }
+        return answer
+    }
+    override fun control(action: String) = JSONObject().put("status", 200)
+    override fun setHighPriority(on: Boolean) { priorities += on }
+    override fun close() { closed = true }
+}
