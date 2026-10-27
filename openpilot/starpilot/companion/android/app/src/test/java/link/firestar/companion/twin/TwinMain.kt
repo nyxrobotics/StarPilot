@@ -83,12 +83,16 @@ internal class TwinClient(private val socket: Socket) {
 }
 
 /** The link of one connection: the logic of `BleTransport` (connect and handshake, one exchange at a time, a failed exchange closes the link) over the twin's operations. */
+/** Every chunk request this process sent: "sequence:bytes:first 4 bytes of the SHA-256" (evidence for the resume rows). */
+internal val chunkLog = java.util.concurrent.CopyOnWriteArrayList<String>()
+
 internal class TwinTransport(private val rpc: TwinClient, private val key: ByteArray, private val legacy: Boolean, private val ignorePushNav: Boolean, private val sabotage: String, private val onClosed: (TwinTransport) -> Unit) : RouteLink, Closeable {
     @Volatile var closed = false
     @Volatile private var session = ""
     private var counter = 0L
     private var packetSize = 20
     @Volatile var features: BridgeFeatures = BridgeFeatures.LEGACY
+    val chunksSent: MutableList<String> = chunkLog
     @Volatile var canWriteNoResponse = false
     @Volatile var hasPushCharacteristic = false
     @Volatile var pushSink: ((ByteArray) -> Unit)? = null
@@ -136,6 +140,12 @@ internal class TwinTransport(private val rpc: TwinClient, private val key: ByteA
         val count = ++counter
         try {
             val (sentMeta, sentBody) = damaged(meta, body)
+            val path = sentMeta.optString("path")
+            if (sentBody != null && path.contains("/chunk/")) {
+                val sequence = path.substringAfter("/chunk/").substringAfter('/').substringBefore('?')
+                val sha = java.security.MessageDigest.getInstance("SHA-256").digest(sentBody).take(4).joinToString("") { "%02x".format(it.toInt() and 255) }
+                chunksSent.add("$sequence:${sentBody.size}:$sha")
+            }
             return BleExchange.run(io, key, session, count, id, sentMeta, sentBody, deadlineSeconds, packetSize, canWriteNoResponse)
         } catch (e: Exception) { close(); throw e }
     }
@@ -242,7 +252,7 @@ internal class TwinCompanion(private val rpc: TwinClient) {
         routePort = cfg.getInt("routePort")
         vehiclePort = cfg.getInt("vehiclePort")
         token = cfg.optString("token", "X10-route-link-example-key-2026")
-        warnings.clear(); laneMax.clear(); reconnectLog.clear(); connects.set(0)
+        warnings.clear(); laneMax.clear(); reconnectLog.clear(); connects.set(0); chunkLog.clear()
         worker = SidecarRouteWorker(
             transport = { current?.takeIf { it.open } },
             autoStart = true,
@@ -342,7 +352,7 @@ internal class TwinCompanion(private val rpc: TwinClient) {
     private fun stats(): JSONObject {
         val out = JSONObject()
         val link = current
-        out.put("pushBoundEpochMs", pushBoundEpochMs).put("nowEpochMs", System.currentTimeMillis()).put("open", link?.open == true).put("connects", connects.get()).put("features", link?.features?.let { JSONObject().put("jobsV2", it.jobsV2).put("push", it.push).put("pushNav", it.pushNav).put("xz", it.xz) } ?: JSONObject.NULL)
+        out.put("chunksSent", JSONArray(chunkLog.toList())).put("pushBoundEpochMs", pushBoundEpochMs).put("nowEpochMs", System.currentTimeMillis()).put("open", link?.open == true).put("connects", connects.get()).put("features", link?.features?.let { JSONObject().put("jobsV2", it.jobsV2).put("push", it.push).put("pushNav", it.pushNav).put("xz", it.xz) } ?: JSONObject.NULL)
         out.put("canWriteNoResponse", link?.canWriteNoResponse ?: false)
         val jobs = try { val f = SidecarRouteWorker::class.java.getDeclaredField("jobs"); f.isAccessible = true; f.get(worker) as? SidecarJobs } catch (_: Exception) { null }
         out.put("jobs", JSONObject().put("done", jobs?.jobsDone ?: 0).put("failed", jobs?.jobsFailed ?: 0).put("refused", jobs?.jobsRefused ?: 0).put("held", jobs?.heldTransfers ?: 0))
