@@ -21,7 +21,6 @@ class GattDenied(status: Int) : IOException("Bluetooth access denied ($status)")
 class GattEventFailure(val expected: String, val observed: String, val status: Int) : IOException("Bluetooth GATT operation failed")
 /** The link works but comma never answered the authenticated check: it no longer knows this phone's key. */
 class PairingNotRecognized(message: String) : IOException(message)
-private class ResponseTimeout : IOException("Bluetooth response timed out. Check the result before retrying a change.")
 
 internal data class GattEvent(val kind: String, val status: Int, val data: ByteArray = byteArrayOf())
 
@@ -253,32 +252,13 @@ class BleTransport(context: Context, private val key: ByteArray?, private val he
         check(!closed && session.isNotEmpty())
         val id = UUID.randomUUID().toString()
         val count = ++counter
-        val request = JSONObject(meta.toString()).put("id", id).put("session", session).put("counter", count).put("responseCodec", 2).put("responseFlow", "read-stream")
-        // Upstream read-stream flow acknowledges once after authenticated reassembly.
         try {
-            val sealKey = key ?: throw IOException("Not paired")
-            val frame = if (body == null) BleWire.seal(request.toString().toByteArray(), sealKey) else BleWire.sealRaw(request.toString().toByteArray(), body, sealKey)
-            val packets = BleWire.packets(frame, packetSize)
-            // A raw-body request goes without a response per data packet where the bridge allows it; the last packet always waits for comma's response, so its answer proves
-            // the earlier ones arrived in order (a lost or reordered packet fails the frame at comma, and this request at its deadline).
-            val quick = body != null && canWriteNoResponse
-            for ((index, packet) in packets.withIndex()) write(packet, quick && index < packets.size - 1)
-            val assembler = BleWire.Assembler()
-            val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(deadlineSeconds)
-            while (System.nanoTime() < deadline) {
-                val packet = read("3")
-                if (packet.contentEquals(byteArrayOf(0))) { Thread.sleep(30); continue }
-                val result = assembler.add(packet)
-                if (result != null) {
-                    val decoded = BleWire.decode(result, sealKey)
-                    val response = JSONObject(String(decoded.json, Charsets.UTF_8))
-                    decoded.body?.let { require(!response.has("body")); response.put("body", java.util.Base64.getEncoder().encodeToString(it)) }
-                    require(response.getString("id") == id && response.getString("session") == session && response.getLong("counter") == count)
-                    write(ByteBuffer.allocate(5).put(2).put(packet, 1, 4).array())
-                    return response
-                }
+            val io = object : GattIo {
+                override fun write(packet: ByteArray, noResponse: Boolean) = this@BleTransport.write(packet, noResponse)
+                override fun read(): ByteArray = this@BleTransport.read("3")
+                override fun pause(millis: Long) = Thread.sleep(millis)
             }
-            throw ResponseTimeout()
+            return BleExchange.run(io, key ?: throw IOException("Not paired"), session, count, id, meta, body, deadlineSeconds, packetSize, canWriteNoResponse)
         } catch (e: Exception) { close(); throw e }
     }
 

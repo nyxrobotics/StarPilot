@@ -1,0 +1,958 @@
+{
+ "version": 1,
+ "note": "hand-written expectations; see tools/btlab/contract/vectors.py",
+ "cases": [
+  {
+   "name": "route-basic",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "accept:route",
+   "note": "what navigationd sends"
+  },
+  {
+   "name": "route-bearing-percent-in-query",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=T&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "accept:route",
+   "note": "% is allowed in the query"
+  },
+  {
+   "name": "route-three-points",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7300,35.6700;139.7016,35.6580?access_token=T",
+   "body": null,
+   "expect": "accept:route",
+   "note": ""
+  },
+  {
+   "name": "route-negative-and-exponent",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/-0.5,1e-05;+139.7,35.6?access_token=T",
+   "body": null,
+   "expect": "accept:route",
+   "note": "Python float text may use an exponent"
+  },
+  {
+   "name": "route-segment-256",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.68120000000?access_token=T",
+   "body": null,
+   "expect": "accept:route",
+   "note": "the longest allowed segment"
+  },
+  {
+   "name": "route-target-8192-bytes",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=T&x=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "body": null,
+   "expect": "accept:route",
+   "note": "the whole target at the limit"
+  },
+  {
+   "name": "status",
+   "method": "GET",
+   "target": "/status",
+   "body": null,
+   "expect": "accept:status",
+   "note": ""
+  },
+  {
+   "name": "health",
+   "method": "GET",
+   "target": "/health",
+   "body": null,
+   "expect": "accept:health",
+   "note": ""
+  },
+  {
+   "name": "vehicle-minimal",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":5,\"fix\":false}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "vehicle-full-report",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":123456,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"bearing\":250.5,\"speed\":13.89,\"acc\":4.5,\"age_ms\":120,\"src\":\"gnss\",\"hdg\":\"ok\"}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "vehicle-exactly-512-bytes",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"fix\":true,\"lat\":35.11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111}",
+   "expect": "accept:vehicle",
+   "note": "the size limit is inclusive"
+  },
+  {
+   "name": "method-'get'",
+   "method": "get",
+   "target": "/status",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "method-'HEAD'",
+   "method": "HEAD",
+   "target": "/status",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "method-'PUT'",
+   "method": "PUT",
+   "target": "/status",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "method-'DELETE'",
+   "method": "DELETE",
+   "target": "/status",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "method-'OPTIONS'",
+   "method": "OPTIONS",
+   "target": "/status",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "method-'GET '",
+   "method": "GET ",
+   "target": "/status",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "method-''",
+   "method": "",
+   "target": "/status",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "method-None",
+   "method": null,
+   "target": "/status",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-empty",
+   "method": "GET",
+   "target": "",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-null",
+   "method": "GET",
+   "target": null,
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-not-absolute",
+   "method": "GET",
+   "target": "status",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-double-slash",
+   "method": "GET",
+   "target": "//status",
+   "body": null,
+   "expect": "reject",
+   "note": "network-path reference"
+  },
+  {
+   "name": "target-absolute-url",
+   "method": "GET",
+   "target": "http://127.0.0.1:8765/status",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-asterisk",
+   "method": "GET",
+   "target": "*",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-too-long",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=T&x=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-8193-bytes",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=T&x=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-space-in-query",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=T&x=a b",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-space-in-status",
+   "method": "GET",
+   "target": "/status ",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-tab-in-query",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=T&x=a\tb",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-tab-in-status",
+   "method": "GET",
+   "target": "/status\t",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-cr-in-query",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=T&x=a\rb",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-cr-in-status",
+   "method": "GET",
+   "target": "/status\r",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-lf-in-query",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=T&x=a\nb",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-lf-in-status",
+   "method": "GET",
+   "target": "/status\n",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-nul-in-query",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=T&x=a\u0000b",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-nul-in-status",
+   "method": "GET",
+   "target": "/status\u0000",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-del-in-query",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=T&x=ab",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-del-in-status",
+   "method": "GET",
+   "target": "/status",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-non-ascii-in-query",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=T&x=aéb",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-non-ascii-in-status",
+   "method": "GET",
+   "target": "/statusé",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-ideographic-space-in-query",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=T&x=a　b",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-ideographic-space-in-status",
+   "method": "GET",
+   "target": "/status　",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-fragment",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B#frag",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "target-backslash",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?a=b\\c",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-wrong-profile",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving/139.7671,35.6812;139.7016,35.6580?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "reject",
+   "note": "only driving-traffic is carried"
+  },
+  {
+   "name": "route-prefix-without-slash",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-empty-segment",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-dot-segment",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/.?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-dotdot-segment",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/..?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "reject",
+   "note": "would climb out of the allowed path in a normalising server"
+  },
+  {
+   "name": "route-dotdot-in-path",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580/../../status?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-one-point",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "reject",
+   "note": "an origin and a destination are required"
+  },
+  {
+   "name": "route-words",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/tokyo;shibuya?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-space-in-segment",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812; 139.7016,35.6580?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-percent-in-path",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671%2C35.6812;139.7016,35.6580?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-double-slash-in-path",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580//x?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-slash-in-segment",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580/extra?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-trailing-slash",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580/?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-semicolon-at-end",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580;?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-segment-257",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200;139.766500,35.681200000000?access_token=T",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-no-query",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-empty-query",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-post",
+   "method": "POST",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": "",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-get-with-body",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": "x",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-uppercase-path",
+   "method": "GET",
+   "target": "/DIRECTIONS/V5/MAPBOX/DRIVING-TRAFFIC/139.7671,35.6812;139.7016,35.6580?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "route-nan-coordinates",
+   "method": "GET",
+   "target": "/directions/v5/mapbox/driving-traffic/nan,nan;inf,inf?access_token=TOKEN&geometries=geojson&steps=true&overview=full&banner_instructions=true&alternatives=true&bearings=250%2C90%3B",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "status-query",
+   "method": "GET",
+   "target": "/status?x=1",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "status-empty-query",
+   "method": "GET",
+   "target": "/status?",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "status-trailing-slash",
+   "method": "GET",
+   "target": "/status/",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "status-capitalised",
+   "method": "GET",
+   "target": "/Status",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "status-percent-encoded",
+   "method": "GET",
+   "target": "/statu%73",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "status-post",
+   "method": "POST",
+   "target": "/status",
+   "body": "",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "status-get-with-body",
+   "method": "GET",
+   "target": "/status",
+   "body": "x",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "status-subpath",
+   "method": "GET",
+   "target": "/status/x",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "status-prefix-only",
+   "method": "GET",
+   "target": "/statusz",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "health-query",
+   "method": "GET",
+   "target": "/health?x=1",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "health-empty-query",
+   "method": "GET",
+   "target": "/health?",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "health-trailing-slash",
+   "method": "GET",
+   "target": "/health/",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "health-capitalised",
+   "method": "GET",
+   "target": "/Health",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "health-percent-encoded",
+   "method": "GET",
+   "target": "/healt%68",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "health-post",
+   "method": "POST",
+   "target": "/health",
+   "body": "",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "health-get-with-body",
+   "method": "GET",
+   "target": "/health",
+   "body": "x",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "health-subpath",
+   "method": "GET",
+   "target": "/health/x",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "health-prefix-only",
+   "method": "GET",
+   "target": "/healthz",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "other-path",
+   "method": "GET",
+   "target": "/api/navigation",
+   "body": null,
+   "expect": "reject",
+   "note": "the Galaxy path is not carried in this direction"
+  },
+  {
+   "name": "other-path-v1-vehicle-get",
+   "method": "GET",
+   "target": "/v1/vehicle",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "other-path-root",
+   "method": "GET",
+   "target": "/",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "other-path-metrics",
+   "method": "GET",
+   "target": "/metrics",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-get",
+   "method": "GET",
+   "target": "/v1/vehicle",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-get-with-valid-body",
+   "method": "GET",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":5,\"fix\":false}",
+   "expect": "reject",
+   "note": "the method is part of the shape"
+  },
+  {
+   "name": "vehicle-unknown-numeric-key",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"fix\":false,\"cmd\":1}",
+   "expect": "reject",
+   "note": "a key outside the contract is refused whatever its value"
+  },
+  {
+   "name": "vehicle-query",
+   "method": "POST",
+   "target": "/v1/vehicle?x=1",
+   "body": "{\"v\":1,\"seq\":5,\"fix\":false}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-trailing-slash",
+   "method": "POST",
+   "target": "/v1/vehicle/",
+   "body": "{\"v\":1,\"seq\":5,\"fix\":false}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-empty-body",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-null-body",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": null,
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-513-bytes",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"fix\":false,\"lat\":11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-not-json",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "v=1&seq=2",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-array",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "[{\"v\":1}]",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-empty-object",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-nested-object",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"fix\":{\"a\":1}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-array-value",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"fix\":[1]}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-null-value",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"fix\":null}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-duplicate-key",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"seq\":2,\"fix\":false}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-unknown-key",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"fix\":false,\"cmd\":\"x\"}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-nan",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"fix\":true,\"lat\":NaN}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-infinity",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"fix\":true,\"lat\":Infinity}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-huge-exponent",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"fix\":true,\"lat\":1e999}",
+   "expect": "reject",
+   "note": "parses to infinity"
+  },
+  {
+   "name": "vehicle-version-missing",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"seq\":1,\"fix\":false}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-version-2",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":2,\"seq\":1,\"fix\":false}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-version-string",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":\"1\",\"seq\":1,\"fix\":false}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-version-true",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":true,\"seq\":1,\"fix\":false}",
+   "expect": "reject",
+   "note": "True == 1 in Python: the type is checked too"
+  },
+  {
+   "name": "vehicle-word-too-long",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"fix\":false,\"src\":\"aaaaaaaaaaaaaaaaa\"}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-word-with-space",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"fix\":false,\"src\":\"a b\"}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-word-empty",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"fix\":false,\"src\":\"\"}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-number-as-text",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"fix\":true,\"lat\":\"35.6\"}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-word-as-number",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"fix\":false,\"src\":7}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-non-ascii",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\"fix\":false,\"src\":\"é\"}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "vehicle-control-char",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":1,\n\"fix\":false}",
+   "expect": "reject",
+   "note": "a newline is not printable ASCII"
+  },
+  {
+   "name": "vehicle-utf8-bom",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "﻿{\"v\":1,\"seq\":5,\"fix\":false}",
+   "expect": "reject",
+   "note": ""
+  }
+ ]
+}

@@ -1,0 +1,131 @@
+{
+ "version": 1,
+ "job_id": "0123456789abcdef0123456789abcdef",
+ "cases": [
+  {
+   "name": "middle-chunk",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/0?last=0&status=200&encoding=gzip",
+   "expect": "accept"
+  },
+  {
+   "name": "middle-chunk-xz",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/7?last=0&status=200&encoding=xz",
+   "expect": "accept"
+  },
+  {
+   "name": "last-chunk",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/3?last=1&status=200&encoding=gzip&size=10&sha256=0000000000000000000000000000000000000000000000000000000000000000",
+   "expect": "accept"
+  },
+  {
+   "name": "last-chunk-503-identity",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/0?last=1&status=503&encoding=identity&size=10&sha256=0000000000000000000000000000000000000000000000000000000000000000",
+   "expect": "accept"
+  },
+  {
+   "name": "sequence-six-digits",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/999999?last=0&status=200&encoding=gzip",
+   "expect": "accept"
+  },
+  {
+   "name": "sequence-seven-digits",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/1000000?last=0&status=200&encoding=gzip",
+   "expect": "reject"
+  },
+  {
+   "name": "sequence-negative",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/-1?last=0&status=200&encoding=gzip",
+   "expect": "reject"
+  },
+  {
+   "name": "id-short",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcde/0?last=0&status=200&encoding=gzip",
+   "expect": "reject"
+  },
+  {
+   "name": "id-uppercase",
+   "target": "/_bridge/sidecar/chunk/0123456789ABCDEF0123456789ABCDEF/0?last=0&status=200&encoding=gzip",
+   "expect": "reject"
+  },
+  {
+   "name": "no-query",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/0",
+   "expect": "reject"
+  },
+  {
+   "name": "last-without-size",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/0?last=1&status=200&encoding=gzip",
+   "expect": "reject"
+  },
+  {
+   "name": "middle-with-size",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/0?last=0&status=200&encoding=gzip&size=10&sha256=0000000000000000000000000000000000000000000000000000000000000000",
+   "expect": "reject"
+  },
+  {
+   "name": "keys-reordered",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/0?status=200&last=0&encoding=gzip",
+   "expect": "reject"
+  },
+  {
+   "name": "extra-key",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/0?last=0&status=200&encoding=gzip&x=1",
+   "expect": "reject"
+  },
+  {
+   "name": "repeated-key",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/0?last=0&last=0&status=200&encoding=gzip",
+   "expect": "reject"
+  },
+  {
+   "name": "status-302",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/0?last=0&status=302&encoding=gzip",
+   "expect": "reject"
+  },
+  {
+   "name": "status-two-digits",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/0?last=0&status=20&encoding=gzip",
+   "expect": "reject"
+  },
+  {
+   "name": "encoding-unknown",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/0?last=0&status=200&encoding=br",
+   "expect": "reject"
+  },
+  {
+   "name": "last-two",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/0?last=2&status=200&encoding=gzip",
+   "expect": "reject"
+  },
+  {
+   "name": "sha-short",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/0?last=1&status=200&encoding=gzip&size=10&sha256=000000000000000000000000000000000000000000000000000000000000000",
+   "expect": "reject"
+  },
+  {
+   "name": "sha-uppercase",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/0?last=1&status=200&encoding=gzip&size=10&sha256=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+   "expect": "reject"
+  },
+  {
+   "name": "size-nine-digits",
+   "target": "/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/0?last=1&status=200&encoding=gzip&size=123456789&sha256=0000000000000000000000000000000000000000000000000000000000000000",
+   "expect": "reject"
+  },
+  {
+   "name": "wrong-path-prefix",
+   "target": "/_bridge/sidecar/chunks/0123456789abcdef0123456789abcdef/0?last=0&status=200&encoding=gzip",
+   "expect": "reject"
+  },
+  {
+   "name": "path-traversal",
+   "target": "/_bridge/sidecar/chunk/../0123456789abcdef0123456789abcdef/0?last=0&status=200&encoding=gzip",
+   "expect": "reject"
+  },
+  {
+   "name": "not-a-string",
+   "target": null,
+   "expect": "reject"
+  }
+ ]
+}
