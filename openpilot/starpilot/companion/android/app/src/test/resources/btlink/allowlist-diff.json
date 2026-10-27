@@ -3920,6 +3920,2806 @@
 "body": "{\"v\":1,\"seq\":1,\"x\":[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]}",
 "ok": false,
 "shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":[1],\"tigh t\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"future\":[],\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{{v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"a-b\":null}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkkk\":{}}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":1.5,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":\u00c3\u00a9true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16,\"1k\":\"on\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"re\"sume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":\"x\",\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"se1q\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":[],\"ta\":\"wait\",\"mt\":\"e,nd of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLef[t\",\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":\"end of road\",\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpL-ft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"l\u00c3\u00a9ft\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":0,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"1k\":60001}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"lat\":true,\"ctl\":false,\"[a\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkkk\":5000,\"\":\"aaaaaaaaaaaaaaaaaaaaaaaaa\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"future\":\"1a\",\"kkkkkkkkkkkkkkkkk\":null}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ta\":5000,\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkk\":60000}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"future\":\"a_b\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"t\"a\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wai[t\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"\":0}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\n\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkk\":\"a_b\",\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1]\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":1.5,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":[],\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":-1,\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"x1\":\"on\"}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"Bad\":1}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"1eq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"shar{Left\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkkk\":[]}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"ctl\":false}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true,\"1k\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"[ge_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"Bad\":\"end of road\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkkk\":1.5,\"1k\":\"aaaaaaaaaaaaaaaaaaaaaaaa\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":60000,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkk\":60000}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":[],\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\"\u00c3\u00a9true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkkk\":\"aaaaaaaaaaaaaaaaaaaaaaaaa\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"mage\":1e+300,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":\"1a\",\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true,\"1k\":\"end of road\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":tr,ue,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":{\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":tru\ne,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":\"\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":fals[,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"\":60001}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":[],\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"a-b\":5000,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\"}true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkk\":-1}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":false,\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"Bad\":100001}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":2811\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkkk\":100001}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,{seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkk\":60001}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":fals[,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\"::,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true,\"Bad\":0,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkk\":[]}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"future\":\"end of road\",\"x1\":\"aaaaaaaaaaaaaaaaaaaaaaaa\"}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"x1\":\"a_b\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"a-b\":1}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"1k\":\"end of road\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpL}ft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkk\":2.0}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",]lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkkk\":1e+300}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"kkkkkkkkkkkkkkkk\":60001}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":\"aaaaaaaaaaaaaaaaaaaaaaaa\",\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"Bad\":5000,\"kkkkkkkkkkkkkkkkk\":[1]}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen{:true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\"[,\"lat\":true,\"ctl\":1e+300,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\u00c3\u00a9\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"Bad\":false,\"k0\":0}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"seen\":true,\"tight\":true,\"resume\":true,\"mt\":\"1a\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\": \"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkk\":[1],\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"ctl\":false,\"ta\":\"wait\",\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"a-b\":[1]}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true,\"Bad\":100000}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"future\":{}}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\",:\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkkk\":\"aaaaaaaaaaaaaaaaaaaaaaaa\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\n\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"\":60000,\"k0\":0}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"aaaaaaaaaaaaaaaaaaaaaaaa\",\"md\":281,\"mage\":40,\"seen\":true,\":tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait-\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139{.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"1k\":[]}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16,\"\":[],\"x1\":100001}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"sig\":\"left]\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"re:sume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of ro\u00c3\u00a9ad\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":\"x\",\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":\"Left\",\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"resume\":true,\"tight\":\"left\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"1k\":-1}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"\":100001}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"s[een\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":\"on\",\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"\":\"Left\",\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":1e+300,\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":false,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\"{,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"Bad\":[]}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"a_b\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"1esume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"future\":true,\"a-b\":\"a_b\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":100001,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":null,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true,\"mage\":5000}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":tr,e,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true,\"\":\"Left\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"kkkkkkkkkkkkkkkk\":\"Left\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"1k\":1e+300}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":{\"a\":1},\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15,\"k16\":16}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":\"Left\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true[,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":-1}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":\",\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":1e+300,\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":60000,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":tru,,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":[1],\"ctl\":false,\"ta\":\"wait\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"x1\":2.0}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkk\":[1]}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkk\":1}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":},\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"1k\":-1}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true},\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":5001,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"mage\":40,\"seen\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkkk\":-1}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of \"road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"x\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"a-b\":\"Left\",\"Bad\":60001}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"a-b\":false}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkk\":\"a_b\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat}:true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":{},\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"Bad\":\"1a\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":[1],\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":[1],\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"s:een\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"a}ge_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"\":\"end of road\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"f,x\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"1k\":\"x\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"md\":1.5,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"future\":1.5}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"Bad\":60001,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,{\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"kkkkkkkkkkkkkkkk\":\"aaaaaaaaaaaaaaaaaaaaaaaaa\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14,\"k15\":15}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":5001,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"1a\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":{},\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of ro\u00c3\u00a9d\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":\"aaaaaaaaaaaaaaaaaaaaaaaaa\",\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1.5,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"1k\":\"\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"t:ight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":\"aaaaaaaaaaaaaaaaaaaaaaaaa\",\"sig[:\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\n\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":2.0,\"resume\":true,\"1k\":\"1a\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"future\":5001}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\"\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":[],\"resume\":true,\"1k\":1e+300}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":100001,\"md\":281,\"mage\":40,\"seen\":true,\"tight\":5001,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":[1],\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road{\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"future\":\"Left\"}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":0,\"resume\":true,\"kkkkkkkkkkkkkkkk\":\"1a\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"x1\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":{\"a\":1},\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"Bad\":\"x\",\"1k\":[1]}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"ma]e\":40,\"seen\":true,\"tight\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"future\":\"1a\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat:\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"future\":5001}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":[1],\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"t:ight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"x1\":\"turn\"}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":null,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":100000,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"\":5001}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"1a\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":211,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"x1\":\"1a\"}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":\"on\",\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\"\n:\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"Bad\":5000}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":null,\"ctl\":false,\"ta\":\"wait\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"age_ms\":80,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": false,
+"shape": null
+},
+{
+"method": "POST",
+"target": "/v1/vehicle",
+"body": "{\"v\":1,\"seq\":5,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"lat\":true,\"ctl\":false,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":281,\"mage\":40,\"seen\":true,\"tight\":true,\"resume\":true}}",
+"ok": true,
+"shape": "vehicle"
 }
 ]
 }

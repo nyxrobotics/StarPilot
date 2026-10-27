@@ -20,12 +20,12 @@ internal enum class Shape(val wire: String) { ROUTE("route"), STATUS("status"), 
 
 /**
  * The allow-list (docs/dev/bluetooth-link.md section 5.1): exactly four request shapes, one rule, enforced at the comma entrance, here before anything touches
- * `127.0.0.1:8765`, and by the route API itself. The JSON vectors of `tools/fixtures/btlab/contract/allowlist.json` (119 cases) are the test of this port.
+ * `127.0.0.1:8765`, and by the route API itself. The JSON vectors of `tools/fixtures/btlab/contract/allowlist.json` (version 2, 273 cases) are the test of this port.
  *
  *     route    GET  /directions/v5/mapbox/driving-traffic/<coordinates>?<query>
  *     status   GET  /status
  *     health   GET  /health
- *     vehicle  POST /v1/vehicle   (one flat JSON object of at most 512 bytes)
+ *     vehicle  POST /v1/vehicle   (one JSON object of at most 512 bytes; since contract version 2 it may carry the beacon's `nav` object)
  */
 internal object Allowlist {
     const val ROUTE_PREFIX = "/directions/v5/mapbox/driving-traffic/"
@@ -33,6 +33,19 @@ internal object Allowlist {
     const val MAX_SEGMENT_CHARS = 256
     const val MAX_VEHICLE_BODY = 512
     private const val MAX_WORD = 16
+    const val NAV_KEY = "nav"
+    private const val NAV_MAX_AGE_MS = 60_000L
+    private const val NAV_MAX_DISTANCE_M = 100_000L
+    private const val NAV_MAX_FRAME_AGE_MS = 5_000L
+    private const val NAV_MAX_KEYS = 16
+    private val NAV_SIGNALS = setOf("left", "right", "off", "both")
+    private val NAV_TURN_STATES = setOf("off", "stop", "lat", "fast", "none", "far", "wait", "blind", "on")
+    /** `mt`, `mm`: letters, space and hyphen, at most 24 characters. */
+    private val NAV_LABEL = Regex("[A-Za-z][A-Za-z -]{0,23}")
+    /** The name of a key of `nav` that this contract does not know: ignored by every receiver, carried only when it is this small and its value is flat. */
+    private val NAV_OTHER_KEY = Regex("[a-z][a-z0-9_]{0,15}")
+    private val NAV_ONLY_TRUE = setOf("seen", "tight", "resume")
+    private val NAV_GROUP = listOf("mt", "mm", "md", "mage")
     private val WORD_KEYS = setOf("src", "hdg")
     /** The keys of the beacon contract (`BODY_KEYS` of the comma's `sidecar_beacon.py`); a report with any other key is not carried. */
     val VEHICLE_KEYS = setOf("v", "seq", "fix", "lat", "lon", "bearing", "speed", "acc", "age_ms", "src", "vego", "dr_s", "hdg", "hdg_sig", "hold", "prev", "snap_m")
@@ -76,7 +89,7 @@ internal object Allowlist {
         return refuse("path")
     }
 
-    /** "" for a body that the vehicle shape may carry, else the first reason: one flat JSON object of printable ASCII, at most 512 bytes, only contract keys, finite numbers. */
+    /** "" for a body that the vehicle shape may carry, else the first reason: one JSON object of printable ASCII, at most 512 bytes, only contract keys, flat but for the `nav` object, finite numbers. */
     fun vehicleBodyProblem(body: ByteArray): String {
         if (body.size !in 1..MAX_VEHICLE_BODY) return "vehicle body size"
         if (body.any { it > 0x7E || it < 0x20 }) return "vehicle body is not printable ASCII"
@@ -86,6 +99,11 @@ internal object Allowlist {
         val version = value["v"]
         if (version !is StrictJson.Num || !version.isInteger || version.text != "1") return "vehicle body version"
         for ((key, item) in value.members) {
+            if (key == NAV_KEY) {
+                val reason = navProblem(item)
+                if (reason.isNotEmpty()) return reason
+                continue
+            }
             if (key !in VEHICLE_KEYS) return "vehicle body key"
             if (key in WORD_KEYS) {
                 if (item is String && item.length in 1..MAX_WORD && item.all { it in '0'..'9' || it in 'a'..'z' || it in 'A'..'Z' }) continue
@@ -102,6 +120,46 @@ internal object Allowlist {
                 else -> return "vehicle body value"
             }
         }
+        return ""
+    }
+
+    private fun integerIn(item: Any?, low: Long, high: Long): Boolean = item is StrictJson.Num && item.toLongOrNull()?.let { it in low..high } == true
+
+    /**
+     * "" for a `nav` object that the vehicle shape may carry, else the first reason (contract version 2; the reference is `nav_problem` of `tools/btlab/contract/allowlist.py`).
+     * `v` is the integer 1 and `age_ms` an integer 0..60000 (both required); the known keys have exactly the types and bounds of the beacon's nav contract; `mt`, `mm`, `md` and
+     * `mage` come together or not at all; a key the contract does not know is ignored (a later sender's key never costs the position) and carried only when its name is small and
+     * its value is a boolean, a number or a short word; at most 16 keys; the whole body stays within the 512 bytes of the shape.
+     */
+    fun navProblem(nav: Any?): String {
+        if (nav !is StrictJson.Obj || nav.members.isEmpty() || nav.members.size > NAV_MAX_KEYS) return "nav is not a small object"
+        if (nav.duplicateKey) return "vehicle body is not a clean JSON object"
+        val version = nav["v"]
+        if (version !is StrictJson.Num || !version.isInteger || version.text != "1") return "nav version"
+        if (!integerIn(nav["age_ms"], 0, NAV_MAX_AGE_MS)) return "nav age_ms"
+        for ((key, item) in nav.members) {
+            val ok = when (key) {
+                "v", "age_ms" -> true
+                "sig" -> item is String && item in NAV_SIGNALS
+                "ta" -> item is String && item in NAV_TURN_STATES
+                "lat", "ctl" -> item is Boolean
+                "mt", "mm" -> item is String && NAV_LABEL.matches(item)
+                "md" -> integerIn(item, 0, NAV_MAX_DISTANCE_M)
+                "mage" -> integerIn(item, 0, NAV_MAX_FRAME_AGE_MS)
+                in NAV_ONLY_TRUE -> item == true
+                else -> {
+                    if (!NAV_OTHER_KEY.matches(key)) return "nav key"
+                    when (item) {
+                        is Boolean -> true
+                        is StrictJson.Num -> item.isInteger || item.toDoubleOrNull()?.let { it.isFinite() } == true
+                        is String -> NAV_LABEL.matches(item)
+                        else -> false
+                    }
+                }
+            }
+            if (!ok) return "nav value"
+        }
+        if (NAV_GROUP.map { nav.has(it) }.distinct().size != 1) return "nav manoeuvre group"
         return ""
     }
 }

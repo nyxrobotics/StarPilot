@@ -1,5 +1,5 @@
 {
- "version": 1,
+ "version": 2,
  "note": "hand-written expectations; see tools/btlab/contract/vectors.py",
  "cases": [
   {
@@ -951,6 +951,1238 @@
    "method": "POST",
    "target": "/v1/vehicle",
    "body": "﻿{\"v\":1,\"seq\":5,\"fix\":false}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-typical",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":4040,\"fix\":true,\"lat\":35.679077,\"lon\":139.650375,\"bearing\":359.7,\"speed\":8.0,\"acc\":4.7,\"age_ms\":80,\"hdg\":\"converging\",\"hdg_sig\":3.6,\"nav\":{\"v\":1,\"age_ms\":0,\"sig\":\"off\",\"lat\":true,\"ctl\":true,\"ta\":\"far\",\"mt\":\"turn\",\"mm\":\"right\",\"md\":281,\"mage\":0}}",
+   "expect": "accept:vehicle",
+   "note": "the body of the end-to-end drive of the nav fields note"
+  },
+  {
+   "name": "nav-minimal",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120}}",
+   "expect": "accept:vehicle",
+   "note": "only v and age_ms are required"
+  },
+  {
+   "name": "nav-without-a-position",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\"}}",
+   "expect": "accept:vehicle",
+   "note": "the signal does not depend on GNSS: fix false with nav"
+  },
+  {
+   "name": "nav-widest-keys",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":2147483647,\"fix\":true,\"lat\":-35.123456,\"lon\":-139.123456,\"bearing\":359.99,\"speed\":99.99,\"acc\":9999.9,\"age_ms\":59999,\"src\":\"recovering\",\"vego\":99.99,\"dr_s\":86399.9,\"hdg\":\"converging\",\"hdg_sig\":359.9,\"hold\":true,\"prev\":true,\"snap_m\":100000,\"nav\":{\"v\":1,\"age_ms\":1500,\"sig\":\"both\",\"lat\":false,\"ctl\":false,\"ta\":\"blind\",\"mt\":\"end of road\",\"mm\":\"sharpRight\",\"md\":100000,\"mage\":5000,\"seen\":true,\"tight\":true,\"resume\":true}}",
+   "expect": "accept:vehicle",
+   "note": "every key of the contract at its widest value"
+  },
+  {
+   "name": "nav-widest-454-bytes",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":2147483647,\"fix\":true,\"lat\":-35.123456,\"lon\":-139.123456,\"bearing\":359.99,\"speed\":99.99,\"acc\":9999.99999999999999999999999999,\"age_ms\":59999,\"src\":\"recovering\",\"vego\":99.99,\"dr_s\":86399.9,\"hdg\":\"converging\",\"hdg_sig\":359.9,\"hold\":true,\"prev\":true,\"snap_m\":100000,\"nav\":{\"v\":1,\"age_ms\":1500,\"sig\":\"both\",\"lat\":false,\"ctl\":false,\"ta\":\"blind\",\"mt\":\"end of road\",\"mm\":\"sharpRight\",\"md\":100000,\"mage\":5000,\"seen\":true,\"tight\":true,\"resume\":true}}",
+   "expect": "accept:vehicle",
+   "note": "the biggest body the sender can build (the sender's own bound: 454)"
+  },
+  {
+   "name": "nav-age-0",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":0}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-age-60000",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":60000}}",
+   "expect": "accept:vehicle",
+   "note": "the reader's bound is inclusive"
+  },
+  {
+   "name": "nav-sig-left",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\"}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-sig-right",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"right\"}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-sig-off",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"off\"}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-sig-both",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"both\"}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-ta-off",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ta\":\"off\"}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-ta-stop",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ta\":\"stop\"}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-ta-lat",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ta\":\"lat\"}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-ta-fast",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ta\":\"fast\"}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-ta-none",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ta\":\"none\"}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-ta-far",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ta\":\"far\"}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-ta-wait",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ta\":\"wait\"}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-ta-blind",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ta\":\"blind\"}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-ta-on",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ta\":\"on\"}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-lat-true",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"lat\":true}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-lat-false",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"lat\":false}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-ctl-true",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ctl\":true}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-ctl-false",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ctl\":false}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-seen-true",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"seen\":true}}",
+   "expect": "accept:vehicle",
+   "note": "an only-ever-true flag"
+  },
+  {
+   "name": "nav-tight-true",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"tight\":true}}",
+   "expect": "accept:vehicle",
+   "note": "an only-ever-true flag"
+  },
+  {
+   "name": "nav-resume-true",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"resume\":true}}",
+   "expect": "accept:vehicle",
+   "note": "an only-ever-true flag"
+  },
+  {
+   "name": "nav-manoeuvre-md-0-mage-0",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"md\":0,\"mage\":0}}",
+   "expect": "accept:vehicle",
+   "note": "the bounds are inclusive"
+  },
+  {
+   "name": "nav-manoeuvre-md-100000-mage-5000",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"md\":100000,\"mage\":5000}}",
+   "expect": "accept:vehicle",
+   "note": "the bounds are inclusive"
+  },
+  {
+   "name": "nav-label-with-space-and-hyphen",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"end of road\",\"mm\":\"slight-left\",\"md\":50,\"mage\":10}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-label-24-characters",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"aaaaaaaaaaaaaaaaaaaaaaaa\",\"mm\":\"right\",\"md\":50,\"mage\":10}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-unknown-key-flag",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"future_flag\":true}}",
+   "expect": "accept:vehicle",
+   "note": "a key of a later sender is ignored, not refused (the LAN receiver ignores it too)"
+  },
+  {
+   "name": "nav-unknown-key-number",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"lane\":2,\"gap\":1.5}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-unknown-key-word",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"road\":\"highway\"}}",
+   "expect": "accept:vehicle",
+   "note": ""
+  },
+  {
+   "name": "nav-16-keys",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13}}",
+   "expect": "accept:vehicle",
+   "note": "v, age_ms and 14 more: the key limit is inclusive"
+  },
+  {
+   "name": "nav-exactly-512-bytes",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"k0\":0.1111111111111111111111111111111111111111,\"k1\":0.1111111111111111111111111111111111111111,\"k2\":0.1111111111111111111111111111111111111111,\"k3\":0.1111111111111111111111111111111111111111,\"k4\":0.1111111111111111111111111111111111111111,\"k5\":0.1111111111111111111111111111111111111111,\"k6\":0.1111111111111111111111111111111111111111,\"k7\":0.1111111111111111111111111111111111111111,\"k8\":0.1111111111111111111111111111111111111111,\"k9\":0.111111111111111111}}",
+   "expect": "accept:vehicle",
+   "note": "the size limit counts the nav object and is inclusive"
+  },
+  {
+   "name": "nav-is-null",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":null}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-is-array",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":[1]}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-is-string",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":\"x\"}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-is-number",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":1}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-is-true",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":true}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-is-empty-object",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-twice",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120},\"nav\":{\"v\":1,\"age_ms\":120}}",
+   "expect": "reject",
+   "note": "a duplicate key"
+  },
+  {
+   "name": "nav-key-in-capitals",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"NAV\":{\"v\":1,\"age_ms\":120}}",
+   "expect": "reject",
+   "note": "an unknown top-level key"
+  },
+  {
+   "name": "nav-key-in-capitals-flat",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"NAV\":1}",
+   "expect": "reject",
+   "note": "the key is exact"
+  },
+  {
+   "name": "nav-17-keys",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"k0\":0,\"k1\":1,\"k2\":2,\"k3\":3,\"k4\":4,\"k5\":5,\"k6\":6,\"k7\":7,\"k8\":8,\"k9\":9,\"k10\":10,\"k11\":11,\"k12\":12,\"k13\":13,\"k14\":14}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-513-bytes",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"k0\":0.1111111111111111111111111111111111111111,\"k1\":0.1111111111111111111111111111111111111111,\"k2\":0.1111111111111111111111111111111111111111,\"k3\":0.1111111111111111111111111111111111111111,\"k4\":0.1111111111111111111111111111111111111111,\"k5\":0.1111111111111111111111111111111111111111,\"k6\":0.1111111111111111111111111111111111111111,\"k7\":0.1111111111111111111111111111111111111111,\"k8\":0.1111111111111111111111111111111111111111,\"k9\":0.1111111111111111111}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-version-missing",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"age_ms\":0}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-version-2",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":2,\"age_ms\":0}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-version-0",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":0,\"age_ms\":0}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-version-string",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":\"1\",\"age_ms\":0}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-version-true",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":true,\"age_ms\":0}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-version-float",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1.0,\"age_ms\":0}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-version-null",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":null,\"age_ms\":0}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-age-missing",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"sig\":\"off\"}}",
+   "expect": "reject",
+   "note": "an object without a reading age is no nav"
+  },
+  {
+   "name": "nav-age-minus-1",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":-1}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-age-60001",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":60001}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-age-float",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":1.5}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-age-float-zero",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":5.0}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-age-string",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":\"5\"}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-age-true",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":true}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-age-null",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":null}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-age-exponent",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":1e2}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-sig-capital",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"Left\"}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-sig-unknown",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"up\"}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-sig-number",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":1}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-sig-null",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":null}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-sig-empty",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"\"}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-sig-true",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":true}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-sig-with-space",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left \"}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-ta-capital",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ta\":\"ON\"}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-ta-unknown",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ta\":\"turn\"}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-ta-number",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ta\":1}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-ta-null",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ta\":null}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-ta-empty",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ta\":\"\"}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-lat-one",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"lat\":1}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-lat-zero",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"lat\":0}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-lat-string",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"lat\":\"true\"}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-lat-null",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"lat\":null}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-ctl-one",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ctl\":1}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-ctl-zero",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ctl\":0}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-ctl-string",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ctl\":\"true\"}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-ctl-null",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"ctl\":null}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-seen-false",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"seen\":false}}",
+   "expect": "reject",
+   "note": "only the literal true is a claim"
+  },
+  {
+   "name": "nav-seen-one",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"seen\":1}}",
+   "expect": "reject",
+   "note": "only the literal true is a claim"
+  },
+  {
+   "name": "nav-seen-string",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"seen\":\"true\"}}",
+   "expect": "reject",
+   "note": "only the literal true is a claim"
+  },
+  {
+   "name": "nav-seen-null",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"seen\":null}}",
+   "expect": "reject",
+   "note": "only the literal true is a claim"
+  },
+  {
+   "name": "nav-tight-false",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"tight\":false}}",
+   "expect": "reject",
+   "note": "only the literal true is a claim"
+  },
+  {
+   "name": "nav-tight-one",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"tight\":1}}",
+   "expect": "reject",
+   "note": "only the literal true is a claim"
+  },
+  {
+   "name": "nav-tight-string",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"tight\":\"true\"}}",
+   "expect": "reject",
+   "note": "only the literal true is a claim"
+  },
+  {
+   "name": "nav-tight-null",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"tight\":null}}",
+   "expect": "reject",
+   "note": "only the literal true is a claim"
+  },
+  {
+   "name": "nav-resume-false",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"resume\":false}}",
+   "expect": "reject",
+   "note": "only the literal true is a claim"
+  },
+  {
+   "name": "nav-resume-one",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"resume\":1}}",
+   "expect": "reject",
+   "note": "only the literal true is a claim"
+  },
+  {
+   "name": "nav-resume-string",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"resume\":\"true\"}}",
+   "expect": "reject",
+   "note": "only the literal true is a claim"
+  },
+  {
+   "name": "nav-resume-null",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"resume\":null}}",
+   "expect": "reject",
+   "note": "only the literal true is a claim"
+  },
+  {
+   "name": "nav-group-without-mt",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mm\":\"left\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": "mt, mm, md and mage come together or not at all"
+  },
+  {
+   "name": "nav-group-without-mm",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": "mt, mm, md and mage come together or not at all"
+  },
+  {
+   "name": "nav-group-without-md",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"mage\":10}}",
+   "expect": "reject",
+   "note": "mt, mm, md and mage come together or not at all"
+  },
+  {
+   "name": "nav-group-without-mage",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"md\":50}}",
+   "expect": "reject",
+   "note": "mt, mm, md and mage come together or not at all"
+  },
+  {
+   "name": "nav-group-only-md",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"md\":50}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-md-minus-1",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"md\":-1,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-md-100001",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"md\":100001,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-md-float",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"md\":50.5,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-md-float-zero",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"md\":50.0,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-md-string",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"md\":\"50\",\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-md-true",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"md\":true,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-md-null",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"md\":null,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mage-minus-1",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"md\":50,\"mage\":-1}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mage-5001",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"md\":50,\"mage\":5001}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mage-float",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"md\":50,\"mage\":1.5}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mage-string",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"md\":50,\"mage\":\"1\"}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mage-true",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"md\":50,\"mage\":true}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mage-null",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"left\",\"md\":50,\"mage\":null}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mt-starts-with-digit",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"1turn\",\"mm\":\"left\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mm-starts-with-digit",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"1turn\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mt-underscore",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"end_of_road\",\"mm\":\"left\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mm-underscore",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"end_of_road\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mt-25-characters",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"aaaaaaaaaaaaaaaaaaaaaaaaa\",\"mm\":\"left\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mm-25-characters",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"aaaaaaaaaaaaaaaaaaaaaaaaa\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mt-empty",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"\",\"mm\":\"left\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mm-empty",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mt-number",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":1,\"mm\":\"left\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mm-number",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":1,\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mt-null",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":null,\"mm\":\"left\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mm-null",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":null,\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mt-starts-with-space",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\" turn\",\"mm\":\"left\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mm-starts-with-space",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\" turn\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mt-starts-with-hyphen",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"-turn\",\"mm\":\"left\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mm-starts-with-hyphen",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"-turn\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mt-dot",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"a.b\",\"mm\":\"left\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mm-dot",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"a.b\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mt-quote-escape",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"a\\\"b\",\"mm\":\"left\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-mm-quote-escape",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"turn\",\"mm\":\"a\\\"b\",\"md\":50,\"mage\":10}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-unknown-key-object",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"future\":{\"a\":1}}}",
+   "expect": "reject",
+   "note": "an unknown key is ignored only when its value is flat and small"
+  },
+  {
+   "name": "nav-unknown-key-array",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"future\":[1]}}",
+   "expect": "reject",
+   "note": "an unknown key is ignored only when its value is flat and small"
+  },
+  {
+   "name": "nav-unknown-key-null",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"future\":null}}",
+   "expect": "reject",
+   "note": "an unknown key is ignored only when its value is flat and small"
+  },
+  {
+   "name": "nav-unknown-key-long-word",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"future\":\"aaaaaaaaaaaaaaaaaaaaaaaaa\"}}",
+   "expect": "reject",
+   "note": "an unknown key is ignored only when its value is flat and small"
+  },
+  {
+   "name": "nav-unknown-key-word-with-digit-first",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"future\":\"1a\"}}",
+   "expect": "reject",
+   "note": "an unknown key is ignored only when its value is flat and small"
+  },
+  {
+   "name": "nav-unknown-key-nan",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"future\":NaN}}",
+   "expect": "reject",
+   "note": "an unknown key is ignored only when its value is flat and small"
+  },
+  {
+   "name": "nav-unknown-key-infinity",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"future\":Infinity}}",
+   "expect": "reject",
+   "note": "an unknown key is ignored only when its value is flat and small"
+  },
+  {
+   "name": "nav-unknown-key-huge",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"future\":1e999}}",
+   "expect": "reject",
+   "note": "an unknown key is ignored only when its value is flat and small"
+  },
+  {
+   "name": "nav-key-capital",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"Future\":1}}",
+   "expect": "reject",
+   "note": "the name of an unknown key is small"
+  },
+  {
+   "name": "nav-key-starts-with-digit",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"1x\":1}}",
+   "expect": "reject",
+   "note": "the name of an unknown key is small"
+  },
+  {
+   "name": "nav-key-hyphen",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"a-b\":1}}",
+   "expect": "reject",
+   "note": "the name of an unknown key is small"
+  },
+  {
+   "name": "nav-key-17-characters",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"kkkkkkkkkkkkkkkkk\":1}}",
+   "expect": "reject",
+   "note": "the name of an unknown key is small"
+  },
+  {
+   "name": "nav-key-empty",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"\":1}}",
+   "expect": "reject",
+   "note": "the name of an unknown key is small"
+  },
+  {
+   "name": "nav-key-dot",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"a.b\":1}}",
+   "expect": "reject",
+   "note": "the name of an unknown key is small"
+  },
+  {
+   "name": "nav-nested-in-nav",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"nav\":{\"v\":1,\"age_ms\":0}}}",
+   "expect": "reject",
+   "note": "no object inside an object"
+  },
+  {
+   "name": "nav-duplicate-key-inside",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"sig\":\"left\",\"sig\":\"right\"}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-nan-inside",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":NaN}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-with-a-bad-position-key",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"cmd\":1,\"nav\":{\"v\":1,\"age_ms\":0,\"sig\":\"off\",\"lat\":true,\"ctl\":true,\"ta\":\"far\",\"mt\":\"turn\",\"mm\":\"right\",\"md\":281,\"mage\":0}}",
+   "expect": "reject",
+   "note": "nav does not make an unknown top-level key pass"
+  },
+  {
+   "name": "nav-with-version-2-report",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":2,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":0,\"sig\":\"off\",\"lat\":true,\"ctl\":true,\"ta\":\"far\",\"mt\":\"turn\",\"mm\":\"right\",\"md\":281,\"mage\":0}}",
+   "expect": "reject",
+   "note": "the report's own v stays 1"
+  },
+  {
+   "name": "nav-get-with-body",
+   "method": "GET",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120}}",
+   "expect": "reject",
+   "note": ""
+  },
+  {
+   "name": "nav-non-ascii-label",
+   "method": "POST",
+   "target": "/v1/vehicle",
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":120,\"mt\":\"tür\",\"mm\":\"left\",\"md\":50,\"mage\":10}}",
    "expect": "reject",
    "note": ""
   }

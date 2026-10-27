@@ -311,7 +311,8 @@ class BleTransport(context: Context, private val key: ByteArray?, private val he
         override val pushKey: ByteArray get() = key ?: throw IOException("Not paired")
         override val pushSession: String get() = session
         override fun subscribe() { lane.control(LaneClass.SMALL, 12, "subscribe") }
-        override fun pushEnable(): Int = lane.call(LaneClass.SMALL, 10, laneRequest("POST", "/_bridge/push/enable"), label = "push-enable").optInt("status")
+        override val carriesNav: Boolean get() = features.pushNav
+        override fun pushEnable(): Int = lane.call(LaneClass.SMALL, 10, PushEnable.request(features.pushNav), label = "push-enable").optInt("status")
     }
 
     internal val jobsV2: Boolean get() = features.jobsV2 && open

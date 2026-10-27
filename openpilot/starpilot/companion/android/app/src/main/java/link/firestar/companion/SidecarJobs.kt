@@ -21,12 +21,13 @@ import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * What comma's bridge announces in `GET /_bridge/health` (docs/dev/bluetooth-link.md section 5.3 and the deviation of the bridge, bluetooth-comma-deploy.md): the flags
- * `poll2`, `results2` and `push`. **The flags decide, never `protocol`**: the iOS Galaxy app refuses a health `protocol` other than 1, so the bridge keeps 1 and adds
+ * `poll2`, `results2` and `push` (and, since contract version 2, `pushNav`: the push frames may carry the beacon's `nav` object to a phone that announces it in `push-enable`).
+ * **The flags decide, never `protocol`**: the iOS Galaxy app refuses a health `protocol` other than 1, so the bridge keeps 1 and adds
  * `sidecarProtocol` 2 next to the flags ([protocol] is the larger of the two, for the status page only). A bridge that has no flag, or an answer this reader does
  * not understand, is the old one: the old poll and chunk calls (the route worker's legacy path) keep working with it and nothing new is used (a new Companion on an old
  * bridge, and the old Companion on a new bridge, both work).
  */
-internal class BridgeFeatures(val protocol: Int, val poll2: Boolean, val results2: Boolean, val push: Boolean, val xz: Boolean) {
+internal class BridgeFeatures(val protocol: Int, val poll2: Boolean, val results2: Boolean, val push: Boolean, val xz: Boolean, val pushNav: Boolean = false) {
     /** Jobs by `poll2` and results with a status, an encoding and a digest. */
     val jobsV2: Boolean get() = poll2 && results2
 
@@ -38,7 +39,7 @@ internal class BridgeFeatures(val protocol: Int, val poll2: Boolean, val results
             fun level(name: String) = (value[name] as? StrictJson.Num)?.toLongOrNull()?.takeIf { it in 1..1000 }?.toInt() ?: 1
             fun flag(name: String) = value[name] == true
             // `xz` is announced only to switch it off: the bridge's interpreter has `lzma` (measured), and a refused `xz` result is a failed job, never a wrong route.
-            return BridgeFeatures(maxOf(level("protocol"), level("sidecarProtocol")), flag("poll2"), flag("results2"), flag("push"), value["xz"] != false)
+            return BridgeFeatures(maxOf(level("protocol"), level("sidecarProtocol")), flag("poll2"), flag("results2"), flag("push"), value["xz"] != false, flag("pushNav"))
         }
     }
 }

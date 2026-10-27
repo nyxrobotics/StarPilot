@@ -1,0 +1,111 @@
+{
+ "version": 1,
+ "note": "hand-written expectations; see tools/btlab/contract/vectors.py",
+ "cases": [
+  {
+   "name": "fix-age-grows",
+   "body": "{\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.679077,\"lon\":139.650375,\"bearing\":359.7,\"speed\":8.0,\"acc\":4.7,\"age_ms\":120}",
+   "add_ms": 250,
+   "expect": "{\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.679077,\"lon\":139.650375,\"bearing\":359.7,\"speed\":8.0,\"acc\":4.7,\"age_ms\":370}",
+   "note": ""
+  },
+  {
+   "name": "fix-zero-wait-is-unchanged",
+   "body": "{\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.679077,\"lon\":139.650375,\"bearing\":359.7,\"speed\":8.0,\"acc\":4.7,\"age_ms\":120}",
+   "add_ms": 0,
+   "expect": "{\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.679077,\"lon\":139.650375,\"bearing\":359.7,\"speed\":8.0,\"acc\":4.7,\"age_ms\":120}",
+   "note": ""
+  },
+  {
+   "name": "no-fix-no-age",
+   "body": "{\"v\":1,\"seq\":9,\"fix\":false}",
+   "add_ms": 250,
+   "expect": "{\"v\":1,\"seq\":9,\"fix\":false}",
+   "note": "a report without a fix has no age to grow"
+  },
+  {
+   "name": "fix-with-nav-all-ages-grow",
+   "body": "{\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.679077,\"lon\":139.650375,\"bearing\":359.7,\"speed\":8.0,\"acc\":4.7,\"age_ms\":120,\"nav\":{\"v\":1,\"age_ms\":30,\"sig\":\"left\",\"ctl\":true,\"ta\":\"wait\",\"mt\":\"turn\",\"mm\":\"left\",\"md\":120,\"mage\":400}}",
+   "add_ms": 250,
+   "expect": "{\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.679077,\"lon\":139.650375,\"bearing\":359.7,\"speed\":8.0,\"acc\":4.7,\"age_ms\":370,\"nav\":{\"v\":1,\"age_ms\":280,\"sig\":\"left\",\"ctl\":true,\"ta\":\"wait\",\"mt\":\"turn\",\"mm\":\"left\",\"md\":120,\"mage\":650}}",
+   "note": ""
+  },
+  {
+   "name": "no-fix-with-nav-nav-ages-grow",
+   "body": "{\"v\":1,\"seq\":9,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":30,\"sig\":\"left\",\"ctl\":true,\"ta\":\"wait\",\"mt\":\"turn\",\"mm\":\"left\",\"md\":120,\"mage\":400}}",
+   "add_ms": 250,
+   "expect": "{\"v\":1,\"seq\":9,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":280,\"sig\":\"left\",\"ctl\":true,\"ta\":\"wait\",\"mt\":\"turn\",\"mm\":\"left\",\"md\":120,\"mage\":650}}",
+   "note": "the signal has an age also without a position"
+  },
+  {
+   "name": "nav-without-manoeuvre",
+   "body": "{\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.679077,\"lon\":139.650375,\"bearing\":359.7,\"speed\":8.0,\"acc\":4.7,\"age_ms\":120,\"nav\":{\"v\":1,\"age_ms\":30,\"sig\":\"off\",\"lat\":true}}",
+   "add_ms": 700,
+   "expect": "{\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.679077,\"lon\":139.650375,\"bearing\":359.7,\"speed\":8.0,\"acc\":4.7,\"age_ms\":820,\"nav\":{\"v\":1,\"age_ms\":730,\"sig\":\"off\",\"lat\":true}}",
+   "note": "no mage: only nav.age_ms grows"
+  },
+  {
+   "name": "nav-mage-saturates-at-5000",
+   "body": "{\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.679077,\"lon\":139.650375,\"bearing\":359.7,\"speed\":8.0,\"acc\":4.7,\"age_ms\":120,\"nav\":{\"v\":1,\"age_ms\":30,\"sig\":\"left\",\"ctl\":true,\"ta\":\"wait\",\"mt\":\"turn\",\"mm\":\"left\",\"md\":120,\"mage\":4900}}",
+   "add_ms": 300,
+   "expect": "{\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.679077,\"lon\":139.650375,\"bearing\":359.7,\"speed\":8.0,\"acc\":4.7,\"age_ms\":420,\"nav\":{\"v\":1,\"age_ms\":330,\"sig\":\"left\",\"ctl\":true,\"ta\":\"wait\",\"mt\":\"turn\",\"mm\":\"left\",\"md\":120,\"mage\":5000}}",
+   "note": "as the sender saturates mage"
+  },
+  {
+   "name": "nav-mage-at-5000-stays",
+   "body": "{\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.679077,\"lon\":139.650375,\"bearing\":359.7,\"speed\":8.0,\"acc\":4.7,\"age_ms\":120,\"nav\":{\"v\":1,\"age_ms\":30,\"sig\":\"left\",\"ctl\":true,\"ta\":\"wait\",\"mt\":\"turn\",\"mm\":\"left\",\"md\":120,\"mage\":5000}}",
+   "add_ms": 1000,
+   "expect": "{\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.679077,\"lon\":139.650375,\"bearing\":359.7,\"speed\":8.0,\"acc\":4.7,\"age_ms\":1120,\"nav\":{\"v\":1,\"age_ms\":1030,\"sig\":\"left\",\"ctl\":true,\"ta\":\"wait\",\"mt\":\"turn\",\"mm\":\"left\",\"md\":120,\"mage\":5000}}",
+   "note": ""
+  },
+  {
+   "name": "nav-age-saturates-at-60000",
+   "body": "{\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.679077,\"lon\":139.650375,\"bearing\":359.7,\"speed\":8.0,\"acc\":4.7,\"age_ms\":120,\"nav\":{\"v\":1,\"age_ms\":59900,\"sig\":\"left\",\"ctl\":true,\"ta\":\"wait\",\"mt\":\"turn\",\"mm\":\"left\",\"md\":120,\"mage\":400}}",
+   "add_ms": 300,
+   "expect": "{\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.679077,\"lon\":139.650375,\"bearing\":359.7,\"speed\":8.0,\"acc\":4.7,\"age_ms\":420,\"nav\":{\"v\":1,\"age_ms\":60000,\"sig\":\"left\",\"ctl\":true,\"ta\":\"wait\",\"mt\":\"turn\",\"mm\":\"left\",\"md\":120,\"mage\":700}}",
+   "note": ""
+  },
+  {
+   "name": "nav-age-0-and-wait-0",
+   "body": "{\"v\":1,\"seq\":9,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":0}}",
+   "add_ms": 0,
+   "expect": "{\"v\":1,\"seq\":9,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":0}}",
+   "note": ""
+  },
+  {
+   "name": "nav-unknown-keys-and-order-are-kept",
+   "body": "{\"v\":1,\"seq\":9,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":5,\"future\":true,\"sig\":\"both\"}}",
+   "add_ms": 100,
+   "expect": "{\"v\":1,\"seq\":9,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":105,\"future\":true,\"sig\":\"both\"}}",
+   "note": ""
+  },
+  {
+   "name": "nav-first-in-the-body",
+   "body": "{\"nav\":{\"v\":1,\"age_ms\":5},\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.1,\"lon\":139.1,\"age_ms\":7}",
+   "add_ms": 10,
+   "expect": "{\"nav\":{\"v\":1,\"age_ms\":15},\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.1,\"lon\":139.1,\"age_ms\":17}",
+   "note": "order is kept as received"
+  },
+  {
+   "name": "no-fix-with-an-age-field-is-left",
+   "body": "{\"v\":1,\"seq\":9,\"fix\":false,\"age_ms\":50}",
+   "add_ms": 250,
+   "expect": "{\"v\":1,\"seq\":9,\"fix\":false,\"age_ms\":50}",
+   "note": "a report without a fix has no position age: a stray field is not touched"
+  },
+  {
+   "name": "nothing-to-age-is-byte-for-byte",
+   "body": "{\"v\": 1, \"seq\": 9, \"fix\": false}",
+   "add_ms": 250,
+   "expect": "{\"v\": 1, \"seq\": 9, \"fix\": false}",
+   "note": "a body that has nothing to age is returned as it came, spaces and all"
+  },
+  {
+   "name": "fix-without-age-field",
+   "body": "{\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.1,\"lon\":139.1}",
+   "add_ms": 250,
+   "expect": "{\"v\":1,\"seq\":9,\"fix\":true,\"lat\":35.1,\"lon\":139.1}",
+   "note": "a fix report without age_ms is not given one"
+  }
+ ]
+}

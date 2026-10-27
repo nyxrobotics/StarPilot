@@ -331,8 +331,9 @@ class VehiclePushTest {
 
     // ---- the receiver end to end, with a link, a clock and a POST that are injected -------------------------------------------------------
 
-    private class FakeLink(val key: ByteArray, val session: String, var enableStatus: Int = 200) : PushLink {
+    private class FakeLink(val key: ByteArray, val session: String, var enableStatus: Int = 200, var nav: Boolean = false) : PushLink {
         val steps = CopyOnWriteArrayList<String>()
+        override val carriesNav get() = nav
         override val pushKey get() = key
         override val pushSession get() = session
         override fun subscribe() { steps += "subscribe" }
@@ -504,5 +505,129 @@ class VehiclePushTest {
         r.deliver(ByteArray(64) { 3 }, 3, 43)
         assertTrue(r.warnings.isNotEmpty())
         for (line in r.warnings) for (secret in listOf(token, "35.681201", "139.767102", "gnss", "cmd", "\"v\":1")) assertFalse("a warning holds '$secret': $line", line.contains(secret))
+    }
+
+    // ---- contract version 2: the beacon's nav object ----------------------------------------------------------------------------------------
+
+    private val nav = "{\"v\":1,\"age_ms\":30,\"sig\":\"left\",\"ctl\":true,\"ta\":\"wait\",\"mt\":\"end of road\",\"mm\":\"sharpLeft\",\"md\":120,\"mage\":400}"
+    private val navReport = report.dropLast(1) + ",\"nav\":" + nav + "}"
+
+    private fun Rig.withNav(on: Boolean = true) = apply { link.nav = on }
+
+    @Test fun navIsForwardedAsTheBridgeSentItAndItsAgesGrowWithTheDelay() {
+        val r = rig().withNav()
+        r.deliver(seal(1, 1, "wake", 0, null, null), 1, 40)
+        r.deliver(seal(2, 2, "vehicle", 1000, navReport, token), 2, 1040 + 30) // 30 ms above the best case
+        r.runWorker()
+        assertEquals(1, r.posts.size)
+        val expected = navReport.replace("\"age_ms\":120,", "\"age_ms\":150,").replace("\"age_ms\":30,", "\"age_ms\":60,").replace("\"mage\":400", "\"mage\":430")
+        assertEquals(expected, r.posts[0].first)
+        assertTrue(Allowlist.check("POST", "/v1/vehicle", r.posts[0].first.toByteArray()).ok)
+        assertEquals(1, r.push.forwarded)
+    }
+
+    @Test fun aFrameWithNavIsRefusedWhenTheBridgeDidNotAnnouncePushNav() {
+        val r = rig().withNav(false)
+        r.deliver(seal(1, 1, "wake", 0, null, null), 1, 40)
+        r.deliver(seal(2, 2, "vehicle", 1000, navReport, token), 2, 1040)
+        r.runWorker()
+        assertTrue(r.posts.isEmpty())
+        assertEquals(1, r.push.droppedBad)
+        r.deliver(seal(3, 3, "vehicle", 2000, report, token), 3, 2040) // a frame without nav still passes
+        r.runWorker()
+        assertEquals(1, r.posts.size)
+        assertEquals(report, r.posts[0].first)
+    }
+
+    @Test fun aReportWithoutNavIsTheSameWithOrWithoutTheFlag() {
+        for (flag in listOf(true, false)) {
+            val r = rig().withNav(flag)
+            r.deliver(seal(1, 1, "wake", 0, null, null), 1, 40)
+            r.deliver(seal(2, 2, "vehicle", 1000, report, token), 2, 1040 + 30)
+            r.runWorker()
+            assertEquals(report.replace("\"age_ms\":120", "\"age_ms\":150"), r.posts.single().first)
+        }
+    }
+
+    @Test fun theNavAgesGrowAlsoWithoutAFixAndAReportWithNothingToAgeIsLeftAlone() {
+        val r = rig().withNav()
+        r.deliver(seal(1, 1, "wake", 0, null, null), 1, 40)
+        val noFix = "{\"v\":1,\"seq\":9,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":5,\"sig\":\"both\"}}"
+        r.deliver(seal(2, 2, "vehicle", 1000, noFix, token), 2, 1040 + 100)
+        r.runWorker()
+        assertEquals(noFix.replace("\"age_ms\":5", "\"age_ms\":105"), r.posts.single().first)
+        val plain = "{\"v\":1,\"seq\":9,\"fix\":false}"
+        r.deliver(seal(3, 3, "vehicle", 2000, plain, token), 3, 2040 + 100)
+        r.runWorker()
+        assertEquals(plain, r.posts.last().first)
+    }
+
+    @Test fun theNavAgesSaturateAtTheirBounds() {
+        val body = "{\"v\":1,\"seq\":9,\"fix\":false,\"nav\":{\"v\":1,\"age_ms\":59900,\"mt\":\"turn\",\"mm\":\"left\",\"md\":5,\"mage\":4900}}"
+        val out = String(FreshnessFilter.withAge(body.toByteArray(), 300))
+        assertEquals(body.replace("59900", "60000").replace("4900", "5000"), out)
+        assertTrue(Allowlist.check("POST", "/v1/vehicle", out.toByteArray()).ok)
+    }
+
+    @Test fun aStallThatDeliversFiveFramesWithNavForwardsOnlyTheNewestWithItsNav() {
+        val r = rig().withNav()
+        r.deliver(seal(1, 1, "wake", 0, null, null), 1, 40)
+        for (i in 2..6) r.deliver(seal(i, i.toLong(), "vehicle", i * 1000L, navReport.replace("\"seq\":1234", "\"seq\":$i"), token), i, 7000L + i)
+        r.runWorker()
+        assertEquals(1, r.posts.size)
+        assertTrue(r.posts[0].first.contains("\"seq\":2,") || r.posts[0].first.contains("\"seq\":6,"))
+        assertTrue(r.posts[0].first.contains("\"nav\":{"))
+    }
+
+    @Test fun aFrameWithNavThatWaitedMoreThanASecondInTheCompanionIsDropped() {
+        val r = rig().withNav()
+        r.deliver(seal(1, 1, "wake", 0, null, null), 1, 40)
+        r.deliver(seal(2, 2, "vehicle", 1000, navReport, token), 2, 1040)
+        r.now += 1200
+        r.runWorker()
+        assertTrue(r.posts.isEmpty())
+        assertEquals(1, r.push.droppedLate)
+    }
+
+    @Test fun theWidestBodyOfTheSenderPassesTheReceiverAndStaysWithinTheBound() {
+        val widest = TestVectors.cases("allowlist.json").first { it["name"] == "nav-widest-454-bytes" }["body"] as String
+        assertEquals(454, widest.length)
+        val r = rig().withNav()
+        val frame = seal(2, 2, "vehicle", 1000, widest, "t".repeat(128))
+        assertTrue("at most 4 notifications of 244 bytes: ${packets(frame, 2).size}", packets(frame, 2).size <= 4)
+        r.deliver(seal(1, 1, "wake", 0, null, null), 1, 40)
+        r.deliver(frame, 2, 1040 + 200)
+        r.runWorker()
+        assertEquals(1, r.posts.size)
+        assertTrue(r.posts[0].first.length <= 512)
+        assertTrue(Allowlist.check("POST", "/v1/vehicle", r.posts[0].first.toByteArray()).ok)
+    }
+
+    @Test fun nothingOfTheNavObjectIsLogged() {
+        val r = rig().withNav(false)
+        r.deliver(seal(1, 1, "wake", 0, null, null), 1, 40)
+        r.deliver(seal(2, 2, "vehicle", 1000, navReport, token), 2, 1040)
+        r.deliver(seal(3, 3, "vehicle", 2000, navReport.replace("\"sig\":\"left\"", "\"sig\":\"up\""), token), 3, 2040)
+        r.runWorker()
+        assertTrue(r.warnings.isNotEmpty())
+        for (line in r.warnings) for (secret in listOf("sharpLeft", "end of road", "left", token, "35.68")) assertFalse("$line holds $secret", line.contains(secret))
+    }
+
+    @Test fun theBridgeFlagPushNavIsRead() {
+        fun features(json: String) = BridgeFeatures.parse(json.toByteArray())
+        assertTrue(features("{\"protocol\":1,\"poll2\":true,\"results2\":true,\"push\":true,\"pushNav\":true}").pushNav)
+        assertFalse(features("{\"protocol\":1,\"poll2\":true,\"results2\":true,\"push\":true}").pushNav)
+        for (bad in listOf("1", "\"true\"", "null", "false", "[true]")) assertFalse(bad, features("{\"push\":true,\"pushNav\":$bad}").pushNav)
+        assertFalse(features("{\"protocol\":2,\"pushNav\":true").pushNav) // not JSON: the old bridge's behaviour
+        assertFalse(BridgeFeatures.LEGACY.pushNav)
+    }
+
+    @Test fun pushEnableAnnouncesNavOnlyWhenTheBridgeSaidPushNav() {
+        val with = PushEnable.request(true)
+        assertEquals("POST", with.getString("method")); assertEquals("/_bridge/push/enable", with.getString("path"))
+        assertEquals("{\"nav\":true}", String(java.util.Base64.getDecoder().decode(with.getString("body")), Charsets.US_ASCII))
+        val without = PushEnable.request(false)
+        assertEquals("POST", without.getString("method")); assertEquals("/_bridge/push/enable", without.getString("path"))
+        assertFalse("the request an older bridge always got", without.has("body"))
     }
 }

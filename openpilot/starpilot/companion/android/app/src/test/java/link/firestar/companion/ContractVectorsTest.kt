@@ -12,7 +12,7 @@ class ContractVectorsTest {
 
     @Test fun allowListVectors() {
         val cases = TestVectors.cases("allowlist.json")
-        assertEquals(119, cases.size)
+        assertEquals(273, cases.size)
         val wrong = ArrayList<String>()
         var accepted = 0
         for (case in cases) {
@@ -22,7 +22,22 @@ class ContractVectorsTest {
             if (text != case["expect"]) wrong += "${case["name"]}: expected ${case["expect"]}, got $text (${verdict.reason})"
         }
         assertTrue(wrong.joinToString("\n"), wrong.isEmpty())
-        assertEquals(11, accepted)
+        assertEquals(47, accepted)
+    }
+
+    @Test fun theAllowListVectorsAreContractVersion2AndTheOldOnesCameFirst() {
+        assertEquals("2", (TestVectors.file("allowlist.json")["version"] as StrictJson.Num).text)
+        val first = TestVectors.cases("allowlist.json").take(119).map { it["name"] as String }
+        assertEquals("route-basic", first.first())
+        assertEquals("vehicle-utf8-bom", first.last()) // the 119th case of version 1: the nav cases (nav-*) come after it
+        assertTrue(TestVectors.cases("allowlist.json").drop(119).all { (it["name"] as String).startsWith("nav-") })
+    }
+
+    @Test fun ageVectors() {
+        for (case in TestVectors.cases("age.json")) {
+            val got = String(FreshnessFilter.withAge((case["body"] as String).toByteArray(Charsets.US_ASCII), (case["add_ms"] as StrictJson.Num).text.toLong()), Charsets.US_ASCII)
+            assertEquals(case["name"] as String, case["expect"], got)
+        }
     }
 
     @Test fun resultVectors() {
@@ -96,7 +111,7 @@ class ContractVectorsTest {
 
     @Test fun vectorFilesAreWhatTheContractSays() {
         // a truncated or edited copy of a vector file would silently weaken every test above
-        val expected = mapOf("allowlist.json" to 119, "results.json" to 34, "chunk-targets.json" to 25)
+        val expected = mapOf("allowlist.json" to 273, "results.json" to 34, "chunk-targets.json" to 25, "age.json" to 15)
         for ((file, count) in expected) assertEquals(file, count, TestVectors.cases(file).size)
         val names = TestVectors.cases("allowlist.json").map { it["name"] }
         assertEquals("names are unique", names.size, names.toSet().size)

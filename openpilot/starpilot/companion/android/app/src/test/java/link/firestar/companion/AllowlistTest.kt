@@ -6,14 +6,14 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.Random
 
-/** The allow-list beyond the hand-written vectors: 560 generated requests with the verdict of the reference (Python's `json` and `re`), properties, and a fuzz run. */
+/** The allow-list beyond the hand-written vectors: 960 generated requests (560 of contract version 1, 400 with a nav object) with the verdict of the reference (Python's `json` and `re`), properties, and a fuzz run. */
 class AllowlistTest {
     private fun accepts(method: String, target: String, body: String = "") = Allowlist.check(method, target, body.toByteArray(Charsets.ISO_8859_1)).ok
     private fun v(vararg members: String) = "{" + members.joinToString(",") + "}"
 
     @Test fun generatedRequestsGetTheVerdictOfTheReference() {
         val cases = TestVectors.cases("allowlist-diff.json")
-        assertEquals(560, cases.size)
+        assertEquals(960, cases.size)
         val wrong = ArrayList<String>()
         var accepted = 0
         for (case in cases) {
@@ -24,7 +24,7 @@ class AllowlistTest {
             else if (expectOk && verdict.shape?.wire != case["shape"]) wrong += "${case["target"]}: shape ${verdict.shape} against ${case["shape"]}"
         }
         assertTrue("${wrong.size} disagreements:\n" + wrong.take(20).joinToString("\n"), wrong.isEmpty())
-        assertEquals(83, accepted)
+        assertEquals(233, accepted)
     }
 
     @Test fun theFourShapesAndNothingElse() {

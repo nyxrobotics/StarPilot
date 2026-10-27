@@ -73,9 +73,10 @@ internal object PushFrames {
 
     /**
      * Verifies and opens a sealed frame (with its 4-byte length prefix, as the assembler returns it). Raises [PushError] for: a wrong key or direction (the GCM
-     * tag), another session, a counter that did not rise, an unknown kind, extra fields, a report outside the allow-list, a token that cannot be a header value.
+     * tag), another session, a counter that did not rise, an unknown kind, extra fields, a report outside the allow-list, a token that cannot be a header value, and a
+     * report with a `nav` object when [navAllowed] is false (the bridge did not announce `pushNav`: a bridge that never said it carries nav sends none).
      */
-    fun open(frame: ByteArray, key: ByteArray, session: String, lastCounter: Long): PushMessage {
+    fun open(frame: ByteArray, key: ByteArray, session: String, lastCounter: Long, navAllowed: Boolean = false): PushMessage {
         if (frame.size < 5 || ByteBuffer.wrap(frame, 0, 4).int != frame.size - 4) throw PushError("frame length")
         val message = try { BleWire.decode(frame.copyOfRange(4, frame.size), key, BleWire.PUSH_DIRECTION) } catch (_: Exception) { throw PushError("frame does not open") }
         if (message.body != null) throw PushError("frame fields") // codec 2 carries a body: a push has none
@@ -94,30 +95,45 @@ internal object PushFrames {
         val report = value["b"] as? StrictJson.Obj
         val auth = value["a"] as? String
         if (report == null || auth == null || !AUTH.matches(auth)) throw PushError("vehicle frame fields")
+        if (report.has(Allowlist.NAV_KEY) && !navAllowed) throw PushError("report carries nav that the bridge did not announce")
         val body = compact(report) ?: throw PushError("report is not a vehicle body")
         if (Allowlist.vehicleBodyProblem(body).isNotEmpty()) throw PushError("report is not a vehicle body")
         return PushMessage("vehicle", counter, ts, body, auth)
     }
 
-    /** The report as compact ASCII JSON, member by member as received; null when a member is not a number, a boolean or a plain word, or a key repeats. */
-    internal fun compact(report: StrictJson.Obj, replace: Pair<String, String>? = null): ByteArray? {
-        if (report.duplicateKey) return null
-        val out = StringBuilder("{")
+    /**
+     * The report as compact ASCII JSON, member by member as received; null when a member is not a number, a boolean or a plain word, or a key repeats. The `nav` object (contract
+     * version 2) is written the same way, one level down: flat, its words are letters, space and hyphen. [replace] maps a top-level key to the text that takes its value, and
+     * [replaceNav] does the same inside `nav` (the two ages).
+     */
+    internal fun compact(report: StrictJson.Obj, replace: Pair<String, String>? = null, replaceNav: Map<String, String> = emptyMap()): ByteArray? {
+        val out = StringBuilder()
+        if (!writeObject(report, out, true, replace, replaceNav)) return null
+        return out.toString().toByteArray(Charsets.US_ASCII)
+    }
+
+    private fun writeObject(obj: StrictJson.Obj, out: StringBuilder, top: Boolean, replace: Pair<String, String>?, replaceNav: Map<String, String>): Boolean {
+        if (obj.duplicateKey) return false
+        out.append('{')
         var first = true
-        for ((key, item) in report.members) {
-            if (key.any { it !in 'a'..'z' && it !in '0'..'9' && it != '_' }) return null
-            val text = when {
-                replace != null && key == replace.first -> replace.second
-                item is Boolean -> item.toString()
-                item is StrictJson.Num -> item.text
-                item is String && item.all { it in '0'..'9' || it in 'a'..'z' || it in 'A'..'Z' } -> "\"$item\""
-                else -> return null
-            }
+        for ((key, item) in obj.members) {
+            if (key.any { it !in 'a'..'z' && it !in '0'..'9' && it != '_' }) return false
             if (!first) out.append(',')
             first = false
-            out.append('"').append(key).append("\":").append(text)
+            out.append('"').append(key).append("\":")
+            val swap = if (top) replace?.takeIf { key == it.first }?.second else replaceNav[key]
+            when {
+                swap != null -> out.append(swap)
+                top && key == Allowlist.NAV_KEY && item is StrictJson.Obj -> { if (!writeObject(item, out, false, null, replaceNav)) return false }
+                item is Boolean -> out.append(item.toString())
+                item is StrictJson.Num -> out.append(item.text)
+                item is String && top && item.all { it in '0'..'9' || it in 'a'..'z' || it in 'A'..'Z' } -> out.append('"').append(item).append('"')
+                item is String && !top && item.all { it in 'a'..'z' || it in 'A'..'Z' || it == ' ' || it == '-' } -> out.append('"').append(item).append('"')
+                else -> return false
+            }
         }
-        return out.append('}').toString().toByteArray(Charsets.US_ASCII)
+        out.append('}')
+        return true
     }
 }
 
@@ -153,14 +169,38 @@ internal class FreshnessFilter(private val window: Int = WINDOW, private val dro
         const val WINDOW = 600
         const val DROP_OVER_MS = 1000L
 
-        /** The body with `age_ms` raised by [addMs]; a report with `fix` false carries no age and comes back unchanged. */
+        /**
+         * The body with its ages raised by [addMs] (contract version 2, `age.json`): `age_ms` of the position (a report with `fix` false carries none), and `age_ms` and `mage` of the
+         * `nav` object, which saturate at 60000 and 5000 and grow also without a fix (the signal has an age whether or not there is a position). A body that has nothing to age
+         * comes back as it came, byte for byte. Reference: `aged` of `tools/btlab/contract/fresh.py`.
+         */
         fun withAge(body: ByteArray, addMs: Long): ByteArray {
             val report = try { StrictJson.parseObject(String(body, Charsets.US_ASCII), 1024) } catch (_: StrictJson.Invalid) { throw PushError("report unreadable") }
+            var position: Pair<String, String>? = null
             val age = report["age_ms"]
-            if (report["fix"] == false || age == null) return body
-            val old = (age as? StrictJson.Num)?.let { n -> n.toLongOrNull() ?: n.toDoubleOrNull()?.takeIf { it.isFinite() && Math.abs(it) < 1e15 }?.toLong() } ?: throw PushError("age_ms")
-            return PushFrames.compact(report, "age_ms" to (old + addMs).toString()) ?: throw PushError("report unreadable")
+            if (report["fix"] != false && age != null) {
+                val old = (age as? StrictJson.Num)?.let { n -> n.toLongOrNull() ?: n.toDoubleOrNull()?.takeIf { it.isFinite() && Math.abs(it) < 1e15 }?.toLong() } ?: throw PushError("age_ms")
+                position = "age_ms" to (old + addMs).toString()
+            }
+            val navAges = HashMap<String, String>()
+            val nav = report[Allowlist.NAV_KEY]
+            if (nav is StrictJson.Obj) {
+                for ((name, cap) in listOf("age_ms" to NAV_AGE_CAP_MS, "mage" to NAV_FRAME_AGE_CAP_MS)) {
+                    val value = nav[name] ?: continue
+                    val old = (value as? StrictJson.Num)?.toLongOrNull() ?: throw PushError("nav $name")
+                    navAges[name] = minOf(cap, old + addMs).toString()
+                }
+            }
+            if (position == null && navAges.isEmpty()) return body
+            val changed = (position != null && report["age_ms"].toString() != position.second) ||
+                navAges.any { (name, text) -> (report[Allowlist.NAV_KEY] as StrictJson.Obj)[name].toString() != text }
+            if (!changed) return body
+            return PushFrames.compact(report, position, navAges) ?: throw PushError("report unreadable")
         }
+
+        /** The bounds of `nav.age_ms` and `nav.mage` (the sender saturates `mage` itself). */
+        const val NAV_AGE_CAP_MS = 60_000L
+        const val NAV_FRAME_AGE_CAP_MS = 5_000L
     }
 }
 
@@ -191,14 +231,34 @@ internal class Forwarder<T : Any> {
     }
 }
 
+/**
+ * The `push-enable` request (a SMALL request of the lane). A bridge that announced `pushNav` in its health answer is told that this phone forwards the beacon's `nav`
+ * object: the request body is `{"nav":true}` (codec 0: the base64 `body` member). A bridge that did not announce it gets the request it always got, with no body.
+ */
+internal object PushEnable {
+    const val PATH = "/_bridge/push/enable"
+    const val NAV_BODY = "{\"nav\":true}"
+
+    fun request(announceNav: Boolean): org.json.JSONObject {
+        val request = laneRequest("POST", PATH)
+        if (announceNav) request.put("body", java.util.Base64.getEncoder().encodeToString(NAV_BODY.toByteArray(Charsets.US_ASCII)))
+        return request
+    }
+}
+
 /** The part of a connection that [VehiclePush] needs; `BleTransport` implements it. */
 internal interface PushLink {
     val pushKey: ByteArray
     val pushSession: String
     /** Switches the notifications of the push characteristic on (the descriptor write) and returns when it is written; fails with an [IOException]. */
     fun subscribe()
-    /** `POST /_bridge/push/enable` through the lane (a SMALL request); returns the HTTP status. */
+    /**
+     * `POST /_bridge/push/enable` through the lane (a SMALL request); returns the HTTP status. When [carriesNav] is true the body is `{"nav":true}`: this phone forwards the beacon's
+     * `nav` object and the bridge may send it.
+     */
     fun pushEnable(): Int
+    /** The bridge announced `pushNav` in its health answer: the frames may carry `nav`, and `push-enable` says that this phone takes it. Read flags only, never `protocol`. */
+    val carriesNav: Boolean get() = false
 }
 
 /**
@@ -263,7 +323,7 @@ internal class VehiclePush(
         if (closed) return
         try {
             val frame = assembler.add(packet) ?: return
-            val message = PushFrames.open(frame, link.pushKey, link.pushSession, lastCounter)
+            val message = PushFrames.open(frame, link.pushKey, link.pushSession, lastCounter, link.carriesNav)
             lastCounter = message.counter
             counts[Stat.FRAMES.ordinal].incrementAndGet()
             val late = filter.observe(rx, message.tsMs)
