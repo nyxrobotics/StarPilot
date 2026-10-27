@@ -282,7 +282,9 @@ class SidecarJobsTest {
         worker.pollOnce(lane1)
         comma.expired += job.id // comma ended the job: the next list no longer has it
         val lane2 = lane(CommaLink(comma))
+        assertEquals("the bytes are held until the next poll shows that the job is gone", 1, worker.heldTransfers)
         worker.pollOnce(lane2)
+        assertEquals("the bytes of a job comma no longer lists are dropped", 0, worker.heldTransfers)
         // a new job with the same target gets a fresh fetch: nothing of the old bytes is reused
         val again = comma.submit(Shape.ROUTE, route)
         worker.pollOnce(lane2)
@@ -321,6 +323,57 @@ class SidecarJobsTest {
             assertTrue("$kind $target was fetched", fetcher.fetched.isEmpty())
             assertTrue("$kind $target is failed", job.failed)
         }
+    }
+
+    @Test fun anAcknowledgementThatNamesAnotherChunkFailsTheJob() {
+        val comma = FakeComma(); val job = comma.submit(Shape.ROUTE, route)
+        val inner = CommaLink(comma)
+        val lying = object : LaneLink by inner {
+            override fun exchange(meta: JSONObject, body: ByteArray?, deadlineSeconds: Long): JSONObject {
+                val answer = inner.exchange(meta, body, deadlineSeconds)
+                return if (meta.getString("path").startsWith("/_bridge/sidecar/chunk/"))
+                    JSONObject().put("status", 200).put("body", java.util.Base64.getEncoder().encodeToString("{\"next\":99}".toByteArray()))
+                else answer
+            }
+        }
+        val lane = lane(lying)
+        val worker = jobs({ lane }, FakeFetcher(mutableMapOf(route to { LocalAnswer(200, routeBody(300_000, 12)) })))
+        worker.pollOnce(lane)
+        assertEquals("only the first chunk went out", listOf("chunk:route:0"), comma.calls.filter { it.startsWith("chunk") })
+        assertTrue(job.failed)
+        assertEquals(1, worker.jobsFailed)
+        assertEquals(0, worker.heldTransfers)
+    }
+
+    @Test fun theJobsUseTheClassesOfTheDesign() {
+        fun classesOf(kind: Shape, target: String, label: String, answer: LocalAnswer): Set<LaneClass> {
+            val comma = FakeComma(); comma.submit(kind, target)
+            val lane = lane(CommaLink(comma))
+            val events = CopyOnWriteArrayList<LaneEvent>(); lane.observer = { events += it }
+            jobs({ lane }, FakeFetcher(mutableMapOf(target to { answer }))).pollOnce(lane)
+            return events.filter { it.label == label }.map { it.cls }.toSet()
+        }
+        assertEquals("the poll is small", setOf(LaneClass.SMALL), classesOf(Shape.STATUS, "/status", "poll2", LocalAnswer(200, json("{}"))))
+        assertEquals("route chunks are bulk", setOf(LaneClass.BULK), classesOf(Shape.ROUTE, route, "chunk", LocalAnswer(200, routeBody(50_000, 13))))
+        assertEquals("the result of a status job is small", setOf(LaneClass.SMALL), classesOf(Shape.STATUS, "/status", "chunk", LocalAnswer(200, json("{}"))))
+        assertEquals("a failure notice is small", setOf(LaneClass.SMALL), classesOf(Shape.STATUS, "/status", "fail", LocalAnswer(500, json("{}"))))
+    }
+
+    @Test fun aListedJobAsksForTheHighPriorityEvenWhenItIsASmallOne() {
+        val comma = FakeComma(); comma.submit(Shape.STATUS, "/status")
+        val link = CommaLink(comma)
+        val lane = lane(link)
+        jobs({ lane }, FakeFetcher(mutableMapOf("/status" to { LocalAnswer(200, json("{}")) }))).pollOnce(lane)
+        assertEquals(listOf(true), link.priorities.toList())
+    }
+
+    @Test fun aJobAnotherPhoneHoldsDoesNotAskForTheHighPriority() {
+        val comma = FakeComma().apply { claimedByAnotherPhone = true }
+        comma.submit(Shape.STATUS, "/status")
+        val link = CommaLink(comma)
+        val lane = lane(link)
+        jobs({ lane }, FakeFetcher()).pollOnce(lane)
+        assertTrue(link.priorities.isEmpty())
     }
 
     // ---- the poll answer is untrusted input -----------------------------------------------------------------------------------------------

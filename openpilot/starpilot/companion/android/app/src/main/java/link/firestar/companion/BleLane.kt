@@ -150,6 +150,7 @@ internal class BleLane(
     private val queues = Array(LaneClass.entries.size) { ArrayDeque<Ticket>() }
     private var inFlight: Ticket? = null
     private var closed = false
+    private val lossReported = java.util.concurrent.atomic.AtomicBoolean()
     private var owner: Thread? = null
     private var watchdog: Thread? = null
 
@@ -275,9 +276,11 @@ internal class BleLane(
 
     /** Ends the lane because the link failed: fails everything queued or in flight, closes the link, tells the owner of the lane. */
     private fun abort(cause: Throwable, alreadyFailed: Ticket? = null) {
-        if (!shutDown(cause, alreadyFailed)) return
-        try { link.close() } catch (_: Exception) { /* closing is best effort */ }
-        onLinkClosed()
+        if (shutDown(cause, alreadyFailed)) {
+            try { link.close() } catch (_: Exception) { /* closing is best effort */ }
+        }
+        // The loss is reported once, also when the link closed the lane itself inside the failing request (the transport closes itself before it rethrows).
+        if (lossReported.compareAndSet(false, true)) onLinkClosed()
     }
 
     private fun shutDown(cause: Throwable, alreadyFailed: Ticket?): Boolean {
@@ -285,8 +288,12 @@ internal class BleLane(
         lock.withLock {
             if (closed) return false
             closed = true
-            inFlight?.let { victims.add(it) }
-            inFlight = null
+            // When the owner thread itself closes the lane (the transport closes itself inside the failing request) the request in flight is completed by the owner
+            // with the real error a moment later; any other thread fails it here.
+            if (Thread.currentThread() !== owner) {
+                inFlight?.let { victims.add(it) }
+                inFlight = null
+            }
             for (queue in queues) { victims.addAll(queue); queue.clear() }
             wake.signalAll()
         }

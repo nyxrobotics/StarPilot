@@ -126,7 +126,8 @@ class JobContractTest {
     }
 
     @Test fun theBuilderHoldsItselfToTheRulesOfTheReceiver() {
-        assertThrows(ContractError::class.java) { JobContract.chunkPath(job, 1, true, 200, "gzip", null, null) }
+        assertEquals("the last chunk declares size and sha256", assertThrows(ContractError::class.java) { JobContract.chunkPath(job, 1, true, 200, "gzip", null, null) }.message)
+        assertEquals("only the last chunk declares size and sha256", assertThrows(ContractError::class.java) { JobContract.chunkPath(job, 1, false, 200, "gzip", 5, null) }.message)
         assertThrows(ContractError::class.java) { JobContract.chunkPath(job, 1, false, 200, "gzip", 5, null) }
         assertThrows(ContractError::class.java) { JobContract.chunkPath(job, 1, false, 200, "gzip", null, digest) }
         assertThrows(ContractError::class.java) { JobContract.chunkPath(job.uppercase(), 1, false, 200, "gzip", null, null) }

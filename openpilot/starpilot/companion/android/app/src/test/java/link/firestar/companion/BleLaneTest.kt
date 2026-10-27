@@ -236,6 +236,38 @@ class BleLaneTest {
         assertEquals(listOf("gate"), link.executed.toList())
     }
 
+    @Test fun aLinkThatClosesItselfInsideTheFailingRequestStillGivesTheCallerTheRealError() {
+        val clock = Clock()
+        val laneRef = java.util.concurrent.atomic.AtomicReference<BleLane>()
+        val gate = CountDownLatch(1)
+        val link = object : LaneLink {
+            val executed = CopyOnWriteArrayList<String>()
+            override fun exchange(meta: JSONObject, body: ByteArray?, deadlineSeconds: Long): JSONObject {
+                executed += meta.optString("name")
+                gate.await(10, TimeUnit.SECONDS)
+                laneRef.get().close() // what BleTransport.close() does before it rethrows
+                throw IOException("Bluetooth response timed out")
+            }
+            override fun control(action: String) = JSONObject().put("status", 200)
+            override fun setHighPriority(on: Boolean) = Unit
+            override fun close() = Unit
+        }
+        val lane = BleLane(link, clock.read, false)
+        laneRef.set(lane)
+        val reported = AtomicInteger()
+        lane.onLinkClosed = { reported.incrementAndGet() }
+        val failing = lane.submit(LaneClass.INTERACTIVE, 20, request("failing"))
+        while (link.executed.isEmpty()) Thread.sleep(2)
+        val queued = lane.submit(LaneClass.SMALL, 10, request("poll"))
+        gate.countDown()
+        val real = failing.failure()
+        assertEquals("the caller of the failing request sees the real error", "Bluetooth response timed out", real.message)
+        assertTrue(queued.failure() is LaneClosed)
+        Thread.sleep(50)
+        assertEquals("the loss is reported once", 1, reported.get())
+        assertEquals(listOf("failing"), link.executed.toList())
+    }
+
     @Test fun theWatchdogClosesALinkThatNeverAnswers() {
         val clock = Clock()
         val release = CountDownLatch(1)
@@ -245,7 +277,7 @@ class BleLaneTest {
             override fun exchange(meta: JSONObject, body: ByteArray?, deadlineSeconds: Long): JSONObject {
                 ran += meta.optString("name")
                 release.await(10, TimeUnit.SECONDS) // a GATT callback that never comes
-                return JSONObject().put("status", 200)
+                throw IOException("the transport was closed under the request") // what the real transport does when the lane closes it
             }
             override fun control(action: String) = JSONObject().put("status", 200)
             override fun setHighPriority(on: Boolean) = Unit

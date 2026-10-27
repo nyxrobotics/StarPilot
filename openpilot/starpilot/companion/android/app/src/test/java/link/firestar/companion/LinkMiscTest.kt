@@ -17,6 +17,15 @@ class LinkMiscTest {
         assertEquals(2, f.protocol); assertTrue(f.jobsV2); assertTrue(f.push); assertTrue(f.xz)
     }
 
+    @Test fun theBridgeThatKeepsProtocolOneForIosAnnouncesTheSidecarProtocolSeparately() {
+        // what the bridge of job A answers: `protocol` stays 1 because the iOS Galaxy app refuses any other value
+        val f = features("""{"protocol":1,"transport":"bluetooth","readStream":true,"notificationStream":true,"galaxy":"secretgood","sidecarProtocol":2,"poll2":true,"results2":true,"push":true}""")
+        assertEquals(2, f.protocol); assertTrue(f.jobsV2); assertTrue(f.push)
+        assertFalse("flags without the protocol level", features("""{"protocol":1,"poll2":true,"results2":true,"push":true}""").jobsV2)
+        assertFalse("a level without the flags", features("""{"protocol":1,"sidecarProtocol":2}""").jobsV2)
+        assertFalse(features("""{"protocol":1,"sidecarProtocol":"2","poll2":true,"results2":true}""").jobsV2)
+    }
+
     @Test fun theOldBridgeAndAnythingUnreadableAreProtocolOne() {
         val old = features("{\"protocol\":1,\"transport\":\"bluetooth\",\"readStream\":true,\"notificationStream\":true,\"galaxy\":\"secretgood\"}")
         assertEquals(1, old.protocol); assertFalse(old.jobsV2); assertFalse(old.push)

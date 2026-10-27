@@ -3,7 +3,7 @@
  "session": "00112233445566778899aabbccddeeff",
  "other_session": "ffeeddccbbaa99887766554433221100",
  "auth": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
- "note": "made by tools/btlab/contract/push.py and fresh.py of the sidecar repo and by the production protocol.py of the fork; see README.md in this folder",
+ "note": "made by tools/btcompanion/gen_push_vectors.py from tools/btlab/contract/push.py and fresh.py of the sidecar repo and by the production protocol.py of the fork; see README.md in this folder",
  "cases": [
   {
    "name": "vehicle-codec0",

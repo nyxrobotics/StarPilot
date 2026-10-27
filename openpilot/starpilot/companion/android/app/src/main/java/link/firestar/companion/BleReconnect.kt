@@ -8,14 +8,13 @@ package link.firestar.companion
 internal class ReconnectBackoff(private val stepsMs: LongArray = longArrayOf(1_000, 2_000, 4_000, 8_000, 10_000)) {
     private var failures = 0
     private var lastAttemptMs = 0L
-    private var attempted = false
 
     /** How long to wait after the last attempt before the next one. */
     fun delayMs(): Long = if (failures == 0) 0 else stepsMs[minOf(failures - 1, stepsMs.size - 1)]
 
-    @Synchronized fun ready(nowMs: Long): Boolean = !attempted || nowMs - lastAttemptMs >= delayMs()
+    @Synchronized fun ready(nowMs: Long): Boolean = nowMs - lastAttemptMs >= delayMs()
 
-    @Synchronized fun attempt(nowMs: Long) { attempted = true; lastAttemptMs = nowMs }
+    @Synchronized fun attempt(nowMs: Long) { lastAttemptMs = nowMs }
 
     @Synchronized fun failed() { failures++ }
 

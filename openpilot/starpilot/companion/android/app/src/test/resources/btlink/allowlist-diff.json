@@ -1,5 +1,5 @@
 {
-"note": "made by bin/gen_allowlist_diff.py from tools/btlab/contract/allowlist.py of the sidecar repo; see README.md in this folder",
+"note": "made by tools/btcompanion/gen_allowlist_diff.py from tools/btlab/contract/allowlist.py of the sidecar repo; see README.md in this folder",
 "cases": [
 {
 "method": "GET",

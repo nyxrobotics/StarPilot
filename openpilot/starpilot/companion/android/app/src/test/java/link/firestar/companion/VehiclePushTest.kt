@@ -107,6 +107,33 @@ class VehiclePushTest {
         assertThrows(PushError::class.java) { PushFrames.open(ByteArray(3), key, session, 0) }
     }
 
+    @Test fun aLengthPrefixThatLiesIsRefusedEvenWhenTheCiphertextIsIntact() {
+        val frame = seal(1, 5, "wake", 1, null, null)
+        for (claimed in listOf(frame.size - 5, frame.size - 3, frame.size, 0, -1, Int.MAX_VALUE)) {
+            val lying = frame.copyOf().also { java.nio.ByteBuffer.wrap(it).putInt(0, claimed) }
+            assertThrows("a prefix of $claimed", PushError::class.java) { PushFrames.open(lying, key, session, 0) }
+        }
+        assertEquals(5L, PushFrames.open(frame, key, session, 0).counter)
+    }
+
+    @Test fun aReportWithoutAFixKeepsItsAgeEvenWhenItCarriesOne() {
+        val body = "{\"v\":1,\"seq\":1,\"fix\":false,\"age_ms\":5}"
+        assertEquals(body, String(FreshnessFilter.withAge(body.toByteArray(), 250)))
+    }
+
+    @Test fun aReportThatGrowsPast512BytesWithItsRaisedAgeIsNotPosted() {
+        val head = "{\"v\":1,\"seq\":1,\"fix\":true,\"lat\":35.11111111,\"lon\":139.11111111,\"age_ms\":99,\"snap_m\":"
+        val body = head + "1".repeat(512 - head.length - 1) + "}"
+        assertEquals(512, body.length)
+        assertTrue(Allowlist.check("POST", "/v1/vehicle", body.toByteArray()).ok)
+        val r = rig()
+        r.deliver(seal(1, 1, "wake", 0, null, null), 1, 40)
+        r.deliver(seal(2, 2, "vehicle", 1000, body, token), 2, 1040 + 20) // 20 ms late: age_ms 99 becomes 119 (more digits would need 100 -> 1000+)
+        r.runWorker()
+        assertEquals("119 is as long as 99 plus one digit: 513 bytes", 0, r.posts.size)
+        assertEquals(1, r.push.droppedBad)
+    }
+
     @Test fun hostileFramesThatAreSealedCorrectlyAreStillRefused() {
         val ok = report
         val hostile = listOf(

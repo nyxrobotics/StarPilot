@@ -126,7 +126,7 @@ internal object PushFrames {
  * `127.0.0.1:8765` plus `age_ms`, so a frame that waited in BlueZ, the controller or this process would look fresh. For every frame: `d = rx - ts` is the unloaded
  * path delay plus the offset between the two clocks; `late = d - min(d)` over the last [window] frames of this connection (the first sample is the wake frame sent
  * right after `push-enable`, when the lane is idle); `dwell` is the time from `rx` to the POST. A frame whose `late + dwell` exceeds [dropOverMs] is dropped; else
- * its `age_ms` grows by that sum. Both clocks are used only as differences, so no clock synchronisation is needed. Reference: `tools/btlab/contract/fresh.py`.
+ * its `age_ms` grows by that sum. Both clocks are used only as differences, so no clock synchronization is needed. Reference: `tools/btlab/contract/fresh.py`.
  */
 internal class FreshnessFilter(private val window: Int = WINDOW, private val dropOverMs: Long = DROP_OVER_MS) {
     class Decision(val forward: Boolean, val addMs: Long, val reason: String)

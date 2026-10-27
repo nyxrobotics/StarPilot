@@ -34,9 +34,11 @@ internal class BridgeFeatures(val protocol: Int, val poll2: Boolean, val results
         fun parse(body: ByteArray): BridgeFeatures {
             val value = try { StrictJson.parseObject(body, 4096) } catch (_: StrictJson.Invalid) { return LEGACY }
             val protocol = (value["protocol"] as? StrictJson.Num)?.toLongOrNull()?.takeIf { it in 1..1000 }?.toInt() ?: return LEGACY
+            // The iOS Galaxy app refuses a health `protocol` other than 1, so the bridge keeps 1 and announces the Sidecar protocol as `sidecarProtocol`: the larger one counts.
+            val sidecar = (value["sidecarProtocol"] as? StrictJson.Num)?.toLongOrNull()?.takeIf { it in 1..1000 }?.toInt() ?: 1
             fun flag(name: String) = value[name] == true
             // `xz` is announced only to switch it off: the bridge's interpreter has `lzma` (measured), and a refused `xz` result is a failed job, never a wrong route.
-            return BridgeFeatures(protocol, flag("poll2"), flag("results2"), flag("push"), value["xz"] != false)
+            return BridgeFeatures(maxOf(protocol, sidecar), flag("poll2"), flag("results2"), flag("push"), value["xz"] != false)
         }
     }
 }
@@ -92,6 +94,9 @@ internal class SidecarJobs(
     val jobsDone: Int get() = done.get()
     val jobsFailed: Int get() = failed.get()
     val jobsRefused: Int get() = refused.get()
+
+    /** Transfers whose compressed bytes are held for a resume. */
+    internal val heldTransfers: Int get() = transfers.size
 
     /** How many immediate polls were asked for (tests and the status page). */
     internal val pollRequests = AtomicInteger()
