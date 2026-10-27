@@ -249,8 +249,7 @@ internal class BleLane(
                     if (ticket.control != null) link.control(ticket.control) else link.exchange(ticket.meta, ticket.body, ticket.deadlineSeconds)
                 } catch (error: Throwable) {
                     if (error is InterruptedException) Thread.currentThread().interrupt()
-                    finishWith(ticket, null, error)
-                    abort(error, alreadyFailed = ticket)
+                    abort(error, completing = ticket)
                     return
                 }
                 if (!finishWith(ticket, answer, null)) return
@@ -274,9 +273,14 @@ internal class BleLane(
         return true
     }
 
-    /** Ends the lane because the link failed: fails everything queued or in flight, closes the link, tells the owner of the lane. */
-    private fun abort(cause: Throwable, alreadyFailed: Ticket? = null) {
-        if (shutDown(cause, alreadyFailed)) {
+    /**
+     * Ends the lane because the link failed: fails everything queued or in flight, closes the link, tells the owner of the lane. [completing] is the request the owner thread
+     * was running: it gets the real error, but only after the lane is marked closed, so a caller that wakes up with the failure never finds an open lane.
+     */
+    private fun abort(cause: Throwable, completing: Ticket? = null) {
+        val first = shutDown(cause, completing)
+        completing?.let { finishWith(it, null, cause) }
+        if (first) {
             try { link.close() } catch (_: Exception) { /* closing is best effort */ }
         }
         // The loss is reported once, also when the link closed the lane itself inside the failing request (the transport closes itself before it rethrows).
