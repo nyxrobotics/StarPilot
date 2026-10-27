@@ -99,6 +99,26 @@ class BleWireRawTest {
         assertEquals("{\"method\":\"GET\",\"path\":\"/api/companion/status\"}", String(opened.json))
     }
 
+    /**
+     * `ble/request-raw.json` holds raw-body request frames made by [BleWire.sealRaw] (the fixed test key and nonces); `tests/test_ble_wire_vectors.py` opens them with the
+     * production `open_message`. A change of the seal makes this test fail; BTLINK_REGEN=1 rewrites the file, and the Python test then judges the new frames.
+     */
+    @Test fun committedRawFramesAreWhatSealRawMakes() {
+        val specs = listOf(
+            Triple("tiny", "{\"method\":\"POST\",\"path\":\"/_bridge/sidecar/fail/0123456789abcdef0123456789abcdef\"}", ByteArray(0)),
+            Triple("one-byte", "{\"method\":\"POST\",\"path\":\"/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/0?last=1&status=204&encoding=identity&size=0&sha256=${"0".repeat(64)}\"}", ByteArray(1) { 7 }),
+            Triple("chunk-1900", "{\"method\":\"POST\",\"path\":\"/_bridge/sidecar/chunk/0123456789abcdef0123456789abcdef/3?last=0&status=200&encoding=gzip\"}", ByteArray(1900) { ((it * 131 + 7) and 255).toByte() }),
+        )
+        val cases = specs.mapIndexed { i, (name, metaText, data) ->
+            val frame = BleWire.sealRaw(metaText.toByteArray(), data, key, "request", TestVectors.nonce(30 + i))
+            Triple(name, metaText, data) to TestVectors.hex(frame)
+        }
+        val text = "{\"key_hex\":\"${TestVectors.hex(key)}\",\"cases\":[" + cases.joinToString(",\n") { (spec, frame) ->
+            "{\"name\":\"${spec.first}\",\"meta\":${quote(spec.second)},\"body_hex\":\"${TestVectors.hex(spec.third)}\",\"frame_hex\":\"$frame\"}" } + "]}\n"
+        if (System.getenv("BTLINK_REGEN") != null) File(System.getenv("BTLINK_REGEN_FILE") ?: "src/test/resources/ble/request-raw.json").writeText(text)
+        else assertEquals("run with BTLINK_REGEN=1 to rewrite it", javaClass.getResource("/ble/request-raw.json")!!.readText(), text)
+    }
+
     /** Writes the frames a Python check opens with the production `open_message` (bin/interop_check.sh); a normal run only checks that they open here. */
     @Test fun framesForThePythonCheck() {
         val dir = System.getenv("BTLINK_INTEROP_DIR")?.let { File(it).apply { mkdirs() } }
