@@ -94,7 +94,7 @@ When comma needs an X10 route while their Wi-Fi link is unavailable, it queues o
 
 As of 2026-10-26, the loopback relay and route target validation have host unit tests, and the Android debug build compiles. The X10 and comma exchanged a 55,772-byte live Sidecar route over Bluetooth in about nine seconds while X10 Wi-Fi was connected to T11 and AARE was projecting. Sidecar destination POST and DELETE also passed over Bluetooth on the home Wi-Fi. Vehicle navigation remains to be checked after installation in the car.
 
-### Sidecar link over Bluetooth alone (Companion 1.1.39)
+### Sidecar link over Bluetooth alone (Companion 1.1.40)
 
 With a bridge whose `GET /_bridge/health` answer has the flags `poll2` and `results2` (and `push` for the car position), Companion carries the whole Sidecar exchange over
 the one BLE pairing. The flags decide, never `protocol`: the bridge keeps `protocol` 1 because the iOS Galaxy app refuses any other value, and adds `sidecarProtocol` 2. A bridge
@@ -106,6 +106,10 @@ without the flags is the old one: the poll and chunk calls described above stay 
   chunk. A request that fails or stalls closes the link and fails every request that is queued; nothing is replayed.
 - **Connection priority.** The lane asks for the high priority (15 ms interval) when a bulk transfer starts or a job is listed, keeps it while it is busy and gives
   it back after 8 s of idle. Single exchanges (state poll, job poll) run at the interval comma chooses.
+- **The turn signal and the turn help (`nav`).** When the health answer has the flag `pushNav`, the position frames may carry the beacon's `nav` object (the turn signal, the
+  state of the comma's turn help, the distance to the next manoeuvre). Companion says so in the body of `push-enable` (`{"nav":true}`), accepts `nav` in a frame only then, and
+  passes the report on as the bridge sent it; the ages in `nav` grow with the time the frame waited, like the position's `age_ms`. A bridge without the flag, or an older Companion,
+  gets and sends the position alone.
 - **Jobs.** `GET /_bridge/sidecar/poll2` lists the open jobs, small ones first. A job is one of three shapes: a route (`GET /directions/v5/mapbox/driving-traffic/<lon,lat;lon,lat...>?<query>`),
   `GET /status` or `GET /health`, fetched from `127.0.0.1:8765` only (one allow-list for the Companion, the bridge and the X10's route API; `SidecarJobs.kt`,
   `SidecarContract.kt`). The answer goes back with the X10's HTTP status (200, 204, 400, 401, 403, 404, 422, 429, 503, 504), as `identity`, `gzip` or `xz`, in raw
