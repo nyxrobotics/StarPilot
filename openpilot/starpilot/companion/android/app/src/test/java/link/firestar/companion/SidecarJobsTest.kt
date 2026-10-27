@@ -468,4 +468,34 @@ class SidecarJobsTest {
         for (line in warnings) for (secret in listOf("SECRETTOKEN123", "139.7671", "35.6812", "driving-traffic", "/status", "access_token", "steps=true", a.id, b.id))
             assertFalse("a warning holds '$secret': $line", line.contains(secret))
     }
+
+    @Test fun aWakeThatArrivesDuringAPollIsNotLostToTheTimerOfThatPoll() {
+        val comma = FakeComma()
+        val inner = CommaLink(comma)
+        val gate = java.util.concurrent.CountDownLatch(1)
+        val polls = java.util.concurrent.atomic.AtomicInteger()
+        val link = object : LaneLink {
+            override fun exchange(meta: JSONObject, body: ByteArray?, deadlineSeconds: Long): JSONObject {
+                if (meta.optString("path") == SidecarJobs.POLL2 && polls.incrementAndGet() == 1) gate.await(10, TimeUnit.SECONDS)
+                return inner.exchange(meta, body, deadlineSeconds)
+            }
+            override fun control(action: String) = inner.control(action)
+            override fun setHighPriority(on: Boolean) = inner.setHighPriority(on)
+            override fun close() = inner.close()
+        }
+        val lane = lane(link)
+        val poller = Executors.newSingleThreadScheduledExecutor { Thread(it, "test-poller").apply { isDaemon = true } }
+        val jobs = SidecarJobs({ lane }, FakeFetcher(), { false }, System::nanoTime, { warnings += it }, Executor { it.run() }, poller)
+        try {
+            jobs.pollNow()
+            val begun = System.nanoTime()
+            while (polls.get() < 1 && System.nanoTime() - begun < 5_000_000_000L) Thread.sleep(10)
+            assertEquals("the first poll runs", 1, polls.get())
+            jobs.pollNow() // the wake arrives while the first poll is still in the link
+            gate.countDown()
+            val waited = System.nanoTime()
+            while (polls.get() < 2 && System.nanoTime() - waited < 3_000_000_000L) Thread.sleep(10)
+            assertTrue("the second poll came after ${(System.nanoTime() - waited) / 1_000_000} ms, not at once (the idle timer is 10 s)", polls.get() >= 2)
+        } finally { jobs.close() }
+    }
 }

@@ -102,8 +102,11 @@ internal class SidecarJobs(
     /** How many immediate polls were asked for (tests and the status page). */
     internal val pollRequests = AtomicInteger()
 
+    /** A poll was asked for since the cycle that is running now began: its own timer must not replace it (found by the twin: a wake that arrived during a poll waited for the 10 s idle timer). */
+    @Volatile private var pollAsked = false
+
     /** Polls soon: from the push wake-up, after a connect, after a job, after the user sends a destination. */
-    fun pollNow() { pollRequests.incrementAndGet(); schedule(0) }
+    fun pollNow() { pollRequests.incrementAndGet(); pollAsked = true; schedule(0) }
 
     @Synchronized private fun schedule(delayMs: Long) {
         if (!running) return
@@ -114,6 +117,7 @@ internal class SidecarJobs(
 
     private fun cycle() {
         if (!running) return
+        pollAsked = false
         var next = IDLE_POLL_MS
         try {
             val lane = laneSource()
@@ -121,7 +125,7 @@ internal class SidecarJobs(
         } catch (error: Throwable) {
             warn("Job poll failed (${error.javaClass.simpleName})")
         }
-        schedule(next)
+        schedule(if (pollAsked) 0 else next) // a poll that was asked for while this one ran comes next, at once
     }
 
     /** One poll and the dispatch of what it lists. Returns the delay until the next poll (the comma's hint, bounded). */
