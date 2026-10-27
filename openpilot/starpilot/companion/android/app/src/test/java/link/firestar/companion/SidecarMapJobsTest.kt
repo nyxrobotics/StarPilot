@@ -82,6 +82,28 @@ class SidecarMapJobsTest {
         }
     }
 
+    @Test fun onlyTheChunksOfAPlannedTransferFeedAPlannerAndEachFeedsItsOwn() {
+        val statusLane: BleLane
+        run {
+            val comma = comma(); val job = comma.submit(Shape.STATUS, "/status")
+            val clock = java.util.concurrent.atomic.AtomicLong()
+            statusLane = lane(TimedLink(comma, 10_000.0, clock), clock::get)
+            jobs({ statusLane }, FakeFetcher(mutableMapOf("/status" to { LocalAnswer(200, bytes(3_000)) })), clock = clock::get).pollOnce(statusLane)
+            assertNotNull(job.result)
+        }
+        assertNull("a status answer is one chunk of the poll's class and says nothing about the rate of a search answer", statusLane.searchPlanner.rate)
+        assertNull(statusLane.planner.rate); assertNull(statusLane.mapPlanner.rate)
+        for ((kind, planner) in listOf(Shape.GEOCODE to { l: BleLane -> l.searchPlanner }, Shape.ROADTILES to { l: BleLane -> l.mapPlanner })) {
+            val comma = comma(); val job = comma.submit(kind, targets.getValue(kind))
+            val clock = java.util.concurrent.atomic.AtomicLong()
+            val lane = lane(TimedLink(comma, 10_000.0, clock), clock::get)
+            jobs({ lane }, FakeFetcher(mutableMapOf(targets.getValue(kind) to { LocalAnswer(200, bytes(20_000)) })), clock = clock::get).pollOnce(lane)
+            assertNotNull(job.result)
+            assertNotNull("${kind.wire}: its own planner measured a rate", planner(lane).rate)
+            assertNull("${kind.wire}: the route's planner did not", lane.planner.rate)
+        }
+    }
+
     @Test fun theTilesAreMapChunksAndTheSearchesAreSmallChunksAndTheRouteStaysBulk() {
         assertEquals(LaneClass.MAP, Shape.ROADTILES.jobClass); assertEquals(LaneClass.MAP, Shape.STILE.jobClass)
         for (kind in listOf(Shape.GEOCODE, Shape.SUGGEST, Shape.RETRIEVE, Shape.STATUS, Shape.HEALTH)) assertEquals(kind.wire, LaneClass.SMALL, kind.jobClass)
@@ -311,8 +333,10 @@ class SidecarMapJobsTest {
                 assertEquals("nothing more was sent for the lost job", 1, job.next)
                 assertFalse("it is the comma's deadline that ends it, the Companion does not call fail", job.failed)
                 assertTrue(warnings.last().startsWith("Job past its deadline (kind=${kind.wire}"))
+                val polls = worker.pollRequests.get()
                 worker.pollOnce(lane(CommaLink(comma), clock::get))
                 assertEquals("a job the comma still lists is counted once and never fetched or sent again", 1, worker.jobsLost)
+                assertEquals("and it does not ask for an immediate poll (the comma has not dropped it yet)", polls, worker.pollRequests.get())
             } else assertArrayEquals(body, job.result!!.second)
         }
     }

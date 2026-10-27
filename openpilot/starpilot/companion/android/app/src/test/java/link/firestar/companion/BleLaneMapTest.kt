@@ -220,6 +220,8 @@ class BleLaneMapTest {
             assertEquals(11_950, lane.planChunk(LaneClass.SMALL, 1_000_000))
             lane.call(LaneClass.INTERACTIVE, 10, req, ByteArray(6_000), 6_000)
             assertEquals("an interactive request is not a chunk", 11_950, lane.planChunk(LaneClass.SMALL, 1_000_000))
+            assertEquals("and does not move the route's planner either", 65_486, lane.planChunk(LaneClass.BULK, 1_000_000))
+            assertEquals("nor the map planner", 11_950, lane.planChunk(LaneClass.MAP, 1_000_000))
         } finally { lane.close() }
     }
 
