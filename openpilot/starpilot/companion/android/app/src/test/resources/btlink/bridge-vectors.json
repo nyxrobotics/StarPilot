@@ -1,0 +1,64 @@
+{
+ "note": "made by tools/btcompanion/gen_bridge_vectors.py from the real bridge modules (ble_push.py, ble_jobs.py, proxy.py); see README.md in this folder",
+ "key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+ "session": "00112233445566778899aabbccddeeff",
+ "answers_json": {
+  "health": "{\"protocol\":1,\"transport\":\"bluetooth\",\"readStream\":true,\"notificationStream\":true,\"galaxy\":\"secretgood\",\"sidecarProtocol\":2,\"poll2\":true,\"results2\":true,\"push\":true}",
+  "poll2_empty": "{\"v\":2,\"jobs\":[],\"next_poll_ms\":10000}",
+  "poll2_jobs": "{\"v\":2,\"jobs\":[{\"id\":\"5ed4eb22932b69be053b480592da1fe6\",\"kind\":\"status\",\"target\":\"/status\",\"next_sequence\":0,\"claimed\":false,\"lease_ms\":15000},{\"id\":\"21189fada30053e9a543fd3f9af09d35\",\"kind\":\"health\",\"target\":\"/health\",\"next_sequence\":0,\"claimed\":false,\"lease_ms\":15000},{\"id\":\"cf28d49c96b00a7d38c9824dc97d0939\",\"kind\":\"route\",\"target\":\"/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=TOKEN&geometries=geojson\",\"next_sequence\":0,\"claimed\":false,\"lease_ms\":15000}],\"next_poll_ms\":1000}",
+  "poll2_claimed_by_another": "{\"v\":2,\"jobs\":[{\"id\":\"5ed4eb22932b69be053b480592da1fe6\",\"kind\":\"status\",\"target\":\"/status\",\"next_sequence\":0,\"claimed\":false,\"lease_ms\":15000},{\"id\":\"21189fada30053e9a543fd3f9af09d35\",\"kind\":\"health\",\"target\":\"/health\",\"next_sequence\":0,\"claimed\":false,\"lease_ms\":15000},{\"id\":\"cf28d49c96b00a7d38c9824dc97d0939\",\"kind\":\"route\",\"target\":\"/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=TOKEN&geometries=geojson\",\"next_sequence\":1,\"claimed\":true,\"lease_ms\":15000}],\"next_poll_ms\":1000}"
+ },
+ "frames": [
+  {
+   "name": "vehicle",
+   "kind": "vehicle",
+   "counter": 5,
+   "ts": 123456,
+   "body": "{\"v\":1,\"seq\":1234,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"bearing\":250.5,\"speed\":13.89,\"age_ms\":120,\"src\":\"gnss\"}",
+   "auth": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+   "frame_hex": "0000011b05060708090a0b0c0d0e0f100fea543acedb1957817fdb22a5b84b1bb4969cf81f2e4eb17ce5d48549fbb188f0e3418fa0af4c6fde33f858152fb9984442b4a1ae2f291d36ea52578d9ebae2f642d3e448e9ddd7ac05a4874ebbf038fdbdb103d3e4e19ec71e9b9fa9360a1ff50c07ec28475c4260158d221f53ebcda7fc2c98afa2303eb46b7f7d8c38340b4eda8e8aa972f893ae8adad6009c789980ff46c2739bc7db9f07a2ecd15aa0fd207722707a93f28223283ea9b78f264cad1f204135b64d489266a25a52357c9ccbb046eca35402017b1c7da9c52774fe2e16b14687b279dab9183795d7fb95bd59d9369cf4125b97c1df7b19b93cb1267566488e9a2032b749835eda4cba300e656e069268b434b2500a8c46fd765e",
+   "packets_hex": [
+    "100000000500020000011b05060708090a0b0c0d0e0f100fea543acedb1957817fdb22a5b84b1bb4969cf81f2e4eb17ce5d48549fbb188f0e3418fa0af4c6fde33f858152fb9984442b4a1ae2f291d36ea52578d9ebae2f642d3e448e9ddd7ac05a4874ebbf038fdbdb103d3e4e19ec71e9b9fa9360a1ff50c07ec28475c4260158d221f53ebcda7fc2c98afa2303eb46b7f7d8c38340b4eda8e8aa972f893ae8adad6009c789980ff46c2739bc7db9f07a2ecd15aa0fd207722707a93f28223283ea9b78f264cad1f204135b64d489266a25a52357c9ccbb046eca35402017b1c7da9c52774fe2e16b14687b279dab9183795d7",
+    "10000000050102fb95bd59d9369cf4125b97c1df7b19b93cb1267566488e9a2032b749835eda4cba300e656e069268b434b2500a8c46fd765e"
+   ]
+  },
+  {
+   "name": "vehicle-full-3-packets",
+   "kind": "vehicle",
+   "counter": 6,
+   "ts": 1099511627776,
+   "body": "{\"v\":1,\"seq\":99,\"fix\":true,\"lat\":35.681201,\"lon\":139.767102,\"bearing\":359.9,\"speed\":99.99,\"acc\":4.5,\"age_ms\":4999,\"src\":\"gnss\",\"vego\":13.5,\"dr_s\":12,\"hdg\":\"ok\",\"hdg_sig\":0.5,\"hold\":false,\"prev\":3,\"snap_m\":3}",
+   "auth": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+   "frame_hex": "000001cb060708090a0b0c0d0e0f10119cbcdb24a9bd067bb5c229a2401a27f97786575b5603ffbbaec1855b8aa5bdc6c7150dadd41ab089e9d63246636a396cbc8711d0a3323fd27af55d83390ac08810dda811eef7e6975d1f22f7de7ecae403d5ce4ed5c73c0b581842653edfebf4c0bd1d9fc71d3ae90455040119e1c1d8d0b7666f9aa90a71afe0b56e1157266f33dc28a449d3490dd7dea7b1f8058c514118e0a7112392e8aa1cf997f268dd8a3f35dcdf1e5112db3adc433ca0d762ef403137be1ada615dff6b3bb7dbfda302c668df99f5ec75ad1b549e040e16bccb2a3ea0270ca1ee00dc54471652d0741e03b43ebba0f84eab3fd58b55dce691b5542052b61b058b5b8f3568af0ca8d0f51167aa670869a6e4a715a79274c414fb27ae94dc02f7d4de87f0a376212ac96940cfabfc97d2784ec8506dbb47eaa65341db34ead8ff2c47d51b983b3db37b0829d96e4d2594d403b4258376e4f06c2816784a03c8ce054544fe8ea21cfd2d53ba50706315bb70b3f2e1a40d45b4d414e15d11abf9b6ccc2417925ad0e64a2772a5279b3314d59ab5566a845aeb08f6c19577a9c3fcea30afdead8e5f296d2e805a7d164617973b56beac433a8608b99dfe1f68bfa869355bbc851cdc29388",
+   "packets_hex": [
+    "10000000060002000001cb060708090a0b0c0d0e0f10119cbcdb24a9bd067bb5c229a2401a27f97786575b5603ffbbaec1855b8aa5bdc6c7150dadd41ab089e9d63246636a396cbc8711d0a3323fd27af55d83390ac08810dda811eef7e6975d1f22f7de7ecae403d5ce4ed5c73c0b581842653edfebf4c0bd1d9fc71d3ae90455040119e1c1d8d0b7666f9aa90a71afe0b56e1157266f33dc28a449d3490dd7dea7b1f8058c514118e0a7112392e8aa1cf997f268dd8a3f35dcdf1e5112db3adc433ca0d762ef403137be1ada615dff6b3bb7dbfda302c668df99f5ec75ad1b549e040e16bccb2a3ea0270ca1ee00dc54471652",
+    "10000000060102d0741e03b43ebba0f84eab3fd58b55dce691b5542052b61b058b5b8f3568af0ca8d0f51167aa670869a6e4a715a79274c414fb27ae94dc02f7d4de87f0a376212ac96940cfabfc97d2784ec8506dbb47eaa65341db34ead8ff2c47d51b983b3db37b0829d96e4d2594d403b4258376e4f06c2816784a03c8ce054544fe8ea21cfd2d53ba50706315bb70b3f2e1a40d45b4d414e15d11abf9b6ccc2417925ad0e64a2772a5279b3314d59ab5566a845aeb08f6c19577a9c3fcea30afdead8e5f296d2e805a7d164617973b56beac433a8608b99dfe1f68bfa869355bbc851cdc29388"
+   ]
+  },
+  {
+   "name": "vehicle-no-fix",
+   "kind": "vehicle",
+   "counter": 7,
+   "ts": 5,
+   "body": "{\"v\":1,\"seq\":7,\"fix\":false}",
+   "auth": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+   "frame_hex": "000000bb0708090a0b0c0d0e0f10111250632b9cb22933e42011e209d1e02a506d3aa5b0f4ba44d87ac62fbbc97617066f7c2271e589b6823c900e535addb4a19f5dc93018a9884a3b8f22f2b17a329eadb1e9ad9346232f5e40b6bba2281b41aa8bbf50a43c29a9d49556ff3f5d9bc19c6b2600c4bb3623034811faf6f10be17e62370a46c56cce0d33f3fb9d713a88e5b19c82ca5785ab7257536cd2ba9973d767eb6718aed1713ea48895b100785e6cabd66eb314546c8e9e4474a7d3bc",
+   "packets_hex": [
+    "10000000070001000000bb0708090a0b0c0d0e0f10111250632b9cb22933e42011e209d1e02a506d3aa5b0f4ba44d87ac62fbbc97617066f7c2271e589b6823c900e535addb4a19f5dc93018a9884a3b8f22f2b17a329eadb1e9ad9346232f5e40b6bba2281b41aa8bbf50a43c29a9d49556ff3f5d9bc19c6b2600c4bb3623034811faf6f10be17e62370a46c56cce0d33f3fb9d713a88e5b19c82ca5785ab7257536cd2ba9973d767eb6718aed1713ea48895b100785e6cabd66eb314546c8e9e4474a7d3bc"
+   ]
+  },
+  {
+   "name": "wake",
+   "kind": "wake",
+   "counter": 2,
+   "ts": 9,
+   "body": null,
+   "auth": null,
+   "frame_hex": "0000006102030405060708090a0b0c0d69c6a4c13901fdc68043014c6a29984290d9d418902527a7c57bcabf33b3f30692619f2d7663950bb621691905722a3890f11d93cf3af7daae75d944edd79dc228485febca94d5b21e2a27091c40c089dc6911d420",
+   "packets_hex": [
+    "100000000200010000006102030405060708090a0b0c0d69c6a4c13901fdc68043014c6a29984290d9d418902527a7c57bcabf33b3f30692619f2d7663950bb621691905722a3890f11d93cf3af7daae75d944edd79dc228485febca94d5b21e2a27091c40c089dc6911d420"
+   ]
+  }
+ ],
+ "health_b64": "eyJwcm90b2NvbCI6IDEsICJ0cmFuc3BvcnQiOiAiYmx1ZXRvb3RoIiwgInJlYWRTdHJlYW0iOiB0cnVlLCAibm90aWZpY2F0aW9uU3RyZWFtIjogdHJ1ZSwgImdhbGF4eSI6ICJzZWNyZXRnb29kIiwgInNpZGVjYXJQcm90b2NvbCI6IDIsICJwb2xsMiI6IHRydWUsICJyZXN1bHRzMiI6IHRydWUsICJwdXNoIjogdHJ1ZX0="
+}

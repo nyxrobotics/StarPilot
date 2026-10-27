@@ -12,38 +12,40 @@ class LinkMiscTest {
 
     private fun features(text: String) = BridgeFeatures.parse(text.toByteArray())
 
-    @Test fun aBridgeThatAnnouncesProtocolTwoAndItsFlags() {
-        val f = features("{\"protocol\":2,\"transport\":\"bluetooth\",\"poll2\":true,\"results2\":true,\"push\":true,\"galaxy\":\"secretgood\"}")
+    @Test fun aBridgeThatAnnouncesItsFlags() {
+        val f = features("""{"protocol":2,"transport":"bluetooth","poll2":true,"results2":true,"push":true,"galaxy":"secretgood"}""")
         assertEquals(2, f.protocol); assertTrue(f.jobsV2); assertTrue(f.push); assertTrue(f.xz)
     }
 
-    @Test fun theBridgeThatKeepsProtocolOneForIosAnnouncesTheSidecarProtocolSeparately() {
+    @Test fun theBridgeThatKeepsProtocolOneForIosAnnouncesTheSidecarProtocolNextToTheFlags() {
         // what the bridge of job A answers: `protocol` stays 1 because the iOS Galaxy app refuses any other value
         val f = features("""{"protocol":1,"transport":"bluetooth","readStream":true,"notificationStream":true,"galaxy":"secretgood","sidecarProtocol":2,"poll2":true,"results2":true,"push":true}""")
         assertEquals(2, f.protocol); assertTrue(f.jobsV2); assertTrue(f.push)
-        assertFalse("flags without the protocol level", features("""{"protocol":1,"poll2":true,"results2":true,"push":true}""").jobsV2)
-        assertFalse("a level without the flags", features("""{"protocol":1,"sidecarProtocol":2}""").jobsV2)
-        assertFalse(features("""{"protocol":1,"sidecarProtocol":"2","poll2":true,"results2":true}""").jobsV2)
     }
 
-    @Test fun theOldBridgeAndAnythingUnreadableAreProtocolOne() {
-        val old = features("{\"protocol\":1,\"transport\":\"bluetooth\",\"readStream\":true,\"notificationStream\":true,\"galaxy\":\"secretgood\"}")
+    @Test fun theFlagsDecideNeverTheProtocolField() {
+        assertTrue("flags with protocol 1 and no level", features("""{"protocol":1,"poll2":true,"results2":true,"push":true}""").jobsV2)
+        assertTrue("flags and no protocol field at all", features("""{"poll2":true,"results2":true}""").jobsV2)
+        assertFalse("a level without the flags", features("""{"protocol":1,"sidecarProtocol":2}""").jobsV2)
+        assertFalse("protocol 2 without the flags", features("""{"protocol":2,"transport":"bluetooth"}""").jobsV2)
+        assertFalse("a level that is not a number does not matter, the flags are not booleans", features("""{"protocol":1,"sidecarProtocol":"2","poll2":"true","results2":1}""").jobsV2)
+    }
+
+    @Test fun theOldBridgeAndAnythingUnreadableKeepTheLegacyPath() {
+        val old = features("""{"protocol":1,"transport":"bluetooth","readStream":true,"notificationStream":true,"galaxy":"secretgood"}""")
         assertEquals(1, old.protocol); assertFalse(old.jobsV2); assertFalse(old.push)
-        for (text in listOf("", "{}", "[]", "not json", "{\"protocol\":\"2\",\"poll2\":true,\"results2\":true}", "{\"protocol\":2.0,\"poll2\":true,\"results2\":true}", "{\"protocol\":0}", "{\"protocol\":99999}",
-            "{\"protocol\":2,\"poll2\":true,\"results2\":true,\"protocol\":2}x")) {
+        for (text in listOf("", "{}", "[]", "not json", "{\"poll2\":true,\"results2\":true}x", """{"poll2":true,"poll2":true,"results2":true} {}""")) {
             val f = features(text)
             assertFalse(text, f.jobsV2); assertFalse(text, f.push)
         }
     }
 
     @Test fun everyFlagIsNeededAndMustBeTheBooleanTrue() {
-        assertFalse(features("{\"protocol\":2,\"poll2\":true}").jobsV2)
-        assertFalse(features("{\"protocol\":2,\"results2\":true}").jobsV2)
-        assertFalse(features("{\"protocol\":1,\"poll2\":true,\"results2\":true}").jobsV2)
-        assertFalse(features("{\"protocol\":2,\"poll2\":\"true\",\"results2\":1}").jobsV2)
-        assertTrue(features("{\"protocol\":3,\"poll2\":true,\"results2\":true}").jobsV2)
-        assertFalse(features("{\"protocol\":2,\"poll2\":true,\"results2\":true,\"push\":1}").push)
-        assertFalse("xz can be switched off by the bridge", features("{\"protocol\":2,\"poll2\":true,\"results2\":true,\"xz\":false}").xz)
+        assertFalse(features("""{"protocol":2,"poll2":true}""").jobsV2)
+        assertFalse(features("""{"protocol":2,"results2":true}""").jobsV2)
+        assertFalse(features("""{"protocol":2,"poll2":"true","results2":1}""").jobsV2)
+        assertFalse(features("""{"poll2":true,"results2":true,"push":1}""").push)
+        assertFalse("xz can be switched off by the bridge", features("""{"poll2":true,"results2":true,"xz":false}""").xz)
         assertFalse(BridgeFeatures.LEGACY.jobsV2)
     }
 

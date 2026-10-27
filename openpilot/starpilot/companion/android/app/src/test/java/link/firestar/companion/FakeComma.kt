@@ -38,7 +38,21 @@ internal class FakeComma {
     private fun reply(status: Int, json: JSONObject? = null) =
         JSONObject().put("status", status).put("body", Base64.getEncoder().encodeToString((json?.toString() ?: "").toByteArray()))
 
+    /** One request that reached comma, with comma's answer: what a real broker must say to the same request (tools/btcompanion/bridge_replay.py replays these). */
+    class Recorded(val method: String, val path: String, val body: ByteArray, val status: Int, val next: Int?)
+    val transcript = CopyOnWriteArrayList<Recorded>()
+
     @Synchronized fun handle(meta: JSONObject, body: ByteArray?): JSONObject {
+        val answer = handleInner(meta, body)
+        val path = meta.getString("path")
+        if (path.startsWith("/_bridge/sidecar/chunk/") || path.startsWith("/_bridge/sidecar/fail/")) {
+            val next = try { StrictJson.parseObject(java.util.Base64.getDecoder().decode(answer.optString("body", ""))).let { (it["next"] as? StrictJson.Num)?.text?.toInt() } } catch (_: Exception) { null }
+            transcript += Recorded(meta.getString("method"), path, body ?: ByteArray(0), answer.getInt("status"), next)
+        }
+        return answer
+    }
+
+    private fun handleInner(meta: JSONObject, body: ByteArray?): JSONObject {
         val method = meta.getString("method")
         val path = meta.getString("path")
         if (meta.has("body")) rejected += "a body member in a raw request"
