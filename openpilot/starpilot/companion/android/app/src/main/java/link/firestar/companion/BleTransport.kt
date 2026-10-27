@@ -61,7 +61,29 @@ class BleTransport(context: Context, private val key: ByteArray?, private val he
             private set
         private val connecting = java.util.concurrent.atomic.AtomicInteger()
         val busy get() = connecting.get() > 0
+        /** Runs after every successful handshake, on the thread that connected (the Sidecar relay starts the push channel and the job poll from it). */
+        @Volatile internal var handshakeHook: ((BleTransport) -> Unit)? = null
+        private val CCCD: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
     }
+    /** Every request of this connection goes through the lane: one in flight, strict priority, a stall closes the link and fails what is queued (BleLane.kt). */
+    private val laneLink = object : LaneLink {
+        override fun exchange(meta: JSONObject, body: ByteArray?, deadlineSeconds: Long) = this@BleTransport.exchange(meta, body, deadlineSeconds)
+        override fun control(action: String) = this@BleTransport.control(action)
+        override fun setHighPriority(on: Boolean) = this@BleTransport.setHighPriority(on)
+        override fun close() = this@BleTransport.close()
+    }
+    internal val lane: BleLane = BleLane(laneLink)
+    /** What comma's bridge announced at the handshake (`/_bridge/health`): protocol 2 and its flags, or the legacy answer. */
+    @Volatile internal var features: BridgeFeatures = BridgeFeatures.LEGACY
+        private set
+    /** The RX characteristic accepts write without response (a bridge that has the lever): data packets of a raw-body request go without a round trip each. */
+    @Volatile internal var canWriteNoResponse = false
+        private set
+    /** The push characteristic (number 6) is in the service. */
+    @Volatile internal var hasPushCharacteristic = false
+        private set
+    /** Receives every notification of the push characteristic (set by the push receiver of this connection). */
+    @Volatile internal var pushSink: ((ByteArray) -> Unit)? = null
     val open get() = !closed && session.isNotEmpty()
     private val events = GattEventMailbox()
     @Volatile private var gatt: BluetoothGatt? = null
@@ -87,6 +109,13 @@ class BleTransport(context: Context, private val key: ByteArray?, private val he
             events.offer(GattEvent("read", status, value.copyOf()))
         }
         override fun onCharacteristicWrite(g: BluetoothGatt, c: BluetoothGattCharacteristic, status: Int) { events.offer(GattEvent("write", status)) }
+        override fun onDescriptorWrite(g: BluetoothGatt, d: BluetoothGattDescriptor, status: Int) { events.offer(GattEvent("descriptor", status)) }
+        @Deprecated("Pre Android 13 callback") override fun onCharacteristicChanged(g: BluetoothGatt, c: BluetoothGattCharacteristic) {
+            if (Build.VERSION.SDK_INT < 33 && c.uuid == uuid("6")) c.value?.let { pushSink?.invoke(it.copyOf()) }
+        }
+        override fun onCharacteristicChanged(g: BluetoothGatt, c: BluetoothGattCharacteristic, value: ByteArray) {
+            if (c.uuid == uuid("6")) pushSink?.invoke(value.copyOf())
+        }
     }
     private fun await(kind: String, seconds: Long = 12): ByteArray = events.await(kind, seconds) { closed }
     private fun characteristic(part: String) = gatt?.getService(uuid("1"))?.getCharacteristic(uuid(part)) ?: throw IOException("Galaxy Bluetooth service unavailable")
@@ -94,16 +123,24 @@ class BleTransport(context: Context, private val key: ByteArray?, private val he
         if (gatt?.readCharacteristic(characteristic(part)) != true) throw IOException("Bluetooth read unavailable")
         return await("read")
     }
-    private fun write(value: ByteArray) {
+    /** One data packet to RX. Without [noResponse] the stack waits for comma's response (two to three connection intervals); with it the packet goes as soon as the controller has room. */
+    private fun write(value: ByteArray, noResponse: Boolean = false) {
         val g = gatt ?: throw IOException("Bluetooth disconnected")
         val c = characteristic("2")
-        val sent = if (Build.VERSION.SDK_INT >= 33) g.writeCharacteristic(c, value, BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) == BluetoothStatusCodes.SUCCESS
-            else { c.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT; c.value = value; g.writeCharacteristic(c) }
+        val type = if (noResponse) BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE else BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+        val sent = if (Build.VERSION.SDK_INT >= 33) g.writeCharacteristic(c, value, type) == BluetoothStatusCodes.SUCCESS
+            else { c.writeType = type; c.value = value; g.writeCharacteristic(c) }
         if (!sent) throw IOException("Bluetooth write unavailable")
         await("write")
     }
     /** Returns the authenticated device address so the next connection can skip scanning. */
-    @Synchronized fun connect(preferredAddress: String? = null): String {
+    fun connect(preferredAddress: String? = null): String {
+        val address = connectLocked(preferredAddress)
+        // After EVERY handshake, outside the monitor of the handshake: the hook uses the lane (push-enable, the first job poll).
+        try { handshakeHook?.invoke(this) } catch (error: Exception) { Log.w("StarPilotSidecarBLE", "Handshake hook failed (${error.javaClass.simpleName})") }
+        return address
+    }
+    @Synchronized private fun connectLocked(preferredAddress: String?): String {
         check(!closed)
         connecting.incrementAndGet()
         try { return connectOnce(preferredAddress) } finally { connecting.decrementAndGet() }
@@ -116,10 +153,17 @@ class BleTransport(context: Context, private val key: ByteArray?, private val he
             // Authenticate before exposing cached controls. Do not trust the advertised device name.
             onPhase("Authenticating comma…")
             val health = JSONObject().put("method", "GET").put("path", "/_bridge/health").apply { hello?.let { put("phone", it) } }
-            val response = try { request(health, 20) } catch (e: ResponseTimeout) {
+            // Straight to the link: the lane starts after the handshake, and this thread holds the monitor the lane's thread needs.
+            val response = try { exchange(health, null, 20) } catch (e: ResponseTimeout) {
                 throw PairingNotRecognized("comma didn't recognize this phone's pairing")
             }
             if (response.getInt("status") != 200) throw IOException("Galaxy Bluetooth authentication failed")
+            features = try { BridgeFeatures.parse(java.util.Base64.getDecoder().decode(response.optString("body", ""))) } catch (_: IllegalArgumentException) { BridgeFeatures.LEGACY }
+            noteServiceShape()
+            if (features.push && !hasPushCharacteristic) {
+                // The bridge says it has the push characteristic and this phone's copy of the service does not: Android kept an old cached database. Ask for a fresh one, once.
+                if (refreshServices()) noteServiceShape()
+            }
             val previous = active
             active = this
             if (previous !== this) previous?.close()
@@ -200,14 +244,25 @@ class BleTransport(context: Context, private val key: ByteArray?, private val he
             throw IOException("comma didn't answer. Open Pair phone on comma first (Settings > Bluetooth > Pair phone) and keep it open, then tap Add Bluetooth Phone Pairing again.")
         } catch (e: Exception) { close(); throw e } finally { connecting.decrementAndGet() }
     }
-    @Synchronized override fun request(value: JSONObject, deadlineSeconds: Long): JSONObject {
+    /** An interactive request: the relay's calls, the guidance poll, the phone GPS, the Galaxy screens. */
+    override fun request(value: JSONObject, deadlineSeconds: Long): JSONObject = lane.call(LaneClass.INTERACTIVE, deadlineSeconds, value)
+    override fun request(value: JSONObject, deadlineSeconds: Long, cls: LaneClass): JSONObject = lane.call(cls, deadlineSeconds, value)
+
+    /** One request and its answer on the link itself; only the lane's thread (and the handshake) calls it. A failure closes the connection. */
+    @Synchronized internal fun exchange(meta: JSONObject, body: ByteArray?, deadlineSeconds: Long): JSONObject {
         check(!closed && session.isNotEmpty())
         val id = UUID.randomUUID().toString()
         val count = ++counter
-        val request = JSONObject(value.toString()).put("id", id).put("session", session).put("counter", count).put("responseCodec", 2).put("responseFlow", "read-stream")
+        val request = JSONObject(meta.toString()).put("id", id).put("session", session).put("counter", count).put("responseCodec", 2).put("responseFlow", "read-stream")
         // Upstream read-stream flow acknowledges once after authenticated reassembly.
         try {
-            for (packet in BleWire.packets(BleWire.seal(request.toString().toByteArray(), key ?: throw IOException("Not paired")), packetSize)) write(packet)
+            val sealKey = key ?: throw IOException("Not paired")
+            val frame = if (body == null) BleWire.seal(request.toString().toByteArray(), sealKey) else BleWire.sealRaw(request.toString().toByteArray(), body, sealKey)
+            val packets = BleWire.packets(frame, packetSize)
+            // A raw-body request goes without a response per data packet where the bridge allows it; the last packet always waits for comma's response, so its answer proves
+            // the earlier ones arrived in order (a lost or reordered packet fails the frame at comma, and this request at its deadline).
+            val quick = body != null && canWriteNoResponse
+            for ((index, packet) in packets.withIndex()) write(packet, quick && index < packets.size - 1)
             val assembler = BleWire.Assembler()
             val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(deadlineSeconds)
             while (System.nanoTime() < deadline) {
@@ -215,7 +270,7 @@ class BleTransport(context: Context, private val key: ByteArray?, private val he
                 if (packet.contentEquals(byteArrayOf(0))) { Thread.sleep(30); continue }
                 val result = assembler.add(packet)
                 if (result != null) {
-                    val decoded = BleWire.decode(result, key ?: throw IOException("Not paired"))
+                    val decoded = BleWire.decode(result, sealKey)
                     val response = JSONObject(String(decoded.json, Charsets.UTF_8))
                     decoded.body?.let { require(!response.has("body")); response.put("body", java.util.Base64.getEncoder().encodeToString(it)) }
                     require(response.getString("id") == id && response.getString("session") == session && response.getLong("counter") == count)
@@ -226,8 +281,67 @@ class BleTransport(context: Context, private val key: ByteArray?, private val he
             throw ResponseTimeout()
         } catch (e: Exception) { close(); throw e }
     }
-    /** Favor a short connection interval while streaming a route, then restore Android's default. */
-    @Synchronized override fun routePriority(high: Boolean) {
+
+    /** Operations that take a turn on the lane but are not requests. */
+    @Synchronized internal fun control(action: String): JSONObject {
+        check(!closed)
+        try {
+            when (action) {
+                "subscribe" -> subscribeToPush()
+                else -> throw IOException("Unknown link operation")
+            }
+            return JSONObject().put("status", 200)
+        } catch (e: Exception) { close(); throw e }
+    }
+
+    private fun subscribeToPush() {
+        val g = gatt ?: throw IOException("Bluetooth disconnected")
+        val c = characteristic("6")
+        if (!g.setCharacteristicNotification(c, true)) throw IOException("Bluetooth notification unavailable")
+        val descriptor = c.getDescriptor(CCCD) ?: throw IOException("Bluetooth notification descriptor unavailable")
+        val enable = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+        val sent = if (Build.VERSION.SDK_INT >= 33) g.writeDescriptor(descriptor, enable) == BluetoothStatusCodes.SUCCESS
+            else { descriptor.value = enable; g.writeDescriptor(descriptor) }
+        if (!sent) throw IOException("Bluetooth notification write unavailable")
+        await("descriptor")
+    }
+
+    /** The shape of the service as discovered: push characteristic present, write without response on RX. */
+    private fun noteServiceShape() {
+        val service = gatt?.getService(uuid("1"))
+        hasPushCharacteristic = service?.getCharacteristic(uuid("6")) != null
+        canWriteNoResponse = service?.getCharacteristic(uuid("2"))?.let { it.properties and BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE != 0 } == true
+    }
+
+    /** Drops Android's cached copy of comma's service and discovers it again (the cache is not refreshed on its own when the bridge gained a characteristic). */
+    @SuppressLint("DiscouragedPrivateApi")
+    private fun refreshServices(): Boolean {
+        val g = gatt ?: return false
+        return try {
+            if (g.javaClass.getMethod("refresh").invoke(g) != true) return false
+            events.clear()
+            if (!g.discoverServices()) return false
+            await("services")
+            true
+        } catch (_: Exception) { false }
+    }
+
+    /** What the push receiver needs of this connection. */
+    internal val pushLink = object : PushLink {
+        override val pushKey: ByteArray get() = key ?: throw IOException("Not paired")
+        override val pushSession: String get() = session
+        override fun subscribe() { lane.control(LaneClass.SMALL, 12, "subscribe") }
+        override fun pushEnable(): Int = lane.call(LaneClass.SMALL, 10, laneRequest("POST", "/_bridge/push/enable"), label = "push-enable").optInt("status")
+    }
+
+    internal val jobsV2: Boolean get() = features.jobsV2 && open
+    /** Write without response is not available: bytes cost more than the encoder's time, so a route goes as `xz` (the fallback of the design). */
+    internal val preferXz: Boolean get() = features.xz && !canWriteNoResponse
+
+    /** The legacy route worker asks for the high priority while it streams chunks; the lane's policy now owns the setting and gives it back after the idle time. */
+    override fun routePriority(high: Boolean) { if (high) lane.wantHigh() }
+    /** Not synchronized: the request for the high priority must not wait for the exchange that is running. */
+    internal fun setHighPriority(high: Boolean) {
         if (closed) return
         try {
             val priority = if (high) BluetoothGatt.CONNECTION_PRIORITY_HIGH else BluetoothGatt.CONNECTION_PRIORITY_BALANCED
@@ -239,6 +353,8 @@ class BleTransport(context: Context, private val key: ByteArray?, private val he
     }
     override fun close() {
         closed = true
+        pushSink = null
+        lane.close()
         if (active === this) active = null
         val old = gatt; gatt = null
         old?.disconnect(); old?.close()

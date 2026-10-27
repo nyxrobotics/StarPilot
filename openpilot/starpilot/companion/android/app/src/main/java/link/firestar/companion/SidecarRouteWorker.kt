@@ -10,7 +10,6 @@ import java.net.HttpURLConnection
 import java.net.Proxy
 import java.net.SocketException
 import java.net.SocketTimeoutException
-import java.net.URI
 import java.net.URL
 import java.util.Base64
 import java.util.concurrent.Executors
@@ -21,6 +20,8 @@ import java.util.zip.GZIPOutputStream
 interface RouteLink {
     fun request(value: JSONObject, deadlineSeconds: Long = 90): JSONObject
     fun routePriority(high: Boolean)
+    /** The same request in another class of the lane (the lane is in BleLane.kt); a link without a lane treats every class alike. */
+    fun request(value: JSONObject, deadlineSeconds: Long, cls: LaneClass): JSONObject = request(value, deadlineSeconds)
 }
 
 /** A complete HTTP response was received, but it cannot be used as a route. */
@@ -41,6 +42,7 @@ internal class SidecarRouteWorker internal constructor(
     /** Keep the exact compressed bytes until comma confirms completion or expires the job. */
     private data class Transfer(val id: String, val target: String, val body: ByteArray)
     private var pending: Transfer? = null
+    private var jobs: SidecarJobs? = null
 
     internal var routeFetcher: (String) -> ByteArray = ::fetch
     internal var warning: (String) -> Unit = { Log.w("StarPilotSidecarBLE", it) }
@@ -56,11 +58,28 @@ internal class SidecarRouteWorker internal constructor(
         } catch (_: java.util.concurrent.RejectedExecutionException) { /* service stopped */ }
     }
 
+    /** The job poll of a bridge that speaks `poll2` and the v2 results; made on the first tick that finds one. */
+    @Synchronized private fun jobsEngine(): SidecarJobs = jobs ?: SidecarJobs(
+        laneSource = { (transport() as? BleTransport)?.takeIf { it.jobsV2 }?.lane },
+        preferXz = { (transport() as? BleTransport)?.preferXz == true },
+        warn = { warning(it) },
+    ).also { jobs = it }
+
+    /** The push channel says a job is waiting (the wake-up frame), or a connection was just made: poll now instead of at the next tick. */
+    fun wake() {
+        if (!running) return
+        try { worker.execute { tick() } } catch (_: java.util.concurrent.RejectedExecutionException) { /* service stopped */ }
+    }
+
     internal fun tick() {
         if (!running) return
         val link = try { transport() } catch (_: Exception) { null } ?: return
+        if ((link as? BleTransport)?.jobsV2 == true) {
+            try { jobsEngine().pollNow() } catch (error: Exception) { warning("Route poll failed (${error.javaClass.simpleName})") }
+            return
+        }
         try {
-            val answer = link.request(JSONObject().put("method", "GET").put("path", POLL), 10)
+            val answer = link.request(JSONObject().put("method", "GET").put("path", POLL), 10, LaneClass.SMALL)
             if (answer.optInt("status") == 204) { pending = null; return }
             if (answer.optInt("status") != 200) return
             val encoded = answer.optString("body", "")
@@ -141,7 +160,7 @@ internal class SidecarRouteWorker internal constructor(
             val request = JSONObject().put("method", "POST")
                 .put("path", "/_bridge/sidecar/chunk/${transfer.id}/$sequence?last=${if (last) 1 else 0}&status=200&encoding=gzip")
                 .put("body", Base64.getEncoder().encodeToString(body.copyOfRange(offset, end)))
-            val answer = link.request(request, 30)
+            val answer = link.request(request, 30, LaneClass.BULK)
             if (answer.optInt("status") != 200) error("Sidecar route chunk rejected")
             val ack = JSONObject(String(Base64.getDecoder().decode(answer.optString("body", "")), Charsets.UTF_8))
             if (ack.optInt("next", -1) != sequence + 1) error("Sidecar route chunk ACK mismatch")
@@ -150,7 +169,7 @@ internal class SidecarRouteWorker internal constructor(
     }
 
     private fun fail(link: RouteLink, id: String) {
-        val response = link.request(JSONObject().put("method", "POST").put("path", "/_bridge/sidecar/fail/$id"), 10)
+        val response = link.request(JSONObject().put("method", "POST").put("path", "/_bridge/sidecar/fail/$id"), 10, LaneClass.SMALL)
         if (response.optInt("status") !in setOf(200, 404)) throw IOException("Sidecar route failure was not acknowledged")
     }
 
@@ -218,6 +237,7 @@ internal class SidecarRouteWorker internal constructor(
 
     override fun close() {
         running = false
+        jobs?.close()
         worker.shutdownNow()
     }
 
@@ -227,14 +247,7 @@ internal class SidecarRouteWorker internal constructor(
         private const val MAX_BODY = 8 * 1024 * 1024
         private val ID = Regex("[0-9a-f]{32}")
 
-        internal fun validTarget(value: String): Boolean {
-            if (value.length !in 1..8192 || value.any { it.code < 32 || it.code == 127 || it == '\\' }) return false
-            val parsed = try { URI(value) } catch (_: Exception) { return false }
-            val path = parsed.rawPath ?: return false
-            return parsed.scheme == null && parsed.rawAuthority == null && parsed.rawFragment == null &&
-                path.startsWith("/directions/v5/mapbox/driving-traffic/") &&
-                path.length <= 300 && path.drop("/directions/v5/mapbox/driving-traffic/".length).isNotEmpty() &&
-                '%' !in path && "//" !in path && !parsed.rawQuery.isNullOrEmpty()
-        }
+        /** The shared allow-list's route shape (docs/dev/bluetooth-link.md section 5.1): a coordinate list and a query, printable ASCII only. */
+        internal fun validTarget(value: String): Boolean = Allowlist.check("GET", value).let { it.ok && it.shape == Shape.ROUTE }
     }
 }

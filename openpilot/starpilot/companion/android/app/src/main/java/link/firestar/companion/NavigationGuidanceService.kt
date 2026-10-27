@@ -45,7 +45,11 @@ class NavigationGuidanceService : Service() {
     private val handler = Handler(Looper.getMainLooper())
     @Volatile private var stopped = false
     @Volatile private var lastSample = 0L
-    private var lastConnectAttempt = 0L
+    /** Retries after a drop at 1, 2, 4, 8 and then every 10 s (docs/dev/bluetooth-link.md section 7.4). */
+    private val reconnect = ReconnectBackoff()
+    /** The push channel of the current connection and the thread that starts it after each handshake. */
+    private var sidecarPush: VehiclePush? = null
+    private val linkExecutor = Executors.newSingleThreadExecutor { task -> Thread(task, "SidecarBLE-Link").apply { isDaemon = true } }
     private var own: BleTransport? = null
     @Volatile private var sidecarRelay: SidecarLoopbackServer? = null
     private var routeWorker: SidecarRouteWorker? = null
@@ -76,7 +80,17 @@ class NavigationGuidanceService : Service() {
         }
         refreshRelay()
         handler.post(staleCheck)
-        worker.scheduleWithFixedDelay({ tick() }, 0, 3, TimeUnit.SECONDS)
+        scheduleTick(0)
+    }
+
+    /** The guidance poll keeps its 3 s cadence while the link is up; while it is down the loop looks again every second so that the retries of [reconnect] can start on time. */
+    private fun scheduleTick(delayMs: Long) {
+        if (stopped) return
+        try {
+            worker.schedule({
+                try { tick() } finally { scheduleTick(if (BleTransport.active?.open == true) 3_000L else 1_000L) }
+            }, delayMs, TimeUnit.MILLISECONDS)
+        } catch (_: java.util.concurrent.RejectedExecutionException) { /* service stopped */ }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -90,14 +104,32 @@ class NavigationGuidanceService : Service() {
         return START_STICKY
     }
 
+    /** After a handshake with the relay on: the push channel (notifications, `push-enable`) and the first job poll. Runs on [linkExecutor], never on the connecting thread. */
+    private fun startSidecarLink(transport: BleTransport) {
+        if (stopped || !relayEnabled(prefs) || !transport.open) return
+        if (transport.jobsV2) routeWorker?.wake()
+        if (!transport.features.push || !transport.hasPushCharacteristic) return
+        val receiver = VehiclePush(transport.pushLink, onWake = { routeWorker?.wake() })
+        synchronized(this) { sidecarPush?.close(); sidecarPush = receiver }
+        transport.pushSink = receiver::onPacket
+        try { receiver.enable() } catch (error: Exception) {
+            android.util.Log.w("StarPilotSidecarBLE", "Push channel unavailable (${error.javaClass.simpleName})")
+            transport.pushSink = null
+        }
+    }
+
     @Synchronized private fun refreshRelay() {
         if (!relayEnabled(prefs)) {
+            BleTransport.handshakeHook = null
+            sidecarPush?.close()
+            sidecarPush = null
             sidecarRelay?.close()
             sidecarRelay = null
             routeWorker?.close()
             routeWorker = null
             return
         }
+        BleTransport.handshakeHook = { transport -> try { linkExecutor.execute { startSidecarLink(transport) } } catch (_: java.util.concurrent.RejectedExecutionException) { /* stopped */ } }
         if (routeWorker == null) routeWorker = SidecarRouteWorker {
             // The guidance service owns reconnects. Idle route polling must not
             // start another GATT handshake while Sidecar is waiting for status.
@@ -176,11 +208,11 @@ class NavigationGuidanceService : Service() {
     /** Reuses Galaxy's authenticated BLE session, including one held by the companion UI or phone GPS. */
     @Synchronized private fun connect(): BleTransport? {
         val now = SystemClock.elapsedRealtime()
-        if (BleTransport.active != null || BleTransport.busy || now - lastConnectAttempt < 10_000L) return null
+        if (BleTransport.active != null || BleTransport.busy || !reconnect.ready(now)) return null
         val pairing = PairingStore(this)
         if (pairing.stale()) { updateStatus("Pair comma again in StarPilot"); return null }
         val key = pairing.load() ?: run { updateStatus("Pair comma in StarPilot"); return null }
-        lastConnectAttempt = now
+        reconnect.attempt(now)
         var phase = "start"
         fun newTransport() = BleTransport(this, key).apply {
             onPhase = { text -> phase = when {
@@ -211,8 +243,10 @@ class NavigationGuidanceService : Service() {
             }
             pairing.rememberDevice(address)
             own = transport
+            reconnect.succeeded()
             transport
         } catch (error: Exception) {
+            reconnect.failed()
             android.util.Log.w("StarPilotSidecarBLE", "BLE connect failed (${failure(error)})")
             transport.close()
             updateStatus("Waiting for comma")
@@ -264,6 +298,9 @@ class NavigationGuidanceService : Service() {
 
     override fun onDestroy() {
         stopped = true
+        BleTransport.handshakeHook = null
+        sidecarPush?.close()
+        linkExecutor.shutdownNow()
         sidecarRelay?.close()
         routeWorker?.close()
         handler.removeCallbacks(staleCheck)

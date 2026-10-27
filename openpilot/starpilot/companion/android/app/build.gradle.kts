@@ -7,8 +7,8 @@ android {
         applicationId = "link.firestar.companion"
         minSdk = 26
         targetSdk = 35
-        versionCode = 40
-        versionName = "1.1.38"
+        versionCode = 41
+        versionName = "1.1.39"
     }
     signingConfigs {
         create("companion") {
@@ -24,6 +24,8 @@ android {
 }
 
 dependencies {
+    // XZ for Java (0BSD / public domain): the `xz` encoding of a route, the fallback when write without response is not available (docs/dev/bluetooth-link.md section 6, L4).
+    implementation("org.tukaani:xz:1.10")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20180813")
 }
