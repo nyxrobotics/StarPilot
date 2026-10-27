@@ -148,6 +148,29 @@ class SidecarJobsTest {
         assertEquals(2, fetcher.fetched.size)
     }
 
+    @Test fun aJobThatStaysOpenDoesNotMakeATightPollingLoop() {
+        val comma = FakeComma(); comma.submit(Shape.ROUTE, route)
+        val lane = lane(CommaLink(comma))
+        val fetcher = FakeFetcher(mutableMapOf(route to { throw RouteFetchIo("response", "ConnectException", java.net.ConnectException("refused")) }))
+        val worker = jobs({ lane }, fetcher)
+        repeat(3) { worker.pollOnce(lane) }
+        assertEquals("one fetch per poll, at the comma's cadence", 3, fetcher.fetched.size)
+        assertEquals("a job that stays open never asks for an immediate poll", 0, worker.pollRequests.get())
+        val done = FakeComma(); done.submit(Shape.STATUS, "/status")
+        val laneB = lane(CommaLink(done))
+        val fine = jobs({ laneB }, FakeFetcher(mutableMapOf("/status" to { LocalAnswer(200, json("{}")) })))
+        fine.pollOnce(laneB)
+        assertEquals("a job that reached its end asks for the next poll at once", 1, fine.pollRequests.get())
+    }
+
+    @Test fun aLinkLossDuringAnUploadDoesNotAskForAnImmediatePoll() {
+        val comma = FakeComma(); comma.submit(Shape.ROUTE, route)
+        val lane = lane(CommaLink(comma).apply { failAfterChunk = 0 })
+        val worker = jobs({ lane }, FakeFetcher(mutableMapOf(route to { LocalAnswer(200, routeBody(300_000, 11)) })))
+        worker.pollOnce(lane)
+        assertEquals(0, worker.pollRequests.get())
+    }
+
     // ---- a small job while a route is mid-upload ---------------------------------------------------------------------------------------
 
     @Test fun aStatusJobCompletesWhileARouteIsMidUpload() {

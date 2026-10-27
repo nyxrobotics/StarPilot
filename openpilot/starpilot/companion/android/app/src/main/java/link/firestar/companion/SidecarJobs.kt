@@ -93,8 +93,11 @@ internal class SidecarJobs(
     val jobsFailed: Int get() = failed.get()
     val jobsRefused: Int get() = refused.get()
 
+    /** How many immediate polls were asked for (tests and the status page). */
+    internal val pollRequests = AtomicInteger()
+
     /** Polls soon: from the push wake-up, after a connect, after a job, after the user sends a destination. */
-    fun pollNow() { schedule(0) }
+    fun pollNow() { pollRequests.incrementAndGet(); schedule(0) }
 
     @Synchronized private fun schedule(delayMs: Long) {
         if (!running) return
@@ -119,11 +122,21 @@ internal class SidecarJobs(
     internal fun pollOnce(lane: BleLane): Long {
         val list = poll(lane) ?: return IDLE_POLL_MS
         forgetStale(list)
-        if (list.jobs.isNotEmpty()) lane.wantHigh()
+        if (list.jobs.any { !it.claimed }) lane.wantHigh() // a job this phone may take: traffic is coming
         for (job in list.jobs) {
             if (job.claimed || active.containsKey(job.id) || active.containsValue(job.kind)) continue // another phone holds it, it is running, or this kind is busy
             active[job.id] = job.kind
-            try { workers.execute { try { runJob(lane, job) } finally { active.remove(job.id); pollNow() } } } catch (e: java.util.concurrent.RejectedExecutionException) { active.remove(job.id) }
+            try {
+                workers.execute {
+                    var settled = false
+                    try { settled = runJob(lane, job) } finally {
+                        active.remove(job.id)
+                        // A job that reached its end makes room for the next one at once. A job that stays open (no answer from the X10 yet, the link lost) waits for the
+                        // next poll at the comma's cadence: polling again at once would repeat the same failure in a tight loop.
+                        if (settled) pollNow()
+                    }
+                }
+            } catch (e: java.util.concurrent.RejectedExecutionException) { active.remove(job.id) }
         }
         return list.nextPollMs
     }
@@ -151,14 +164,15 @@ internal class SidecarJobs(
         for ((id, transfer) in transfers) if (!active.containsKey(id) && (id !in listed || transfer.createdNs < limit)) transfers.remove(id)
     }
 
-    private fun runJob(lane: BleLane, job: JobInfo) {
+    /** Runs one job as far as it goes. True when the job reached its end here (answered, failed, or gone at comma), false when it stays open. */
+    private fun runJob(lane: BleLane, job: JobInfo): Boolean {
         try {
             val verdict = Allowlist.check("GET", job.target)
             if (!verdict.ok || verdict.shape != job.kind) {
                 refused.incrementAndGet()
                 warn("Job refused (reason=not-allowed, kind=${job.kind.wire})")
                 failJob(lane, job.id)
-                return
+                return true
             }
             var transfer = transfers[job.id]?.takeIf { it.target == job.target }
             if (transfer == null) {
@@ -167,58 +181,64 @@ internal class SidecarJobs(
                     // A restart lost the original bytes; a new download could differ and must never be spliced onto them.
                     warn("Job cannot resume without its original payload (kind=${job.kind.wire})")
                     failJob(lane, job.id)
-                    return
+                    return true
                 }
-                transfer = begin(lane, job) ?: return
+                val begun = begin(lane, job)
+                transfer = begun.transfer ?: return begun.settled
                 transfers[job.id] = transfer
             }
-            send(lane, transfer, job.nextSequence)
+            return send(lane, transfer, job.nextSequence)
         } catch (error: IOException) {
             // The link failed or stalled: the bytes are kept for the next poll, after the reconnect.
             warn("Job transfer interrupted (${error.javaClass.simpleName}, kind=${job.kind.wire})")
+            return false
         } catch (error: Exception) {
             failed.incrementAndGet()
             transfers.remove(job.id)
             warn("Job failed (${error.javaClass.simpleName}, kind=${job.kind.wire})")
             try { failJob(lane, job.id) } catch (_: Exception) { /* comma's deadline still applies */ }
+            return true
         }
     }
 
-    /** Fetches the X10's answer and makes the result. Null when the job stays open (no answer came: a fresh GET is safe on the next poll). */
-    private fun begin(lane: BleLane, job: JobInfo): Transfer? {
+    private class Begun(val transfer: Transfer?, val settled: Boolean)
+
+    /** Fetches the X10's answer and makes the result. No transfer when the job stays open (no answer came: a fresh GET is safe on the next poll) or was failed. */
+    private fun begin(lane: BleLane, job: JobInfo): Begun {
         val answer = try { fetcher.fetch(job.kind, job.target) } catch (error: IOException) {
             val origin = (error as? RouteFetchIo)?.origin ?: error.javaClass.simpleName
             val stage = (error as? RouteFetchIo)?.stage ?: "fetch"
             warn("Job fetch deferred ($origin, stage=$stage, kind=${job.kind.wire})")
-            return null
+            return Begun(null, false)
         } catch (error: RouteFetchRejected) {
             failed.incrementAndGet()
             warn("Job fetch rejected (reason=${error.reason}, status=${error.status ?: "none"}, kind=${job.kind.wire})")
             failJob(lane, job.id)
-            return null
+            return Begun(null, true)
         }
         if (answer.status == 200 && answer.body.isEmpty()) {
             failed.incrementAndGet()
             warn("Job fetch rejected (reason=invalid-body, status=200, kind=${job.kind.wire})")
             failJob(lane, job.id)
-            return null
+            return Begun(null, true)
         }
         val encoded = try { JobContract.encode(job.kind.wire, answer.status, answer.body, preferXz()) } catch (error: ContractError) {
             failed.incrementAndGet()
             warn("Job result refused (${error.message}, status=${answer.status}, kind=${job.kind.wire})")
             failJob(lane, job.id)
-            return null
+            return Begun(null, true)
         }
-        return Transfer(job.id, job.target, job.kind, encoded, clock())
+        return Begun(Transfer(job.id, job.target, job.kind, encoded, clock()), false)
     }
 
-    private fun send(lane: BleLane, transfer: Transfer, nextSequence: Int) {
+    /** Sends the chunks from [nextSequence]. True when the job ended here (the last chunk was accepted, comma ended it, or it was failed); an IOException means it stays open. */
+    private fun send(lane: BleLane, transfer: Transfer, nextSequence: Int): Boolean {
         if (nextSequence > transfer.ends.size) {
             // comma holds more chunks than this transfer ever sent: the two sides disagree, so nothing more is sent for this job.
             warn("Job cursor ahead of the transfer (kind=${transfer.kind.wire})")
             transfers.remove(transfer.id)
             failJob(lane, transfer.id)
-            return
+            return true
         }
         while (transfer.ends.size > nextSequence) transfer.ends.removeAt(transfer.ends.size - 1) // resume at the comma's cursor
         val payload = transfer.encoded.payload
@@ -241,8 +261,8 @@ internal class SidecarJobs(
                     val next = (ack["next"] as? StrictJson.Num)?.toLongOrNull()
                     if (next != sequence + 1L) throw ContractError("chunk acknowledgement mismatch")
                 }
-                404 -> { transfers.remove(transfer.id); warn("Job gone at comma (kind=${transfer.kind.wire})"); return } // the job ended: a late answer never holds the lane
-                400 -> { transfers.remove(transfer.id); failed.incrementAndGet(); warn("Job result refused by comma (kind=${transfer.kind.wire})"); return }
+                404 -> { transfers.remove(transfer.id); warn("Job gone at comma (kind=${transfer.kind.wire})"); return true } // the job ended: a late answer never holds the lane
+                400 -> { transfers.remove(transfer.id); failed.incrementAndGet(); warn("Job result refused by comma (kind=${transfer.kind.wire})"); return true }
                 else -> throw IOException("Job chunk not accepted")
             }
             sequence++
@@ -250,6 +270,7 @@ internal class SidecarJobs(
         } while (!last)
         transfers.remove(transfer.id)
         done.incrementAndGet()
+        return true
     }
 
     private fun failJob(lane: BleLane, id: String) {
