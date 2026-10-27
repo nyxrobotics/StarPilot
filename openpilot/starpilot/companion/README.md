@@ -94,6 +94,35 @@ When comma needs an X10 route while their Wi-Fi link is unavailable, it queues o
 
 As of 2026-10-26, the loopback relay and route target validation have host unit tests, and the Android debug build compiles. The X10 and comma exchanged a 55,772-byte live Sidecar route over Bluetooth in about nine seconds while X10 Wi-Fi was connected to T11 and AARE was projecting. Sidecar destination POST and DELETE also passed over Bluetooth on the home Wi-Fi. Vehicle navigation remains to be checked after installation in the car.
 
+### Sidecar link over Bluetooth alone (Companion 1.1.39)
+
+With a bridge that announces `protocol` 2 in `GET /_bridge/health` (flags `poll2`, `results2`, `push`), Companion carries the whole Sidecar exchange over the one BLE
+pairing. A bridge that announces nothing is a protocol 1 bridge: the poll and chunk calls described above stay as they are, and nothing below is used.
+
+- **One lane.** Every request of a connection (relay calls, guidance poll, phone GPS, Galaxy screens, job poll, route chunks) goes through one lane (`BleLane`): one
+  request in flight, three classes in strict priority (interactive, small, bulk), first come first served inside a class, never preempting a request that has started.
+  A route chunk is sized from the measured rate so that it takes at most 5 s (whole packets, 1 to 64 KiB, the first chunk 6 KiB); nothing waits longer than one
+  chunk. A request that fails or stalls closes the link and fails every request that is queued; nothing is replayed.
+- **Connection priority.** The lane asks for the high priority (15 ms interval) when a bulk transfer starts or a job is listed, keeps it while it is busy and gives
+  it back after 8 s of idle. Single exchanges (state poll, job poll) run at the interval comma chooses.
+- **Jobs.** `GET /_bridge/sidecar/poll2` lists the open jobs, small ones first. A job is one of three shapes: a route (`GET /directions/v5/mapbox/driving-traffic/<lon,lat;lon,lat...>?<query>`),
+  `GET /status` or `GET /health`, fetched from `127.0.0.1:8765` only (one allow-list for the Companion, the bridge and the X10's route API; `SidecarJobs.kt`,
+  `SidecarContract.kt`). The answer goes back with the X10's HTTP status (200, 204, 400, 401, 403, 404, 422, 429, 503, 504), as `identity`, `gzip` or `xz`, in raw
+  bytes (codec 2: no base64), the last chunk declaring the decoded size and its SHA-256. Companion checks its own result against the contract before the first chunk
+  goes out. A job held by another phone is left alone; after a link loss the upload continues from comma's cursor while Companion holds the bytes, otherwise the job
+  is failed (no second download is spliced on).
+- **Write without response.** When the RX characteristic has the flag, all data packets of a raw-body request but the last go without a response each (measured
+  41 to 58 KB/s against 0.6 KB/s with a response per packet). Without it a route goes as `xz` at the high priority (the fallback).
+- **Car position.** Companion switches the notifications of characteristic number 6 on and sends `push-enable` after every handshake. comma pushes one frame per
+  second (sealed with this phone's key under the label `push`); Companion reassembles, opens and checks it, measures how long it waited (`late` against the best
+  frame of the last 600, plus its own dwell), drops a frame that is later than 1 s and POSTs the newest fresh report to `127.0.0.1:8765/v1/vehicle` (one POST in flight,
+  `age_ms` raised by the wait). A `wake` frame ("a job is waiting") starts a job poll at once.
+- **Reconnect.** After a drop the service retries at once, then after 1, 2, 4 and 8 s, then every 10 s.
+
+Tests: `app/src/test/java/link/firestar/companion/` (`BleLaneTest`, `BleExchangeTest`, `SidecarJobsTest`, `VehiclePushTest`, `AllowlistTest`, `JobContractTest`,
+`ContractVectorsTest`, `BleWireRawTest`, `StrictJsonTest`, `LinkMiscTest`) with the shared vectors of the Sidecar project in `app/src/test/resources/btlink/` (see the
+README there). `tests/test_ble_wire_vectors.py` opens the raw-body frames that the app makes with the bridge's own `open_message`. Not yet seen on a unit or in a car.
+
 Install: join the Galaxy hotspot, open Galaxy → **Galaxy Access & Install** →
 **Android companion**, and install the APK. Later updates install from inside
 the app: tap **Update app** while connected over Galaxy Wi-Fi/LAN, allow

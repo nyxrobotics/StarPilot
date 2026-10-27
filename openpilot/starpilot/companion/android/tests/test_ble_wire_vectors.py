@@ -26,7 +26,8 @@ def test_android_wire_vectors():
 
 
 def test_raw_body_requests_of_the_android_app_open_in_the_bridge():
-  # A request with a raw body (codec 2, stored deflate blocks, no base64) as BleWire.sealRaw writes it; BleWireRawTest checks that the app still makes exactly these frames.
+  # A request with a raw body (codec 2, stored deflate blocks, no base64) as BleWire.sealRaw writes it.
+  # BleWireRawTest checks that the app still makes exactly these frames.
   data = json.loads((ANDROID / 'app/src/test/resources/ble/request-raw.json').read_text())
   key = bytes.fromhex(data['key_hex'])
   assert len(data['cases']) >= 3
