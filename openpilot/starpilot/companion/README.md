@@ -96,8 +96,9 @@ As of 2026-10-26, the loopback relay and route target validation have host unit 
 
 ### Sidecar link over Bluetooth alone (Companion 1.1.39)
 
-With a bridge that announces `protocol` 2 in `GET /_bridge/health` (flags `poll2`, `results2`, `push`), Companion carries the whole Sidecar exchange over the one BLE
-pairing. A bridge that announces nothing is a protocol 1 bridge: the poll and chunk calls described above stay as they are, and nothing below is used.
+With a bridge whose `GET /_bridge/health` answer has the flags `poll2` and `results2` (and `push` for the car position), Companion carries the whole Sidecar exchange over
+the one BLE pairing. The flags decide, never `protocol`: the bridge keeps `protocol` 1 because the iOS Galaxy app refuses any other value, and adds `sidecarProtocol` 2. A bridge
+without the flags is the old one: the poll and chunk calls described above stay as they are, and nothing below is used.
 
 - **One lane.** Every request of a connection (relay calls, guidance poll, phone GPS, Galaxy screens, job poll, route chunks) goes through one lane (`BleLane`): one
   request in flight, three classes in strict priority (interactive, small, bulk), first come first served inside a class, never preempting a request that has started.
