@@ -252,6 +252,9 @@ internal object PushEnable {
         else -> null
     }
 
+    /** The announcement for a bridge that gave this health answer: `nav` when it said `pushNav`, `maps` when it said `maps` (and speaks the jobs of version 2). */
+    fun request(features: BridgeFeatures) = request(features.pushNav, features.announcesMaps)
+
     fun request(announceNav: Boolean, announceMaps: Boolean = false): org.json.JSONObject {
         val request = laneRequest("POST", PATH)
         body(announceNav, announceMaps)?.let { request.put("body", java.util.Base64.getEncoder().encodeToString(it.toByteArray(Charsets.US_ASCII))) }

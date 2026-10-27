@@ -312,7 +312,7 @@ class BleTransport(context: Context, private val key: ByteArray?, private val he
         override val pushSession: String get() = session
         override fun subscribe() { lane.control(LaneClass.SMALL, 12, "subscribe") }
         override val carriesNav: Boolean get() = features.pushNav
-        override fun pushEnable(): Int = lane.call(LaneClass.SMALL, 10, PushEnable.request(features.pushNav, announcesMaps), label = "push-enable").optInt("status")
+        override fun pushEnable(): Int = lane.call(LaneClass.SMALL, 10, PushEnable.request(features), label = "push-enable").optInt("status")
     }
 
     internal val jobsV2: Boolean get() = features.jobsV2 && open
@@ -320,7 +320,7 @@ class BleTransport(context: Context, private val key: ByteArray?, private val he
      * This phone announces `maps` in `push-enable` (contract version 3): the bridge said `maps` in its health answer and speaks the jobs of version 2 that the map shapes need. Only then does it
      * accept the five map shapes. A bridge that did not say it gets the announcement it always got.
      */
-    internal val announcesMaps: Boolean get() = features.maps && features.jobsV2
+    internal val announcesMaps: Boolean get() = features.announcesMaps
     /** The Companion's own view of its uplink (the rule of the bridge's `up_kb_s`, measured at this end of the burst); the bridge's figure is `features.upKbS`. Never gates a job. */
     internal val uplink = UplinkMeter()
     /** Write without response is not available: bytes cost more than the encoder's time, so a route goes as `xz` (the fallback of the design). */

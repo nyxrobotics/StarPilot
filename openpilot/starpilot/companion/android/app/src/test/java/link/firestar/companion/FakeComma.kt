@@ -10,6 +10,16 @@ import java.util.concurrent.CopyOnWriteArrayList
  * comma's job broker as the contract describes it (`tools/btlab/contract/jobs.py` `JobBroker`), at the level of the lane: it answers `poll2`, the v2 chunk call
  * and `fail`, checks every chunk with the contract's own rules and decodes the finished result. Used by the job tests, never by the app.
  */
+/** The bridge's reading of a `push-enable` body (`parse_announcement` of `tools/btlab/contract/mapjobs.py`): (nav, maps), or (false, false) for anything that is not an announcement. */
+internal object Announcements {
+    fun parse(body: ByteArray?): Pair<Boolean, Boolean> {
+        if (body == null || body.isEmpty() || body.size > 64 || body.any { it < 0 }) return false to false
+        val value = try { StrictJson.parseObject(String(body, Charsets.US_ASCII)) } catch (_: StrictJson.Invalid) { return false to false }
+        if (value.duplicateKey || value.members.isEmpty() || value.members.any { (k, v) -> (k != "nav" && k != "maps") || v != true }) return false to false
+        return value.has("nav") to value.has("maps")
+    }
+}
+
 internal class FakeComma {
     class Job(val id: String, val kind: Shape, val target: String) {
         var next = 0
@@ -27,6 +37,9 @@ internal class FakeComma {
     val rejected = CopyOnWriteArrayList<String>()
     val expired = HashSet<String>()
     var claimedByAnotherPhone = false
+    /** The newest `push-enable` of this phone: (nav, maps) as the bridge read it. Like the real broker, a map job is shown to a phone that announced `maps` only. */
+    var announced: Pair<Boolean, Boolean> = false to false
+    var pushEnables = 0
     var nextPollMs = 10_000
     private var counter = 0
 
@@ -55,11 +68,19 @@ internal class FakeComma {
     private fun handleInner(meta: JSONObject, body: ByteArray?): JSONObject {
         val method = meta.getString("method")
         val path = meta.getString("path")
+        if (method == "POST" && path == "/_bridge/push/enable") {
+            calls += "push-enable"
+            pushEnables++
+            announced = Announcements.parse(if (meta.has("body")) java.util.Base64.getDecoder().decode(meta.getString("body")) else null)
+            return reply(200, JSONObject().put("bound", true))
+        }
         if (meta.has("body")) rejected += "a body member in a raw request"
         when {
             method == "GET" && path == "/_bridge/sidecar/poll2" -> {
                 calls += "poll2"
-                val open = jobs.values.filter { !it.finished && !it.failed && it.id !in expired }.sortedBy { it.kind == Shape.ROUTE }
+                // small jobs first, then the route, then the map jobs (the order of the lane's priorities); a map job only for a phone that announced `maps`
+                val open = jobs.values.filter { !it.finished && !it.failed && it.id !in expired && (!it.kind.isMap || announced.second) }
+                    .sortedBy { when (it.kind.jobClass) { LaneClass.SMALL -> 0; LaneClass.BULK -> 1; else -> 2 } }
                 val rows = org.json.JSONArray()
                 for (job in open) rows.put(JSONObject().put("id", job.id).put("kind", job.kind.wire).put("target", job.target).put("next_sequence", job.next)
                     .put("claimed", claimedByAnotherPhone).put("lease_ms", 15_000))
@@ -81,6 +102,7 @@ internal class FakeComma {
         val target = try { JobContract.parseChunkTarget(path) } catch (_: ContractError) { rejected += "chunk path"; return reply(400) }
         val job = jobs[target.jobId]
         if (job == null || job.finished || job.failed || job.id in expired) return reply(404)
+        if (job.kind.isMap && !announced.second) { rejected += "this phone does not carry maps"; return reply(400) }
         if (data.size > JobContract.MAX_CHUNK_BYTES) { rejected += "chunk too large"; return reply(400) }
         if (target.sequence < job.next) return reply(200, JSONObject().put("next", job.next))
         if (target.sequence != job.next) { rejected += "chunk out of order"; return reply(400) }

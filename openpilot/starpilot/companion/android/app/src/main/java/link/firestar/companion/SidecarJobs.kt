@@ -41,6 +41,11 @@ internal class BridgeFeatures(
 ) {
     /** Jobs by `poll2` and results with a status, an encoding and a digest. */
     val jobsV2: Boolean get() = poll2 && results2
+    /**
+     * A phone announces `maps` in `push-enable` (contract version 3) only to a bridge that said `maps` and that speaks the jobs of version 2 which the map shapes need (a bridge that did not say
+     * it is given the announcement it always got, and a Companion never announces a capability it cannot carry).
+     */
+    val announcesMaps: Boolean get() = maps && jobsV2
     /** What the comma's tile client will do with this health answer. */
     val mapAdmission: MapAdmission get() = MapAdmission.of(this)
 
