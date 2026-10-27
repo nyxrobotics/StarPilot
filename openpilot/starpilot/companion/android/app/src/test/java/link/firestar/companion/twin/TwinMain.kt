@@ -83,7 +83,7 @@ internal class TwinClient(private val socket: Socket) {
 }
 
 /** The link of one connection: the logic of `BleTransport` (connect and handshake, one exchange at a time, a failed exchange closes the link) over the twin's operations. */
-internal class TwinTransport(private val rpc: TwinClient, private val key: ByteArray, private val legacy: Boolean, private val ignorePushNav: Boolean, private val onClosed: (TwinTransport) -> Unit) : RouteLink, Closeable {
+internal class TwinTransport(private val rpc: TwinClient, private val key: ByteArray, private val legacy: Boolean, private val ignorePushNav: Boolean, private val sabotage: String, private val onClosed: (TwinTransport) -> Unit) : RouteLink, Closeable {
     @Volatile var closed = false
     @Volatile private var session = ""
     private var counter = 0L
@@ -135,8 +135,28 @@ internal class TwinTransport(private val rpc: TwinClient, private val key: ByteA
         val id = UUID.randomUUID().toString()
         val count = ++counter
         try {
-            return BleExchange.run(io, key, session, count, id, meta, body, deadlineSeconds, packetSize, canWriteNoResponse)
+            val (sentMeta, sentBody) = damaged(meta, body)
+            return BleExchange.run(io, key, session, count, id, sentMeta, sentBody, deadlineSeconds, packetSize, canWriteNoResponse)
         } catch (e: Exception) { close(); throw e }
+    }
+
+    /**
+     * A Companion that does something wrong with the LAST chunk of a job, to see that the comma refuses it (rows S-*: the comma's own rules of section 5.2 are what is tested):
+     * a wrong digest, a wrong size, another status or encoding than the earlier chunks declared, one byte more, one byte less. Nothing is damaged without [sabotage].
+     */
+    private fun damaged(meta: JSONObject, body: ByteArray?): Pair<JSONObject, ByteArray?> {
+        val path = meta.optString("path")
+        if (sabotage.isEmpty() || body == null || !path.contains("/chunk/") || !path.contains("last=1")) return meta to body
+        val copy = JSONObject(meta.toString())
+        return when (sabotage) {
+            "digest" -> copy.put("path", path.replace(Regex("sha256=([0-9a-f])"), { m -> "sha256=" + (if (m.groupValues[1] == "0") "1" else "0") })) to body
+            "size" -> copy.put("path", path.replace(Regex("size=([0-9]+)"), { m -> "size=" + (m.groupValues[1].toLong() + 1) })) to body
+            "status" -> copy.put("path", path.replace("status=200", "status=204")) to body
+            "encoding" -> copy.put("path", path.replace("encoding=gzip", "encoding=identity").replace("encoding=xz", "encoding=identity")) to body
+            "trailing" -> copy to (body + byteArrayOf(0))
+            "truncate" -> copy to body.copyOf(maxOf(0, body.size - 1))
+            else -> throw IllegalArgumentException("unknown sabotage")
+        }
     }
 
     @Synchronized fun control(action: String): JSONObject {
@@ -201,6 +221,7 @@ internal class TwinCompanion(private val rpc: TwinClient) {
     private var lastCloseAtMs = 0L
     @Volatile private var pushBoundEpochMs = 0L
     @Volatile private var ignorePushNav = false
+    @Volatile private var sabotage = ""
 
     fun command(message: JSONObject): JSONObject = when (message.getString("cmd")) {
         "start" -> start(message.getJSONObject("cfg"))
@@ -217,6 +238,7 @@ internal class TwinCompanion(private val rpc: TwinClient) {
         key = hex(cfg.getString("keyHex"))
         legacy = cfg.optBoolean("legacy")
         ignorePushNav = cfg.optBoolean("ignorePushNav")
+        sabotage = cfg.optString("sabotage", "")
         routePort = cfg.getInt("routePort")
         vehiclePort = cfg.getInt("vehiclePort")
         token = cfg.optString("token", "X10-route-link-example-key-2026")
@@ -246,7 +268,7 @@ internal class TwinCompanion(private val rpc: TwinClient) {
     }
 
     private fun connectOnce() {
-        val transport = TwinTransport(rpc, key, legacy, ignorePushNav) { closed -> if (current === closed) { lastCloseAtMs = System.nanoTime() / 1_000_000 } }
+        val transport = TwinTransport(rpc, key, legacy, ignorePushNav, sabotage) { closed -> if (current === closed) { lastCloseAtMs = System.nanoTime() / 1_000_000 } }
         transport.lane.observer = { e ->
             val row = laneMax.computeIfAbsent(e.cls.name) { LongArray(3) }
             synchronized(row) {
