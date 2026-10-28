@@ -534,7 +534,7 @@ class SidecarMapJobsTest {
         val link = object : LaneLink {
             override fun exchange(meta: org.json.JSONObject, body: ByteArray?, deadlineSeconds: Long): org.json.JSONObject {
                 val path = meta.getString("path")
-                if (path == SidecarJobs.POLL2) seen += "poll" else if (path.startsWith("/_bridge/sidecar/chunk/")) seen += path.removePrefix("/_bridge/sidecar/chunk/").substringBefore('/')
+                if (path == SidecarJobs.POLL2) { seen += "poll"; Thread.sleep(100) } else if (path.startsWith("/_bridge/sidecar/chunk/")) seen += path.removePrefix("/_bridge/sidecar/chunk/").substringBefore('/')
                 return inner.exchange(meta, body, deadlineSeconds)
             }
             override fun control(action: String) = inner.control(action)
