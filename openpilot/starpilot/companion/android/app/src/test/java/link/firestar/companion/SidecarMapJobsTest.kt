@@ -423,6 +423,120 @@ class SidecarMapJobsTest {
         assertTrue(s2.finished)
     }
 
+    /**
+     * Found by the twin of the real pair (rows N-two-style-tiles-in-a-row, open item B1-4): the second job of a kind waits for the first, and its deadline was counted from the moment its own
+     * work began, not from the poll that listed it. The comma counts from the queueing, so on a slow link the Companion would start (fetch, upload) a job that the comma had dropped, and lose the
+     * lane time of its chunks. The deadline of a listed map job counts from the first poll that listed it, whether it started then or later.
+     */
+    @Test fun aMapJobThatWaitsBehindAnotherOfItsKindCountsItsDeadlineFromThePollThatListedIt() {
+        val clock = java.util.concurrent.atomic.AtomicLong()
+        val comma = comma()
+        val t1 = "/styles/v1/mapbox/light-v11/tiles/512/14/14551/6425?access_token=$token"
+        val t2 = "/styles/v1/mapbox/dark-v11/tiles/512/14/14551/6425?access_token=$token"
+        val s1 = comma.submit(Shape.STILE, t1); val s2 = comma.submit(Shape.STILE, t2)
+        val release = CountDownLatch(1)
+        val entered = CountDownLatch(1)
+        val fetcher = FakeFetcher(mutableMapOf(
+            t1 to { entered.countDown(); release.await(10, TimeUnit.SECONDS); LocalAnswer(200, bytes(8_000, 1)) },
+            t2 to { LocalAnswer(200, bytes(8_000, 2)) },
+        ))
+        val pool = Executors.newCachedThreadPool().also { pools += it }
+        val lane = lane(CommaLink(comma), clock::get)
+        val worker = jobs({ lane }, fetcher, clock = clock::get, workers = pool)
+        worker.pollOnce(lane) // lists both: the first starts, the second waits (one job of a kind at a time)
+        assertTrue(entered.await(10, TimeUnit.SECONDS))
+        release.countDown()
+        val begun = System.nanoTime()
+        while (!s1.finished && System.nanoTime() - begun < 10_000_000_000L) Thread.sleep(5)
+        assertTrue(s1.finished); assertFalse(s2.finished)
+        Thread.sleep(50) // the worker of the first job has ended
+        clock.addAndGet(TimeUnit.SECONDS.toNanos(31)) // the first took long: the 30 s of a style tile, counted from the comma's queueing, are over
+        worker.pollOnce(lane)
+        Thread.sleep(100)
+        assertEquals("the second tile is lost by its own deadline", 1, worker.jobsLost)
+        assertFalse("nothing is fetched for a job whose time is over", t2 in fetcher.fetched)
+        assertEquals("nothing is sent for it", 0, s2.next)
+        assertFalse("the comma's deadline ends it, the Companion does not call fail", s2.failed)
+        assertTrue(warnings.any { it.startsWith("Job past its deadline (kind=stile") })
+    }
+
+    /**
+     * Found by the twin of the real pair (row F-style-tile-behind-a-long-route): the lane picks the next request the moment a chunk ends, and the route's own next chunk is queued a moment
+     * later (it has to read the acknowledgement first), so a map chunk that was already waiting took the lane in that gap, again after every route chunk: a long route upload was slowed by
+     * the whole transfer of a style tile. A map chunk is not submitted while a route transfer is being sent: the tiles wait for the route (and a tile that passes its deadline meanwhile is
+     * lost whole, as the contract says).
+     */
+    @Test fun aMapChunkIsNotSentBetweenTheChunksOfARouteTransferThatIsRunning() {
+        val comma = comma()
+        val route = "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=$token&steps=true"
+        val routeJob = comma.submit(Shape.ROUTE, route)
+        val styleTarget = targets.getValue(Shape.STILE)
+        val fetcher = FakeFetcher(mutableMapOf(route to { LocalAnswer(200, bytes(1_200_000, 21)) }, styleTarget to { LocalAnswer(200, bytes(20_000, 22)) }))
+        val pool = Executors.newCachedThreadPool().also { pools += it }
+        val lane = lane(CommaLink(comma).apply { chunkDelayMs = 30 })
+        val worker = jobs({ lane }, fetcher, workers = pool)
+        fun until(seconds: Long, condition: () -> Boolean): Boolean {
+            val begun = System.nanoTime()
+            while (!condition() && System.nanoTime() - begun < seconds * 1_000_000_000L) Thread.sleep(5)
+            return condition()
+        }
+        worker.pollOnce(lane) // the route starts
+        assertTrue("the route transfer began", until(20) { comma.transcript.any { it.path.contains(routeJob.id) } })
+        val styleJob = comma.submit(Shape.STILE, styleTarget)
+        worker.pollOnce(lane) // lists the style tile while the route is being sent
+        assertTrue("both jobs ended", until(60) { routeJob.finished && styleJob.finished })
+        val order = comma.transcript.filter { it.path.startsWith("/_bridge/sidecar/chunk/") }.map { it.path.removePrefix("/_bridge/sidecar/chunk/").substringBefore('/') }
+        val firstRoute = order.indexOf(routeJob.id); val lastRoute = order.lastIndexOf(routeJob.id)
+        assertTrue("the route went in several chunks (${order.count { it == routeJob.id }})", order.count { it == routeJob.id } >= 5)
+        assertEquals("no chunk of the style tile between the first and the last chunk of the route", 0, order.subList(firstRoute, lastRoute + 1).count { it == styleJob.id })
+        assertTrue("the style tile followed the route and arrived whole", styleJob.result!!.second.size == 20_000)
+        assertFalse(routeJob.failed); assertFalse(styleJob.failed)
+    }
+
+    @Test fun aMapJobThatWaitsForARouteTransferStillLosesItsDeadlineAndSendsNothing() {
+        val clock = java.util.concurrent.atomic.AtomicLong()
+        val comma = comma()
+        val route = "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=$token&steps=true"
+        val routeJob = comma.submit(Shape.ROUTE, route)
+        val styleTarget = targets.getValue(Shape.STILE)
+        val styleJob = comma.submit(Shape.STILE, styleTarget)
+        val gate = CountDownLatch(1)
+        val routeChunkInFlight = CountDownLatch(1)
+        val inner = CommaLink(comma)
+        val link = object : LaneLink {
+            override fun exchange(meta: org.json.JSONObject, body: ByteArray?, deadlineSeconds: Long): org.json.JSONObject {
+                if (meta.getString("path").startsWith("/_bridge/sidecar/chunk/${routeJob.id}/0")) { routeChunkInFlight.countDown(); gate.await(20, TimeUnit.SECONDS) }
+                return inner.exchange(meta, body, deadlineSeconds)
+            }
+            override fun control(action: String) = inner.control(action)
+            override fun setHighPriority(on: Boolean) = inner.setHighPriority(on)
+            override fun close() = inner.close()
+        }
+        val styleFetched = CountDownLatch(1)
+        val fetcher = FakeFetcher(mutableMapOf(
+            route to { LocalAnswer(200, bytes(300_000, 31)) },
+            styleTarget to { Thread.sleep(300); styleFetched.countDown(); LocalAnswer(200, bytes(20_000, 32)) }, // slower than the route: the route is being sent when the tile is ready
+        ))
+        val pool = Executors.newCachedThreadPool().also { pools += it }
+        val lane = lane(link, clock::get)
+        val worker = jobs({ lane }, fetcher, clock = clock::get, workers = pool)
+        worker.pollOnce(lane) // lists both: the route is sent at once, the tile is fetched meanwhile and then waits for the route
+        assertTrue("the first chunk of the route is on the link", routeChunkInFlight.await(10, TimeUnit.SECONDS))
+        assertTrue("the tile was fetched", styleFetched.await(10, TimeUnit.SECONDS))
+        Thread.sleep(200) // the tile's worker is waiting for the route
+        assertEquals("nothing of the tile was sent while the route is being sent", 0, styleJob.next)
+        clock.addAndGet(TimeUnit.SECONDS.toNanos(31)) // the 30 s of a style tile are over
+        val begun = System.nanoTime()
+        while (worker.jobsLost == 0 && System.nanoTime() - begun < 10_000_000_000L) Thread.sleep(5)
+        assertEquals("the tile is lost by its own deadline while it waits", 1, worker.jobsLost)
+        assertEquals(0, styleJob.next); assertFalse(styleJob.failed)
+        gate.countDown() // the route goes on
+        val waited = System.nanoTime()
+        while (!routeJob.finished && System.nanoTime() - waited < 20_000_000_000L) Thread.sleep(5)
+        assertTrue(routeJob.finished)
+        assertEquals("the route's transfer ended: the tiles may go again", 0, styleJob.next)
+    }
+
     // ---- every bundle of the vectors through the Companion's path -------------------------------------------------------------------------
 
     private fun bundleBytes(hex: String?, zlibHex: String?): ByteArray {
