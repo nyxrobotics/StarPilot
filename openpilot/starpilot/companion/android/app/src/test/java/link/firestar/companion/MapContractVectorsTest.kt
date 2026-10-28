@@ -156,6 +156,26 @@ class MapContractVectorsTest {
         assertFalse("one hyphen too many", ok(retrieve(session.replaceFirst("-", "--"))))
     }
 
+    @Test fun fuzzNoInputMakesTheMapChecksThrowAndHugeNumbersAreRefusedNotParsed() {
+        val rng = java.util.Random(11)
+        val alphabet = "0123456789abcdefABCDEF%.,-_~=&?/ ;+\u00e9\u3042\u0000\n:zZ".toCharArray()
+        val bases = listOf("/sidecar/v1/roadtiles?z=14&t=", "/sidecar/v1/roadtiles?", "/styles/v1/mapbox/light-v11/tiles/512/", "/styles/v1/mapbox/", "/search/geocode/v6/forward?q=",
+            "/search/searchbox/v1/suggest?q=", "/search/searchbox/v1/retrieve/", "/search/searchbox/v1/suggest?types=", "/search/geocode/v6/forward?proximity=")
+        repeat(60_000) {
+            val text = String(CharArray(rng.nextInt(90)) { alphabet[rng.nextInt(alphabet.size)] })
+            val base = bases[rng.nextInt(bases.size)]
+            Allowlist.check("GET", base + text); Allowlist.check("GET", "$base$text&access_token=TokenForTests"); Allowlist.check("GET", "$base$text?access_token=TokenForTests&session_token=$text")
+        }
+        // numbers of 5,000 digits (and of 4,301, where a Python int() raises) in every place a number stands: refused, never an exception
+        val digits = "7".repeat(5000)
+        for (n in listOf(digits, "7".repeat(4301), "0$digits", "-$digits")) {
+            for (target in listOf("/sidecar/v1/roadtiles?z=14&t=$n.1&access_token=T", "/sidecar/v1/roadtiles?z=14&t=1.$n&access_token=T", "/sidecar/v1/roadtiles?z=$n&t=1.1&access_token=T",
+                "/styles/v1/mapbox/dark-v11/tiles/512/$n/1/1?access_token=T", "/styles/v1/mapbox/dark-v11/tiles/512/1/$n/1?access_token=T", "/styles/v1/mapbox/dark-v11/tiles/512/1/1/$n?access_token=T",
+                "/search/geocode/v6/forward?q=a&access_token=T&limit=$n", "/search/geocode/v6/forward?q=a&access_token=T&proximity=$n,1", "/search/geocode/v6/forward?q=a&access_token=T&proximity=1,$n"))
+                assertFalse(target.take(70), Allowlist.check("GET", target).ok)
+        }
+    }
+
     // ---- results: all 121 cases --------------------------------------------------------------------------------------------------------
 
     private fun payloadOf(case: StrictJson.Obj): ByteArray {
