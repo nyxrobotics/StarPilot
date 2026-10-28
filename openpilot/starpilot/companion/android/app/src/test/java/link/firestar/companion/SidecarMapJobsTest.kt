@@ -53,8 +53,8 @@ class SidecarMapJobsTest {
         }
     }
 
-    private fun jobs(lane: () -> BleLane?, fetcher: LocalFetcher, maps: Boolean = true, clock: () -> Long = System::nanoTime, workers: Executor = Executor { it.run() }) =
-        SidecarJobs(lane, fetcher, { false }, clock, { warnings += it }, workers, null, { maps })
+    private fun jobs(lane: () -> BleLane?, fetcher: LocalFetcher, maps: Boolean = true, clock: () -> Long = System::nanoTime, workers: Executor = Executor { it.run() }, settleNs: Long = 0L) =
+        SidecarJobs(lane, fetcher, { false }, clock, { warnings += it }, workers, null, { maps }, settleNs)
 
     private fun comma(maps: Boolean = true) = FakeComma().also { it.announced = false to maps }
 
@@ -544,7 +544,7 @@ class SidecarMapJobsTest {
         val fetcher = FakeFetcher(mutableMapOf(styleTarget to { LocalAnswer(200, bytes(300_000, 51)) }, route to { LocalAnswer(200, bytes(30_000, 52)) }))
         val pool = Executors.newCachedThreadPool().also { pools += it }
         val lane = lane(link)
-        val worker = jobs({ lane }, fetcher, workers = pool)
+        val worker = jobs({ lane }, fetcher, workers = pool, settleNs = TimeUnit.MILLISECONDS.toNanos(50)) // the production settle window
         fun until(seconds: Long, condition: () -> Boolean): Boolean {
             val begun = System.nanoTime()
             while (!condition() && System.nanoTime() - begun < seconds * 1_000_000_000L) Thread.sleep(2)

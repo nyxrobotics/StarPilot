@@ -102,6 +102,8 @@ internal class SidecarJobs(
     private val poller: ScheduledExecutorService? = Executors.newSingleThreadScheduledExecutor { task -> Thread(task, "SidecarBLE-Jobs").apply { isDaemon = true } },
     /** True while this phone has announced `maps` to the bridge (the bridge said `maps` in its health answer): only then are the five map shapes allowed. */
     private val mapsAnnounced: () -> Boolean = { false },
+    /** How long after a job poll the chunks of a map job still wait ([POLL_SETTLE_NS]); the tests that carry thousands of jobs pass 0. */
+    private val settleNs: Long = POLL_SETTLE_NS,
 ) : Closeable {
     @Volatile private var running = true
     private val active = ConcurrentHashMap<String, Shape>()
@@ -188,9 +190,13 @@ internal class SidecarJobs(
 
     /** `GET /_bridge/sidecar/poll2`; null when nothing usable came back. */
     internal fun poll(lane: BleLane): JobList? {
+        pollsInFlight.incrementAndGet()
         val answer = try { lane.call(LaneClass.SMALL, 10, laneRequest("GET", POLL2), label = "poll2") } catch (error: IOException) {
             warn("Job poll interrupted (${error.javaClass.simpleName})")
             return null
+        } finally {
+            lastPollEndNs = System.nanoTime()
+            pollsInFlight.decrementAndGet()
         }
         val status = answer.optInt("status")
         if (status == 204) return JobList(emptyList(), IDLE_POLL_MS)
@@ -295,6 +301,19 @@ internal class SidecarJobs(
     /** A route job is being worked on by this worker: its fetch from the X10 has begun and its last chunk has not been accepted. */
     private fun routeWorked(): Boolean = active.containsValue(Shape.ROUTE)
 
+    /** Job polls that are being made now (submitted to the lane and not answered). */
+    private val pollsInFlight = AtomicInteger()
+
+    /** When the last job poll ended, in `System.nanoTime()` (the settle window is real time: the lane picks its next request within microseconds, the job that a poll listed starts within milliseconds). */
+    @Volatile private var lastPollEndNs = Long.MIN_VALUE / 2
+
+    /**
+     * The lane is the route's, or belongs to the job poll that may list one: a map chunk waits. A job poll goes before the chunks of a map job in the lane (small before map), and the map job's next
+     * chunk is queued while the poll waits, so it took the lane the moment the poll ended, before the route job that the poll listed had started (found by the twin of the real pair: a route
+     * asked for during a corridor came two map chunks and a poll late). While a poll is in flight, and for [POLL_SETTLE_NS] after it, the chunks of a map job are not submitted.
+     */
+    private fun mapHeld(): Boolean = routeWorked() || pollsInFlight.get() > 0 || System.nanoTime() - lastPollEndNs < settleNs
+
     private fun sendChunks(lane: BleLane, transfer: Transfer, nextSequence: Int): Boolean {
         if (nextSequence > transfer.ends.size) {
             // comma holds more chunks than this transfer ever sent: the two sides disagree, so nothing more is sent for this job.
@@ -311,7 +330,7 @@ internal class SidecarJobs(
         var sequence = nextSequence
         var offset = if (sequence == 0) 0 else transfer.ends[sequence - 1]
         do {
-            if (transfer.kind.isMap) while (routeWorked() && running && (transfer.deadlineNs == 0L || clock() <= transfer.deadlineNs)) Thread.sleep(MAP_HOLD_MS)
+            if (transfer.kind.isMap) while (mapHeld() && running && (transfer.deadlineNs == 0L || clock() <= transfer.deadlineNs)) Thread.sleep(MAP_HOLD_MS)
             if (!running) throw IOException("Sidecar jobs stopped")
             if (transfer.deadlineNs != 0L && clock() > transfer.deadlineNs) { transfers.remove(transfer.id); return endedByDeadline(transfer.kind, transfer.id, true) }
             val remaining = payload.size - offset
@@ -364,6 +383,8 @@ internal class SidecarJobs(
         const val IDLE_POLL_MS = 10_000L
         /** How often a map chunk that waits for a route transfer looks again. */
         private const val MAP_HOLD_MS = 20L
+        /** How long after a job poll the chunks of a map job still wait: the job that the poll listed starts within a few milliseconds. */
+        private val POLL_SETTLE_NS = TimeUnit.MILLISECONDS.toNanos(50)
         private const val MIN_POLL_MS = 1_000L
         private const val MAX_POLL_MS = 30_000L
         private const val MAX_JOBS = 8
