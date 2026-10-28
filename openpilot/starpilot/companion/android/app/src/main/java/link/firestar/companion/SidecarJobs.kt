@@ -281,21 +281,19 @@ internal class SidecarJobs(
         return Begun(Transfer(job.id, job.target, job.kind, encoded, clock(), deadline), false)
     }
 
-    /** Route transfers that are being sent now (at most one: a kind runs one job at a time). */
-    private val routeSending = AtomicInteger()
-
     /**
      * Sends the chunks from [nextSequence]. True when the job ended here (the last chunk was accepted, comma ended it, or it was failed); an IOException means it stays open.
      *
-     * A route is sent without a map chunk between its chunks: the lane picks its next request the moment one ends, and the route's own next chunk is queued a moment later (it reads the
-     * acknowledgement first), so a map chunk that was waiting took the lane in that gap, again after every chunk of the route (found by the twin of the real pair: a style tile slowed a
-     * route of 1 MB by the airtime of its chunks). While a route is being sent, the chunks of a map job are not submitted; its own deadline still counts.
+     * The lane belongs to the route while a route job is being worked on (its fetch from the X10 and its chunks): the chunks of a map job are not submitted then. The lane picks its next request
+     * the moment one ends, and the route's own next chunk is queued a moment later (it reads the acknowledgement first), so a map chunk that was waiting took the lane in that gap, again after
+     * every chunk of the route (found by the twin of the real pair: a style tile slowed a route of 1 MB by the airtime of its chunks); and a map chunk that went while the route was still being
+     * fetched from the X10 was on the air when the route's first chunk was ready (a route asked for during a corridor came up to two map chunks late). A map chunk that is already on the
+     * air is waited for (one chunk); the deadline of the map job still counts while it waits.
      */
-    private fun send(lane: BleLane, transfer: Transfer, nextSequence: Int): Boolean {
-        if (transfer.kind != Shape.ROUTE) return sendChunks(lane, transfer, nextSequence)
-        routeSending.incrementAndGet()
-        try { return sendChunks(lane, transfer, nextSequence) } finally { routeSending.decrementAndGet() }
-    }
+    private fun send(lane: BleLane, transfer: Transfer, nextSequence: Int): Boolean = sendChunks(lane, transfer, nextSequence)
+
+    /** A route job is being worked on by this worker: its fetch from the X10 has begun and its last chunk has not been accepted. */
+    private fun routeWorked(): Boolean = active.containsValue(Shape.ROUTE)
 
     private fun sendChunks(lane: BleLane, transfer: Transfer, nextSequence: Int): Boolean {
         if (nextSequence > transfer.ends.size) {
@@ -313,7 +311,7 @@ internal class SidecarJobs(
         var sequence = nextSequence
         var offset = if (sequence == 0) 0 else transfer.ends[sequence - 1]
         do {
-            if (transfer.kind.isMap) while (routeSending.get() > 0 && running && (transfer.deadlineNs == 0L || clock() <= transfer.deadlineNs)) Thread.sleep(MAP_HOLD_MS)
+            if (transfer.kind.isMap) while (routeWorked() && running && (transfer.deadlineNs == 0L || clock() <= transfer.deadlineNs)) Thread.sleep(MAP_HOLD_MS)
             if (!running) throw IOException("Sidecar jobs stopped")
             if (transfer.deadlineNs != 0L && clock() > transfer.deadlineNs) { transfers.remove(transfer.id); return endedByDeadline(transfer.kind, transfer.id, true) }
             val remaining = payload.size - offset
