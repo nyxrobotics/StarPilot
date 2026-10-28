@@ -276,7 +276,7 @@ class BleLaneMapTest {
         now.ns += 36_000_000_000L // 30 s deadline plus the 5 s grace
         lane.checkDeadline()
         release.countDown()
-        for (ticket in listOf(chunk, waiting, small)) assertTrue(runCatching { ticket.await() }.isFailure)
+        for (ticket in listOf(chunk, waiting, small)) assertTrue("failed at once, not left waiting", runCatching { ticket.future.get(5, TimeUnit.SECONDS) }.exceptionOrNull() is java.util.concurrent.ExecutionException)
         assertFalse(lane.isOpen)
         assertEquals("nothing was replayed", listOf("m1"), executed.toList())
         assertTrue(link.closed)
