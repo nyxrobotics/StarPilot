@@ -493,6 +493,32 @@ class SidecarMapJobsTest {
         assertFalse(routeJob.failed); assertFalse(styleJob.failed)
     }
 
+    /**
+     * Found by the twin of the real pair (row L-mixed-balanced-wwr: a route asked for during a corridor came 2.6 s late, two map chunks): a map chunk that went while the route job was still
+     * being fetched from the X10 was on the air when the route's first chunk was ready. The lane belongs to the route from the moment its job is worked on, not from its first chunk.
+     */
+    @Test fun aMapChunkWaitsForARouteJobThatIsStillBeingFetchedFromTheX10() {
+        val comma = comma()
+        val route = "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=$token&steps=true"
+        val routeJob = comma.submit(Shape.ROUTE, route)
+        val styleTarget = targets.getValue(Shape.STILE)
+        val styleJob = comma.submit(Shape.STILE, styleTarget)
+        val fetcher = FakeFetcher(mutableMapOf(
+            route to { Thread.sleep(600); LocalAnswer(200, bytes(40_000, 41)) }, // the X10 computes the route: seconds in production
+            styleTarget to { LocalAnswer(200, bytes(20_000, 42)) },
+        ))
+        val pool = Executors.newCachedThreadPool().also { pools += it }
+        val lane = lane(CommaLink(comma))
+        val worker = jobs({ lane }, fetcher, workers = pool)
+        worker.pollOnce(lane) // lists both: the tile is ready at once, the route 600 ms later
+        val begun = System.nanoTime()
+        while (!(routeJob.finished && styleJob.finished) && System.nanoTime() - begun < 30_000_000_000L) Thread.sleep(5)
+        assertTrue(routeJob.finished && styleJob.finished)
+        val order = comma.transcript.filter { it.path.startsWith("/_bridge/sidecar/chunk/") }.map { it.path.removePrefix("/_bridge/sidecar/chunk/").substringBefore('/') }
+        assertEquals("the route's first chunk goes before any chunk of the tile", routeJob.id, order.first())
+        assertEquals("the tile follows the route", styleJob.id, order.last())
+    }
+
     @Test fun aMapJobThatWaitsForARouteTransferStillLosesItsDeadlineAndSendsNothing() {
         val clock = java.util.concurrent.atomic.AtomicLong()
         val comma = comma()
