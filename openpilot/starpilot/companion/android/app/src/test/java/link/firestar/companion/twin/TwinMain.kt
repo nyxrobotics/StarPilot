@@ -239,6 +239,10 @@ internal class TwinCompanion(private val rpc: TwinClient) {
     private val warnings = java.util.concurrent.CopyOnWriteArrayList<String>()
     private val guidanceStats = longArrayOf(0, 0, 0, 0) // polls, failures, max ms, last ms
     private val laneMax = ConcurrentHashMap<String, LongArray>() // class -> (count, max wait ms, max service ms)
+    /** Every request the lane ran: "class:label:submitted:started:ended:failed", wall clock ms (evidence for what delayed a route: the polls and the map chunks in front of its chunks). */
+    private val laneTrace = java.util.concurrent.CopyOnWriteArrayList<String>()
+    private val wallOffsetMs = System.currentTimeMillis() - System.nanoTime() / 1_000_000
+    private fun wallMs(nanos: Long) = nanos / 1_000_000 + wallOffsetMs
     private val pollers = ConcurrentHashMap<String, Thread>()
     private val pollStats = ConcurrentHashMap<String, LongArray>() // name -> (polls, failures, max ms, last ms)
     private val linkExecutor = Executors.newSingleThreadExecutor { Thread(it, "twin-link").apply { isDaemon = true } }
@@ -252,7 +256,7 @@ internal class TwinCompanion(private val rpc: TwinClient) {
     fun command(message: JSONObject): JSONObject = when (message.getString("cmd")) {
         "start" -> start(message.getJSONObject("cfg"))
         "connect" -> connect()
-        "stats" -> stats(message.optBoolean("bursts", false))
+        "stats" -> stats(message.optBoolean("bursts", false), message.optBoolean("trace", false))
         "guidance" -> guidance(message.optBoolean("on", true), message.optLong("periodMs", 3000))
         "poll" -> poll(message.getString("pollName"), message.optString("path", "/api/navigation"), message.optBoolean("on", true), message.optLong("periodMs", 3000), message.optString("cls", "interactive"))
         "close_link" -> { current?.close(); JSONObject() }
@@ -271,7 +275,7 @@ internal class TwinCompanion(private val rpc: TwinClient) {
         routePort = cfg.getInt("routePort")
         vehiclePort = cfg.getInt("vehiclePort")
         token = cfg.optString("token", "X10-route-link-example-key-2026")
-        warnings.clear(); laneMax.clear(); reconnectLog.clear(); connects.set(0); chunkLog.clear(); burstLog.clear()
+        warnings.clear(); laneMax.clear(); laneTrace.clear(); reconnectLog.clear(); connects.set(0); chunkLog.clear(); burstLog.clear()
         worker = SidecarRouteWorker(
             transport = { current?.takeIf { it.open } },
             autoStart = true,
@@ -300,6 +304,7 @@ internal class TwinCompanion(private val rpc: TwinClient) {
     private fun connectOnce() {
         val transport = TwinTransport(rpc, key, legacy, ignorePushNav, sabotage) { closed -> if (current === closed) { lastCloseAtMs = System.nanoTime() / 1_000_000 } }
         transport.lane.observer = { e ->
+            if (laneTrace.size < 40_000) laneTrace.add("${e.cls.name}:${e.label}:${wallMs(e.submittedAt)}:${wallMs(e.startedAt)}:${wallMs(e.endedAt)}:${if (e.failed) 1 else 0}")
             val row = laneMax.computeIfAbsent(e.cls.name) { LongArray(3) }
             synchronized(row) {
                 row[0]++
@@ -396,11 +401,11 @@ internal class TwinCompanion(private val rpc: TwinClient) {
         return JSONObject()
     }
 
-    private fun stats(withBursts: Boolean = false): JSONObject {
+    private fun stats(withBursts: Boolean = false, withTrace: Boolean = false): JSONObject {
         val out = JSONObject()
         val link = current
         out.put("chunksSent", JSONArray(chunkLog.toList())).put("pushBoundEpochMs", pushBoundEpochMs).put("nowEpochMs", System.currentTimeMillis()).put("open", link?.open == true).put("connects", connects.get()).put("features", link?.features?.let { JSONObject().put("jobsV2", it.jobsV2).put("push", it.push).put("pushNav", it.pushNav).put("xz", it.xz).put("maps", it.maps).put("wwr", it.wwr).put("upKbS", it.upKbS ?: JSONObject.NULL).put("announcesMaps", it.announcesMaps) } ?: JSONObject.NULL)
-            .put("uplinkKbS", link?.uplink?.upKbS ?: JSONObject.NULL).apply { if (withBursts) put("bursts", JSONArray(burstLog.toList())) }
+            .put("uplinkKbS", link?.uplink?.upKbS ?: JSONObject.NULL).apply { if (withBursts) put("bursts", JSONArray(burstLog.toList())); if (withTrace) put("laneTrace", JSONArray(laneTrace.toList())) }
         out.put("canWriteNoResponse", link?.canWriteNoResponse ?: false)
         val jobs = try { val f = SidecarRouteWorker::class.java.getDeclaredField("jobs"); f.isAccessible = true; f.get(worker) as? SidecarJobs } catch (_: Exception) { null }
         out.put("jobs", JSONObject().put("done", jobs?.jobsDone ?: 0).put("failed", jobs?.jobsFailed ?: 0).put("refused", jobs?.jobsRefused ?: 0).put("lost", jobs?.jobsLost ?: 0).put("held", jobs?.heldTransfers ?: 0))
