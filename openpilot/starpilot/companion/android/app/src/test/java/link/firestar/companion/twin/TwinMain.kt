@@ -87,6 +87,8 @@ internal class TwinClient(private val socket: Socket) {
 internal val chunkLog = java.util.concurrent.CopyOnWriteArrayList<String>()
 /** Every burst the Companion's meter saw: "wall ms at the end:body bytes:seconds" (evidence for the meter comparison with the bridge's `up_kb_s`). */
 internal val burstLog = java.util.concurrent.CopyOnWriteArrayList<String>()
+/** How many last chunks the sabotage still damages (the map rows damage one job and let the next one through). */
+internal val sabotageLeft = AtomicInteger(Int.MAX_VALUE)
 
 internal class TwinTransport(private val rpc: TwinClient, private val key: ByteArray, private val legacy: Boolean, private val ignorePushNav: Boolean, private val sabotage: String, private val onClosed: (TwinTransport) -> Unit) : RouteLink, Closeable {
     @Volatile var closed = false
@@ -166,6 +168,7 @@ internal class TwinTransport(private val rpc: TwinClient, private val key: ByteA
     private fun damaged(meta: JSONObject, body: ByteArray?): Pair<JSONObject, ByteArray?> {
         val path = meta.optString("path")
         if (sabotage.isEmpty() || body == null || !path.contains("/chunk/") || !path.contains("last=1")) return meta to body
+        if (sabotageLeft.getAndDecrement() <= 0) return meta to body
         val copy = JSONObject(meta.toString())
         return when (sabotage) {
             "digest" -> copy.put("path", path.replace(Regex("sha256=([0-9a-f])"), { m -> "sha256=" + (if (m.groupValues[1] == "0") "1" else "0") })) to body
@@ -236,6 +239,8 @@ internal class TwinCompanion(private val rpc: TwinClient) {
     private val warnings = java.util.concurrent.CopyOnWriteArrayList<String>()
     private val guidanceStats = longArrayOf(0, 0, 0, 0) // polls, failures, max ms, last ms
     private val laneMax = ConcurrentHashMap<String, LongArray>() // class -> (count, max wait ms, max service ms)
+    private val pollers = ConcurrentHashMap<String, Thread>()
+    private val pollStats = ConcurrentHashMap<String, LongArray>() // name -> (polls, failures, max ms, last ms)
     private val linkExecutor = Executors.newSingleThreadExecutor { Thread(it, "twin-link").apply { isDaemon = true } }
     private var lastCloseAtMs = 0L
     @Volatile private var pushBoundEpochMs = 0L
@@ -247,6 +252,7 @@ internal class TwinCompanion(private val rpc: TwinClient) {
         "connect" -> connect()
         "stats" -> stats(message.optBoolean("bursts", false))
         "guidance" -> guidance(message.optBoolean("on", true), message.optLong("periodMs", 3000))
+        "poll" -> poll(message.getString("pollName"), message.optString("path", "/api/navigation"), message.optBoolean("on", true), message.optLong("periodMs", 3000), message.optString("cls", "interactive"))
         "close_link" -> { current?.close(); JSONObject() }
         "stop" -> { stop(); JSONObject() }
         else -> throw IllegalArgumentException("unknown command")
@@ -258,6 +264,7 @@ internal class TwinCompanion(private val rpc: TwinClient) {
         legacy = cfg.optBoolean("legacy")
         ignorePushNav = cfg.optBoolean("ignorePushNav")
         sabotage = cfg.optString("sabotage", "")
+        sabotageLeft.set(cfg.optInt("sabotageCount", Int.MAX_VALUE))
         routePort = cfg.getInt("routePort")
         vehiclePort = cfg.getInt("vehiclePort")
         token = cfg.optString("token", "X10-route-link-example-key-2026")
@@ -359,6 +366,32 @@ internal class TwinCompanion(private val rpc: TwinClient) {
         return JSONObject()
     }
 
+    /** A periodic request of the app or the Galaxy page through the lane (the workload of note 7: the guidance poll every 3 s, the state poll every 15 s): [cls] is the lane class, the stats keep the count, the failures and the longest wait. */
+    private fun poll(name: String, path: String, on: Boolean, periodMs: Long, cls: String): JSONObject {
+        pollers.remove(name)?.interrupt()
+        if (on) {
+            val laneClass = LaneClass.valueOf(cls.uppercase())
+            val row = pollStats.computeIfAbsent(name) { LongArray(4) }
+            pollers[name] = Thread({
+                while (running) {
+                    try {
+                        Thread.sleep(periodMs)
+                        val link = current?.takeIf { it.open }
+                        if (link == null) { Thread.sleep(200); continue }
+                        val started = System.nanoTime()
+                        try {
+                            val request = JSONObject().put("method", "GET").put("path", path).put("headers", JSONObject().put("Authorization", "Bearer $token"))
+                            val answer = link.request(request, 20, laneClass)
+                            val ms = (System.nanoTime() - started) / 1_000_000
+                            synchronized(row) { row[0]++; row[3] = ms; row[2] = maxOf(row[2], ms); if (answer.optInt("status") != 200) row[1]++ }
+                        } catch (_: IOException) { synchronized(row) { row[1]++ } }
+                    } catch (_: InterruptedException) { return@Thread }
+                }
+            }, "twin-poll-$name").apply { isDaemon = true; start() }
+        }
+        return JSONObject()
+    }
+
     private fun stats(withBursts: Boolean = false): JSONObject {
         val out = JSONObject()
         val link = current
@@ -371,6 +404,9 @@ internal class TwinCompanion(private val rpc: TwinClient) {
         out.put("push", if (p == null) JSONObject.NULL else JSONObject().put("frames", p.framesOpened).put("wakes", p.wakes).put("forwarded", p.forwarded).put("refusedByX10", p.refusedByX10)
             .put("postFailed", p.postFailed).put("droppedLate", p.droppedLate).put("droppedBad", p.droppedBad).put("droppedStale", p.droppedStale).put("bound", p.bound))
         synchronized(guidanceStats) { out.put("guidance", JSONObject().put("polls", guidanceStats[0]).put("failures", guidanceStats[1]).put("maxMs", guidanceStats[2]).put("lastMs", guidanceStats[3])) }
+        val polls = JSONObject()
+        for ((name, row) in pollStats) synchronized(row) { polls.put(name, JSONObject().put("polls", row[0]).put("failures", row[1]).put("maxMs", row[2]).put("lastMs", row[3])) }
+        out.put("polls", polls)
         val lane = JSONObject()
         for ((cls, row) in laneMax) synchronized(row) { lane.put(cls, JSONObject().put("count", row[0]).put("maxWaitMs", row[1]).put("maxServiceMs", row[2])) }
         out.put("lane", lane)
@@ -382,6 +418,7 @@ internal class TwinCompanion(private val rpc: TwinClient) {
     fun stop() {
         running = false
         guidance?.interrupt(); guidance = null
+        pollers.values.forEach { it.interrupt() }; pollers.clear(); pollStats.clear()
         loop?.interrupt(); loop = null
         synchronized(this) { push?.close(); push = null }
         worker?.close(); worker = null
