@@ -519,6 +519,47 @@ class SidecarMapJobsTest {
         assertEquals("the tile follows the route", styleJob.id, order.last())
     }
 
+    /**
+     * Found by the twin of the real pair (rows L-corridor-74-balanced-wwr and L-corridor-183-balanced-wwr: a route asked for during a corridor came 2.7 to 3.3 s late, two map chunks and a
+     * poll): a job poll goes before the chunks of a map job in the lane (small before map) and the map job's next chunk is queued while the poll waits, so it took the lane the moment the
+     * poll ended, before the route job that the poll listed had started. A map chunk is not submitted while a job poll is being made or has just ended.
+     */
+    @Test fun aMapChunkDoesNotTakeTheLaneBetweenAJobPollAndTheRouteJobThatPollListed() {
+        val comma = comma()
+        val styleTarget = targets.getValue(Shape.STILE)
+        val styleJob = comma.submit(Shape.STILE, styleTarget)
+        val route = "/directions/v5/mapbox/driving-traffic/139.7671,35.6812;139.7016,35.6580?access_token=$token&steps=true"
+        val inner = CommaLink(comma).apply { chunkDelayMs = 60 }
+        val seen = CopyOnWriteArrayList<String>() // the job id of every chunk exchange and "poll" for every job poll
+        val link = object : LaneLink {
+            override fun exchange(meta: org.json.JSONObject, body: ByteArray?, deadlineSeconds: Long): org.json.JSONObject {
+                val path = meta.getString("path")
+                if (path == SidecarJobs.POLL2) seen += "poll" else if (path.startsWith("/_bridge/sidecar/chunk/")) seen += path.removePrefix("/_bridge/sidecar/chunk/").substringBefore('/')
+                return inner.exchange(meta, body, deadlineSeconds)
+            }
+            override fun control(action: String) = inner.control(action)
+            override fun setHighPriority(on: Boolean) = inner.setHighPriority(on)
+            override fun close() = inner.close()
+        }
+        val fetcher = FakeFetcher(mutableMapOf(styleTarget to { LocalAnswer(200, bytes(300_000, 51)) }, route to { LocalAnswer(200, bytes(30_000, 52)) }))
+        val pool = Executors.newCachedThreadPool().also { pools += it }
+        val lane = lane(link)
+        val worker = jobs({ lane }, fetcher, workers = pool)
+        fun until(seconds: Long, condition: () -> Boolean): Boolean {
+            val begun = System.nanoTime()
+            while (!condition() && System.nanoTime() - begun < seconds * 1_000_000_000L) Thread.sleep(2)
+            return condition()
+        }
+        worker.pollOnce(lane) // lists the tile: its chunks start
+        assertTrue("the tile is on the air", until(20) { seen.any { it == styleJob.id } })
+        val routeJob = comma.submit(Shape.ROUTE, route)
+        worker.pollOnce(lane) // the poll waits for the chunk on the air and lists the route
+        assertTrue("both jobs ended", until(60) { routeJob.finished && styleJob.finished })
+        val polls = seen.indices.filter { seen[it] == "poll" }
+        assertTrue("two polls were made (${seen.toList()})", polls.size >= 2)
+        assertEquals("the first chunk after the poll that listed the route is the route's (${seen.toList()})", routeJob.id, seen[polls[1] + 1])
+    }
+
     @Test fun aMapJobThatWaitsForARouteTransferStillLosesItsDeadlineAndSendsNothing() {
         val clock = java.util.concurrent.atomic.AtomicLong()
         val comma = comma()
