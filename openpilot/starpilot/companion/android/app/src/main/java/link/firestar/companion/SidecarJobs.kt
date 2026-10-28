@@ -166,6 +166,9 @@ internal class SidecarJobs(
         forgetStale(list)
         if (list.jobs.any { !it.claimed }) lane.wantHigh() // a job this phone may take: traffic is coming
         for (job in list.jobs) {
+            // The deadline of a map job counts from the first poll that lists it (the comma counts from its queueing), also when it has to wait for another job of its kind: a job whose time
+            // is over by the time its turn comes is dropped before anything is fetched or sent for it (found by the twin of the real pair, open item B1-4).
+            if (job.kind.isMap && !job.claimed) firstSeen.computeIfAbsent(job.id) { clock() }
             if (job.claimed || active.containsKey(job.id) || active.containsValue(job.kind)) continue // another phone holds it, it is running, or this kind is busy
             active[job.id] = job.kind
             try {
@@ -278,8 +281,23 @@ internal class SidecarJobs(
         return Begun(Transfer(job.id, job.target, job.kind, encoded, clock(), deadline), false)
     }
 
-    /** Sends the chunks from [nextSequence]. True when the job ended here (the last chunk was accepted, comma ended it, or it was failed); an IOException means it stays open. */
+    /** Route transfers that are being sent now (at most one: a kind runs one job at a time). */
+    private val routeSending = AtomicInteger()
+
+    /**
+     * Sends the chunks from [nextSequence]. True when the job ended here (the last chunk was accepted, comma ended it, or it was failed); an IOException means it stays open.
+     *
+     * A route is sent without a map chunk between its chunks: the lane picks its next request the moment one ends, and the route's own next chunk is queued a moment later (it reads the
+     * acknowledgement first), so a map chunk that was waiting took the lane in that gap, again after every chunk of the route (found by the twin of the real pair: a style tile slowed a
+     * route of 1 MB by the airtime of its chunks). While a route is being sent, the chunks of a map job are not submitted; its own deadline still counts.
+     */
     private fun send(lane: BleLane, transfer: Transfer, nextSequence: Int): Boolean {
+        if (transfer.kind != Shape.ROUTE) return sendChunks(lane, transfer, nextSequence)
+        routeSending.incrementAndGet()
+        try { return sendChunks(lane, transfer, nextSequence) } finally { routeSending.decrementAndGet() }
+    }
+
+    private fun sendChunks(lane: BleLane, transfer: Transfer, nextSequence: Int): Boolean {
         if (nextSequence > transfer.ends.size) {
             // comma holds more chunks than this transfer ever sent: the two sides disagree, so nothing more is sent for this job.
             warn("Job cursor ahead of the transfer (kind=${transfer.kind.wire})")
@@ -295,6 +313,7 @@ internal class SidecarJobs(
         var sequence = nextSequence
         var offset = if (sequence == 0) 0 else transfer.ends[sequence - 1]
         do {
+            if (transfer.kind.isMap) while (routeSending.get() > 0 && running && (transfer.deadlineNs == 0L || clock() <= transfer.deadlineNs)) Thread.sleep(MAP_HOLD_MS)
             if (!running) throw IOException("Sidecar jobs stopped")
             if (transfer.deadlineNs != 0L && clock() > transfer.deadlineNs) { transfers.remove(transfer.id); return endedByDeadline(transfer.kind, transfer.id, true) }
             val remaining = payload.size - offset
@@ -345,6 +364,8 @@ internal class SidecarJobs(
     companion object {
         const val POLL2 = "/_bridge/sidecar/poll2"
         const val IDLE_POLL_MS = 10_000L
+        /** How often a map chunk that waits for a route transfer looks again. */
+        private const val MAP_HOLD_MS = 20L
         private const val MIN_POLL_MS = 1_000L
         private const val MAX_POLL_MS = 30_000L
         private const val MAX_JOBS = 8
