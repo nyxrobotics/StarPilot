@@ -246,6 +246,8 @@ internal class TwinCompanion(private val rpc: TwinClient) {
     @Volatile private var pushBoundEpochMs = 0L
     @Volatile private var ignorePushNav = false
     @Volatile private var sabotage = ""
+    /** The push-enable of every handshake waits this long (the row where the announcement comes after the first poll). */
+    @Volatile private var enableDelayMs = 0L
 
     fun command(message: JSONObject): JSONObject = when (message.getString("cmd")) {
         "start" -> start(message.getJSONObject("cfg"))
@@ -264,6 +266,7 @@ internal class TwinCompanion(private val rpc: TwinClient) {
         legacy = cfg.optBoolean("legacy")
         ignorePushNav = cfg.optBoolean("ignorePushNav")
         sabotage = cfg.optString("sabotage", "")
+        enableDelayMs = cfg.optLong("enableDelayMs", 0L)
         sabotageLeft.set(cfg.optInt("sabotageCount", Int.MAX_VALUE))
         routePort = cfg.getInt("routePort")
         vehiclePort = cfg.getInt("vehiclePort")
@@ -321,6 +324,7 @@ internal class TwinCompanion(private val rpc: TwinClient) {
         val receiver = VehiclePush(transport.pushLink, post = LoopbackVehiclePoster(vehiclePort)::post, clock = { System.nanoTime() / 1_000_000 }, onWake = { worker?.wake() }, warn = { warnings += it })
         synchronized(this) { push?.close(); push = receiver }
         transport.pushSink = receiver::onPacket
+        if (enableDelayMs > 0) Thread.sleep(enableDelayMs)
         try { receiver.enable(); if (receiver.bound) pushBoundEpochMs = System.currentTimeMillis() } catch (e: Exception) {
             warnings += "push channel unavailable (${e.javaClass.simpleName})"
             transport.pushSink = null
