@@ -483,6 +483,19 @@ class DrivePushTest {
         assertEquals("the position's own counters did not move", listOf(1, 1, 0, 0, 0, 0, 0, 0), r.positionCounters())
     }
 
+    @Test fun closingTheReceiverStopsBothWorkersAndALateFrameGoesNowhere() {
+        val position = java.util.concurrent.Executors.newSingleThreadExecutor()
+        val driveWorker = java.util.concurrent.Executors.newSingleThreadExecutor()
+        val posted = CopyOnWriteArrayList<String>()
+        var now = 0L
+        val push = VehiclePush(FakeLink(key, session), post = { _, _ -> 204 }, clock = { now }, worker = position, warn = {}, postDrive = { body, _ -> posted += String(body); 204 }, driveWorker = driveWorker)
+        push.close()
+        assertTrue(position.isShutdown); assertTrue("the drive worker is stopped too", driveWorker.isShutdown)
+        now = 1040
+        for (p in packets(seal(1, 1, "drive", 1000, drive(), driveToken), 1)) push.onPacket(p)
+        assertTrue(posted.isEmpty()); assertEquals(0, push.driveFramesOpened + push.driveDroppedBad)
+    }
+
     @Test fun nothingOfADriveFrameIsLogged() {
         val r = rig()
         r.link.drive = false
