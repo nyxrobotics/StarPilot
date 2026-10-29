@@ -470,6 +470,19 @@ class DrivePushTest {
         assertEquals(driveBefore, r.driveCounters())
     }
 
+    @Test fun onlyA2xxAnswerOfTheX10IsAForwardedDriveStatus() {
+        val r = rig()
+        r.calibrate()
+        var counter = 2L
+        for ((status, forwarded) in listOf(100 to false, 199 to false, 200 to true, 204 to true, 299 to true, 300 to false, 302 to false, 304 to false, 400 to false, 401 to false, 429 to false, 500 to false, 503 to false)) {
+            val before = listOf(r.push.driveForwarded, r.push.driveRefusedByX10)
+            r.drivePostStatus = status
+            r.driveFrame(counter, counter * 1000); r.runBoth(); counter++
+            assertEquals("status $status", if (forwarded) listOf(before[0] + 1, before[1]) else listOf(before[0], before[1] + 1), listOf(r.push.driveForwarded, r.push.driveRefusedByX10))
+        }
+        assertEquals("the position's own counters did not move", listOf(1, 1, 0, 0, 0, 0, 0, 0), r.positionCounters())
+    }
+
     @Test fun nothingOfADriveFrameIsLogged() {
         val r = rig()
         r.link.drive = false
