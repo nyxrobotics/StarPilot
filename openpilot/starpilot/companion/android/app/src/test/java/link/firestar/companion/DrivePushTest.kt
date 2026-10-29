@@ -575,8 +575,8 @@ class DrivePushTest {
     private class Request(val line: String, val headers: Map<String, String>, val body: ByteArray)
 
     /** A server of one loopback port that answers [status] (with [location] when it redirects) and keeps what it was asked. */
-    private class Peer(private val status: Int = 204, private val location: String? = null) : Closeable {
-        private val server = ServerSocket(0, 5, InetAddress.getByName("127.0.0.1"))
+    private class Peer(private val status: Int = 204, private val location: String? = null, wanted: Int = 0) : Closeable {
+        private val server = ServerSocket(wanted, 5, InetAddress.getByName("127.0.0.1"))
         val port get() = server.localPort
         val requests = CopyOnWriteArrayList<Request>()
         private val thread = Thread {
@@ -625,10 +625,23 @@ class DrivePushTest {
         Peer(status = 401).use { peer -> assertEquals(401, LoopbackVehiclePoster(peer.port, "/v1/drive").post(drive().toByteArray(), driveToken)) }
     }
 
-    @Test fun theDefaultPostersOfAReceiverAreTheTwoPathsOfTheRouteApi() {
-        // the receiver's defaults: position to the vehicle path, drive to the drive path (the constants the real posters are built from)
-        assertEquals("/v1/vehicle", LoopbackVehiclePoster.VEHICLE_PATH); assertEquals("/v1/drive", DriveFrames.PATH); assertEquals("/v1/drive", DriveContract.PATH)
-        assertEquals("drive", DriveFrames.KIND)
+    @Test fun theDefaultPostersOfAReceiverPostToThePortOfTheRouteApiOnTheTwoPaths() {
+        // the receiver as the service builds it (no poster given): a position to http://127.0.0.1:8765/v1/vehicle, a drive status to http://127.0.0.1:8765/v1/drive. The test needs that port on this machine.
+        val peer = try { Peer(wanted = 8765) } catch (error: IOException) { org.junit.Assume.assumeNoException("port 8765 is in use on this machine", error); return }
+        peer.use {
+            var now = 0L
+            val push = VehiclePush(FakeLink(key, session), clock = { now }, worker = Executor { it.run() }, driveWorker = Executor { it.run() }, warn = {})
+            fun deliver(frame: ByteArray, frameId: Int, arrive: Long) { now = arrive; for (p in packets(frame, frameId)) push.onPacket(p) }
+            deliver(seal(1, 1, "wake", 0, null, null), 1, 40)
+            deliver(seal(2, 2, "vehicle", 1000, position, positionToken), 2, 1040)
+            deliver(seal(3, 3, "drive", 2000, drive(), driveToken), 3, 2040)
+            deliver(seal(4, 4, "drive", 3000, drive(seq = 8), driveToken + "2"), 4, 3040)
+            assertEquals(listOf("POST /v1/vehicle HTTP/1.1", "POST /v1/drive HTTP/1.1", "POST /v1/drive HTTP/1.1"), peer.requests.map { it.line })
+            assertEquals(listOf("Bearer $positionToken", "Bearer $driveToken", "Bearer ${driveToken}2"), peer.requests.map { it.headers["authorization"] })
+            assertEquals(drive(), String(peer.requests[1].body)); assertEquals(drive(seq = 8), String(peer.requests[2].body))
+            assertEquals(1, push.forwarded); assertEquals(2, push.driveForwarded); assertEquals(0, push.postFailed + push.drivePostFailed + push.refusedByX10 + push.driveRefusedByX10)
+        }
+        assertEquals("/v1/vehicle", LoopbackVehiclePoster.VEHICLE_PATH); assertEquals("/v1/drive", DriveFrames.PATH); assertEquals("/v1/drive", DriveContract.PATH); assertEquals("drive", DriveFrames.KIND)
     }
 
     // ---- a hostile fuzz of drive frames ------------------------------------------------------------------------------------------------------
