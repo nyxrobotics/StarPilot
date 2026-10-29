@@ -1,0 +1,1806 @@
+{
+ "aged": [
+  {
+   "expected": {
+    "age_ms": 0,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "object": {
+    "age_ms": 0,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "wait_ms": 0
+  },
+  {
+   "expected": {
+    "age_ms": 12,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "object": {
+    "age_ms": 12,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "wait_ms": 0
+  },
+  {
+   "expected": {
+    "age_ms": 112,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "object": {
+    "age_ms": 12,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "wait_ms": 100
+  },
+  {
+   "expected": {
+    "age_ms": 1000,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "object": {
+    "age_ms": 0,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "wait_ms": 1000
+  },
+  {
+   "expected": {
+    "age_ms": 59999,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "object": {
+    "age_ms": 59000,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "wait_ms": 999
+  },
+  {
+   "expected": {
+    "age_ms": 60000,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "object": {
+    "age_ms": 59000,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "wait_ms": 1000
+  },
+  {
+   "expected": {
+    "age_ms": 60000,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "object": {
+    "age_ms": 59000,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "wait_ms": 5000
+  },
+  {
+   "expected": {
+    "age_ms": 60000,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "object": {
+    "age_ms": 60000,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "wait_ms": 1
+  },
+  {
+   "expected": {
+    "age_ms": 60000,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "object": {
+    "age_ms": 1,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 9,
+    "st": "en",
+    "v": 1
+   },
+   "wait_ms": 60000
+  }
+ ],
+ "announce": [
+  {
+   "body": "",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "{\"nav\":true}",
+   "drive": false,
+   "maps": false,
+   "nav": true
+  },
+  {
+   "body": "{\"maps\":true}",
+   "drive": false,
+   "maps": true,
+   "nav": false
+  },
+  {
+   "body": "{\"drive\":true}",
+   "drive": true,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "{\"nav\":true,\"maps\":true}",
+   "drive": false,
+   "maps": true,
+   "nav": true
+  },
+  {
+   "body": "{\"nav\":true,\"drive\":true}",
+   "drive": true,
+   "maps": false,
+   "nav": true
+  },
+  {
+   "body": "{\"maps\":true,\"drive\":true}",
+   "drive": true,
+   "maps": true,
+   "nav": false
+  },
+  {
+   "body": "{\"nav\":true,\"maps\":true,\"drive\":true}",
+   "drive": true,
+   "maps": true,
+   "nav": true
+  },
+  {
+   "body": "{\"drive\":true,\"nav\":true}",
+   "drive": true,
+   "maps": false,
+   "nav": true
+  },
+  {
+   "body": "{ \"nav\" : true , \"drive\" : true }",
+   "drive": true,
+   "maps": false,
+   "nav": true
+  },
+  {
+   "body": "{\"drive\":false}",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "{\"drive\":1}",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "{\"drive\":\"true\"}",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "{\"drive\":null}",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "{\"nav\":true,\"drive\":false}",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "{\"nav\":true,\"other\":true}",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "{\"drive\":true,\"drive\":true}",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "{}",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "[]",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "\"drive\"",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "true",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "not json",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "{\"nav\":true,\"maps\":true,\"drive\":true,\"x\":true}",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "{\"Drive\":true}",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "\u00ff",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  },
+  {
+   "body": "{\"nav\":true,\"maps\":true,\"drive\":true}                                        ",
+   "drive": false,
+   "maps": false,
+   "nav": false
+  }
+ ],
+ "cases": [
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12}",
+   "bytes": false,
+   "name": "minimal",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":0,\"age_ms\":0}",
+   "bytes": false,
+   "name": "seq 0 and age 0",
+   "read": {
+    "age_ms": 0,
+    "seq": 0
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":2147483647,\"age_ms\":60000}",
+   "bytes": false,
+   "name": "seq max and age max",
+   "read": {
+    "age_ms": 60000,
+    "seq": 2147483647
+   }
+  },
+  {
+   "allow": true,
+   "body": "{ \"v\" : 1 , \"seq\" : 7 , \"age_ms\" : 12 }",
+   "bytes": false,
+   "name": "spaces are allowed",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"age_ms\":12,\"seq\":7,\"v\":1,\"st\":\"en\"}",
+   "bytes": false,
+   "name": "keys in another order",
+   "read": {
+    "age_ms": 12,
+    "seq": 7,
+    "st": "en"
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"st\":\"dis\"}",
+   "bytes": false,
+   "name": "st dis",
+   "read": {
+    "age_ms": 12,
+    "seq": 7,
+    "st": "dis"
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"st\":\"pre\"}",
+   "bytes": false,
+   "name": "st pre",
+   "read": {
+    "age_ms": 12,
+    "seq": 7,
+    "st": "pre"
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"st\":\"en\"}",
+   "bytes": false,
+   "name": "st en",
+   "read": {
+    "age_ms": 12,
+    "seq": 7,
+    "st": "en"
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"st\":\"soft\"}",
+   "bytes": false,
+   "name": "st soft",
+   "read": {
+    "age_ms": 12,
+    "seq": 7,
+    "st": "soft"
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"st\":\"ovr\"}",
+   "bytes": false,
+   "name": "st ovr",
+   "read": {
+    "age_ms": 12,
+    "seq": 7,
+    "st": "ovr"
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"rdy\":true}",
+   "bytes": false,
+   "name": "rdy true",
+   "read": {
+    "age_ms": 12,
+    "rdy": true,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"rdy\":false}",
+   "bytes": false,
+   "name": "rdy false",
+   "read": {
+    "age_ms": 12,
+    "rdy": false,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lat\":true}",
+   "bytes": false,
+   "name": "lat true",
+   "read": {
+    "age_ms": 12,
+    "lat": true,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lat\":false}",
+   "bytes": false,
+   "name": "lat false",
+   "read": {
+    "age_ms": 12,
+    "lat": false,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lon\":true}",
+   "bytes": false,
+   "name": "lon true",
+   "read": {
+    "age_ms": 12,
+    "lon": true,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lon\":false}",
+   "bytes": false,
+   "name": "lon false",
+   "read": {
+    "age_ms": 12,
+    "lon": false,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"st\":\"ovr\",\"ov\":\"steer\"}",
+   "bytes": false,
+   "name": "ov steer with ovr",
+   "read": {
+    "age_ms": 12,
+    "ov": "steer",
+    "seq": 7,
+    "st": "ovr"
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"st\":\"ovr\",\"ov\":\"gas\"}",
+   "bytes": false,
+   "name": "ov gas with ovr",
+   "read": {
+    "age_ms": 12,
+    "ov": "gas",
+    "seq": 7,
+    "st": "ovr"
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":0}",
+   "bytes": false,
+   "name": "al 0",
+   "read": {
+    "age_ms": 12,
+    "al": 0,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1}",
+   "bytes": false,
+   "name": "al 1",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":2}",
+   "bytes": false,
+   "name": "al 2",
+   "read": {
+    "age_ms": 12,
+    "al": 2,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":3}",
+   "bytes": false,
+   "name": "al 3",
+   "read": {
+    "age_ms": 12,
+    "al": 3,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":2,\"ak\":\"take\"}",
+   "bytes": false,
+   "name": "ak take",
+   "read": {
+    "age_ms": 12,
+    "ak": "take",
+    "al": 2,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":2,\"ak\":\"drv\"}",
+   "bytes": false,
+   "name": "ak drv",
+   "read": {
+    "age_ms": 12,
+    "ak": "drv",
+    "al": 2,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":2,\"ak\":\"fcw\"}",
+   "bytes": false,
+   "name": "ak fcw",
+   "read": {
+    "age_ms": 12,
+    "ak": "fcw",
+    "al": 2,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":2,\"ak\":\"lane\"}",
+   "bytes": false,
+   "name": "ak lane",
+   "read": {
+    "age_ms": 12,
+    "ak": "lane",
+    "al": 2,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":2,\"ak\":\"other\"}",
+   "bytes": false,
+   "name": "ak other",
+   "read": {
+    "age_ms": 12,
+    "ak": "other",
+    "al": 2,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"Steer Left to Start Lane Change\",\"a2\":\"Once Safe\"}",
+   "bytes": false,
+   "name": "alert text",
+   "read": {
+    "a1": "Steer Left to Start Lane Change",
+    "a2": "Once Safe",
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+   "bytes": false,
+   "name": "text of 40 characters",
+   "read": {
+    "a1": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"Az09 .,:;!?'%/()+-\"}",
+   "bytes": false,
+   "name": "every character of the text rule",
+   "read": {
+    "a1": "Az09 .,:;!?'%/()+-",
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"off\"}",
+   "bytes": false,
+   "name": "lc off",
+   "read": {
+    "age_ms": 12,
+    "lc": "off",
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"pre\"}",
+   "bytes": false,
+   "name": "lc pre",
+   "read": {
+    "age_ms": 12,
+    "lc": "pre",
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"go\"}",
+   "bytes": false,
+   "name": "lc go",
+   "read": {
+    "age_ms": 12,
+    "lc": "go",
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"fin\"}",
+   "bytes": false,
+   "name": "lc fin",
+   "read": {
+    "age_ms": 12,
+    "lc": "fin",
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"pre\",\"ld\":\"l\"}",
+   "bytes": false,
+   "name": "lc pre ld l",
+   "read": {
+    "age_ms": 12,
+    "lc": "pre",
+    "ld": "l",
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"pre\",\"ld\":\"r\"}",
+   "bytes": false,
+   "name": "lc pre ld r",
+   "read": {
+    "age_ms": 12,
+    "lc": "pre",
+    "ld": "r",
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"go\",\"ld\":\"l\"}",
+   "bytes": false,
+   "name": "lc go ld l",
+   "read": {
+    "age_ms": 12,
+    "lc": "go",
+    "ld": "l",
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"go\",\"ld\":\"r\"}",
+   "bytes": false,
+   "name": "lc go ld r",
+   "read": {
+    "age_ms": 12,
+    "lc": "go",
+    "ld": "r",
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"fin\",\"ld\":\"l\"}",
+   "bytes": false,
+   "name": "lc fin ld l",
+   "read": {
+    "age_ms": 12,
+    "lc": "fin",
+    "ld": "l",
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"fin\",\"ld\":\"r\"}",
+   "bytes": false,
+   "name": "lc fin ld r",
+   "read": {
+    "age_ms": 12,
+    "lc": "fin",
+    "ld": "r",
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"pre\",\"ld\":\"r\",\"lp\":\"man\"}",
+   "bytes": false,
+   "name": "lp man",
+   "read": {
+    "age_ms": 12,
+    "lc": "pre",
+    "ld": "r",
+    "lp": "man",
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"pre\",\"ld\":\"r\",\"lp\":\"auto\"}",
+   "bytes": false,
+   "name": "lp auto",
+   "read": {
+    "age_ms": 12,
+    "lc": "pre",
+    "ld": "r",
+    "lp": "auto",
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"pre\",\"ld\":\"r\",\"lp\":\"na\"}",
+   "bytes": false,
+   "name": "lp na",
+   "read": {
+    "age_ms": 12,
+    "lc": "pre",
+    "ld": "r",
+    "lp": "na",
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"pre\",\"ld\":\"r\",\"lp\":\"blk\"}",
+   "bytes": false,
+   "name": "lp blk",
+   "read": {
+    "age_ms": 12,
+    "lc": "pre",
+    "ld": "r",
+    "lp": "blk",
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"crv\":true}",
+   "bytes": false,
+   "name": "crv",
+   "read": {
+    "age_ms": 12,
+    "crv": true,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"stp\":true}",
+   "bytes": false,
+   "name": "stp",
+   "read": {
+    "age_ms": 12,
+    "seq": 7,
+    "stp": true
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"st\":\"ovr\",\"rdy\":true,\"lat\":true,\"lon\":false,\"ov\":\"steer\",\"al\":3,\"ak\":\"take\",\"a1\":\"TAKE CONTROL\",\"a2\":\"Press Brake!\",\"lc\":\"pre\",\"ld\":\"l\",\"lp\":\"blk\",\"crv\":true,\"stp\":true}",
+   "bytes": false,
+   "name": "every key",
+   "read": {
+    "a1": "TAKE CONTROL",
+    "a2": "Press Brake!",
+    "age_ms": 12,
+    "ak": "take",
+    "al": 3,
+    "crv": true,
+    "lat": true,
+    "lc": "pre",
+    "ld": "l",
+    "lon": false,
+    "lp": "blk",
+    "ov": "steer",
+    "rdy": true,
+    "seq": 7,
+    "st": "ovr",
+    "stp": true
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     ",
+   "bytes": false,
+   "name": "512 bytes exactly",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "",
+   "bytes": false,
+   "name": "empty",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "x",
+   "bytes": false,
+   "name": "not json",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7",
+   "bytes": false,
+   "name": "a truncated object",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "[]",
+   "bytes": false,
+   "name": "an array",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "null",
+   "bytes": false,
+   "name": "null",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "5",
+   "bytes": false,
+   "name": "a number",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "\"x\"",
+   "bytes": false,
+   "name": "a string",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{}",
+   "bytes": false,
+   "name": "an empty object",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"seq\":8,\"age_ms\":12}",
+   "bytes": false,
+   "name": "a repeated key",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"st\":\"en\",\"st\":\"dis\"}",
+   "bytes": false,
+   "name": "a repeated key of an optional",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":NaN,\"age_ms\":12}",
+   "bytes": false,
+   "name": "NaN",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":Infinity}",
+   "bytes": false,
+   "name": "Infinity",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":-Infinity}",
+   "bytes": false,
+   "name": "-Infinity in an optional",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"seq\":7,\"age_ms\":12}",
+   "bytes": false,
+   "name": "v missing",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":2,\"seq\":7,\"age_ms\":12}",
+   "bytes": false,
+   "name": "v 2",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":0,\"seq\":7,\"age_ms\":12}",
+   "bytes": false,
+   "name": "v 0",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":\"1\",\"seq\":7,\"age_ms\":12}",
+   "bytes": false,
+   "name": "v a string",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1.0,\"seq\":7,\"age_ms\":12}",
+   "bytes": false,
+   "name": "v a float",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":true,\"seq\":7,\"age_ms\":12}",
+   "bytes": false,
+   "name": "v true",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":null,\"seq\":7,\"age_ms\":12}",
+   "bytes": false,
+   "name": "v null",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"age_ms\":12}",
+   "bytes": false,
+   "name": "seq missing",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":-1,\"age_ms\":12}",
+   "bytes": false,
+   "name": "seq negative",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":2147483648,\"age_ms\":12}",
+   "bytes": false,
+   "name": "seq 2^31",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7.5,\"age_ms\":12}",
+   "bytes": false,
+   "name": "seq a float",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":1e3,\"age_ms\":12}",
+   "bytes": false,
+   "name": "seq a float with exponent",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":\"7\",\"age_ms\":12}",
+   "bytes": false,
+   "name": "seq a string",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":true,\"age_ms\":12}",
+   "bytes": false,
+   "name": "seq true",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":null,\"age_ms\":12}",
+   "bytes": false,
+   "name": "seq null",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":99999999999999999999,\"age_ms\":12}",
+   "bytes": false,
+   "name": "seq huge",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7}",
+   "bytes": false,
+   "name": "age missing",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":-1}",
+   "bytes": false,
+   "name": "age negative",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":60001}",
+   "bytes": false,
+   "name": "age 60001",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":1.5}",
+   "bytes": false,
+   "name": "age a float",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":\"12\"}",
+   "bytes": false,
+   "name": "age a string",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":false}",
+   "bytes": false,
+   "name": "age false",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ",
+   "bytes": false,
+   "name": "513 bytes",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ",
+   "bytes": false,
+   "name": "a body of 5000 bytes",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"st\":\"on\"}",
+   "bytes": false,
+   "name": "st unknown word",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"st\":\"EN\"}",
+   "bytes": false,
+   "name": "st upper case",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"st\":1}",
+   "bytes": false,
+   "name": "st a number",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"st\":null}",
+   "bytes": false,
+   "name": "st null",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"st\":\"\"}",
+   "bytes": false,
+   "name": "st empty",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"rdy\":1}",
+   "bytes": false,
+   "name": "rdy a number",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lat\":\"true\"}",
+   "bytes": false,
+   "name": "lat a string",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lon\":null}",
+   "bytes": false,
+   "name": "lon null",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":4}",
+   "bytes": false,
+   "name": "al 4",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":-1}",
+   "bytes": false,
+   "name": "al -1",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":true}",
+   "bytes": false,
+   "name": "al true",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1.0}",
+   "bytes": false,
+   "name": "al a float",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":\"1\"}",
+   "bytes": false,
+   "name": "al a string",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"start\"}",
+   "bytes": false,
+   "name": "lc unknown word",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":2}",
+   "bytes": false,
+   "name": "lc a number",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"PRE\"}",
+   "bytes": false,
+   "name": "lc upper case",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"crv\":false}",
+   "bytes": false,
+   "name": "crv false",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"crv\":1}",
+   "bytes": false,
+   "name": "crv 1",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"stp\":\"true\"}",
+   "bytes": false,
+   "name": "stp a string",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"stp\":null}",
+   "bytes": false,
+   "name": "stp null",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"zz\":1}",
+   "bytes": false,
+   "name": "an unknown key",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"zz\":\"hello\"}",
+   "bytes": false,
+   "name": "an unknown key with text",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"nav\":{\"v\":1}}",
+   "bytes": false,
+   "name": "a nested object",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"st\":[\"en\"]}",
+   "bytes": false,
+   "name": "an array value",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"rdy\":{\"a\":1}}",
+   "bytes": false,
+   "name": "an object value",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"ST\":\"en\"}",
+   "bytes": false,
+   "name": "a key in upper case",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"\"}",
+   "bytes": false,
+   "name": "text: an empty text",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+   "bytes": false,
+   "name": "text: 41 characters",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"a\\\"b\"}",
+   "bytes": false,
+   "name": "text: a double quote",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"a\\\\b\"}",
+   "bytes": false,
+   "name": "text: a backslash",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"a\\nb\"}",
+   "bytes": false,
+   "name": "text: an escaped newline",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"a\\tb\"}",
+   "bytes": false,
+   "name": "text: an escaped tab",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"caf\\u00e9\"}",
+   "bytes": false,
+   "name": "text: an escaped unicode letter",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"<b>\"}",
+   "bytes": false,
+   "name": "text: an angle bracket",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"a&b\"}",
+   "bytes": false,
+   "name": "text: an ampersand",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"a@b\"}",
+   "bytes": false,
+   "name": "text: an at sign",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"a#b\"}",
+   "bytes": false,
+   "name": "text: a hash",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"a|b\"}",
+   "bytes": false,
+   "name": "text: a pipe",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"a{b\"}",
+   "bytes": false,
+   "name": "text: a curly brace",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":5}",
+   "bytes": false,
+   "name": "text that is not a string",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a2\":true}",
+   "bytes": false,
+   "name": "text 2 that is not a string",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"ld\":\"l\"}",
+   "bytes": false,
+   "name": "ld without lc",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"off\",\"ld\":\"l\"}",
+   "bytes": false,
+   "name": "ld with lc off",
+   "read": {
+    "age_ms": 12,
+    "lc": "off",
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lp\":\"man\"}",
+   "bytes": false,
+   "name": "lp without lc",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"go\",\"ld\":\"l\",\"lp\":\"man\"}",
+   "bytes": false,
+   "name": "lp with lc go",
+   "read": {
+    "age_ms": 12,
+    "lc": "go",
+    "ld": "l",
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"off\",\"lp\":\"auto\"}",
+   "bytes": false,
+   "name": "lp with lc off",
+   "read": {
+    "age_ms": 12,
+    "lc": "off",
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"ov\":\"gas\"}",
+   "bytes": false,
+   "name": "ov without st",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"st\":\"en\",\"ov\":\"steer\"}",
+   "bytes": false,
+   "name": "ov with st en",
+   "read": {
+    "age_ms": 12,
+    "seq": 7,
+    "st": "en"
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"ak\":\"lane\"}",
+   "bytes": false,
+   "name": "ak without al",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":0,\"ak\":\"lane\"}",
+   "bytes": false,
+   "name": "ak with al 0",
+   "read": {
+    "age_ms": 12,
+    "al": 0,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"a1\":\"hi\"}",
+   "bytes": false,
+   "name": "text without al",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":0,\"a1\":\"hi\",\"a2\":\"there\"}",
+   "bytes": false,
+   "name": "text with al 0",
+   "read": {
+    "age_ms": 12,
+    "al": 0,
+    "seq": 7
+   }
+  },
+  {
+   "allow": true,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"lc\":\"pre\",\"lp\":\"man\"}",
+   "bytes": false,
+   "name": "lc pre without a side is allowed on the wire",
+   "read": {
+    "age_ms": 12,
+    "lc": "pre",
+    "lp": "man",
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\n\"seq\":7,\"age_ms\":12}",
+   "bytes": true,
+   "name": "a raw newline between tokens",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\t\"seq\":7,\"age_ms\":12}",
+   "bytes": true,
+   "name": "a raw tab",
+   "read": {
+    "age_ms": 12,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12}\u0000",
+   "bytes": true,
+   "name": "a NUL byte",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"caf\u00c3\u00a9\"}",
+   "bytes": true,
+   "name": "a raw non-ASCII letter in the text",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"\u00ff\"}",
+   "bytes": true,
+   "name": "invalid UTF-8",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "\u00ef\u00bb\u00bf{\"v\":1,\"seq\":7,\"age_ms\":12}",
+   "bytes": true,
+   "name": "a byte order mark",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12,\"al\":1,\"a1\":\"a\u007fb\"}",
+   "bytes": true,
+   "name": "a DEL byte",
+   "read": {
+    "age_ms": 12,
+    "al": 1,
+    "seq": 7
+   }
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12}x",
+   "bytes": false,
+   "name": "text after the object",
+   "read": null
+  },
+  {
+   "allow": false,
+   "body": "{\"v\":1,\"seq\":7,\"age_ms\":12}{\"v\":1,\"seq\":7,\"age_ms\":12}",
+   "bytes": false,
+   "name": "two objects",
+   "read": null
+  }
+ ],
+ "version": 4,
+ "what": "the drive status: allow = the strict verdict of the allow-list (the comma's entrance, the Companion); read = what the X10 reads (null: no drive status)"
+}

@@ -146,8 +146,15 @@ from `127.0.0.1:8765` only: `roadtiles` (a bundle of up to 16 road tiles), `stil
 - **Flags and meter.** Companion reads `maps`, `wwr` and `up_kb_s` of the health answer (`BridgeFeatures`, `MapAdmission`: what the comma's tile client will do with them) and keeps its
   own measure of the burst of write-without-response packets (`UplinkMeter`); the bridge's figure decides, this one is for the status and the tests. Not seen on a unit: 【未検証】.
 
+### Drive status over Bluetooth (Companion 1.1.43, contract version 4)
+
+With a bridge whose health answer has `pushDrive`, Companion adds `"drive":true` to the `push-enable` body (keys in the order nav, maps, drive; an older bridge gets the body it always got) and
+accepts push frames of the kind `drive`: the comma's drive status (engaged or not, a lane change waiting, approved or blocked, alerts). Such a frame is checked like a position (key, session,
+counter, the allow-list shape `drive` of `DriveContract.kt`), dropped when it waited over 1 s, gets only its `age_ms` raised and is POSTed to `127.0.0.1:8765/v1/drive` with its own
+forwarder, so it never delays a position. Read-only: nothing is sent to the comma because of it. Not seen on a unit or in a car.
+
 Tests: `app/src/test/java/link/firestar/companion/` (`BleLaneTest`, `BleExchangeTest`, `SidecarJobsTest`, `VehiclePushTest`, `AllowlistTest`, `JobContractTest`,
-`ContractVectorsTest`, `BleWireRawTest`, `StrictJsonTest`, `LinkMiscTest`) with the shared vectors of the Sidecar project in `app/src/test/resources/btlink/` (see the
+`ContractVectorsTest`, `DriveContractVectorsTest`, `DrivePushTest`, `BleWireRawTest`, `StrictJsonTest`, `LinkMiscTest`) with the shared vectors of the Sidecar project in `app/src/test/resources/btlink/` (see the
 README there). `tests/test_ble_wire_vectors.py` opens the raw-body frames that the app makes with the bridge's own `open_message`. Not yet seen on a unit or in a car.
 
 Install: join the Galaxy hotspot, open Galaxy → **Galaxy Access & Install** →

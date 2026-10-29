@@ -22,7 +22,8 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * What comma's bridge announces in `GET /_bridge/health` (docs/dev/bluetooth-link.md section 5.3 and the deviation of the bridge, bluetooth-comma-deploy.md): the flags
  * `poll2`, `results2` and `push` (and, since contract version 2, `pushNav`: the push frames may carry the beacon's `nav` object to a phone that announces it in `push-enable`; since
- * contract version 3 `maps`, `wwr` and `up_kb_s`: the bridge takes the five map shapes, its RX takes write without response, and it measures its uplink; a phone that read `maps` announces it in `push-enable`).
+ * contract version 3 `maps`, `wwr` and `up_kb_s`: the bridge takes the five map shapes, its RX takes write without response, and it measures its uplink; a phone that read `maps` announces it in `push-enable`;
+ * since contract version 4 `pushDrive`: the push frames may be of the kind `drive`, the drive status, to a phone that announces `drive` in `push-enable`).
  * **The flags decide, never `protocol`**: the iOS Galaxy app refuses a health `protocol` other than 1, so the bridge keeps 1 and adds
  * `sidecarProtocol` 2 next to the flags ([protocol] is the larger of the two, for the status page only). A bridge that has no flag, or an answer this reader does
  * not understand, is the old one: the old poll and chunk calls (the route worker's legacy path) keep working with it and nothing new is used (a new Companion on an old
@@ -38,6 +39,8 @@ internal class BridgeFeatures(
     val upKbS: Double? = null,
     /** `up_kb_s` is there and is not a finite number: the comma's client treats the link as closed. */
     val upKbSInvalid: Boolean = false,
+    /** Contract version 4: the push frames may be of the kind `drive` (the drive status; the literal `true`). The Companion announces `drive` in `push-enable` only to a bridge that said so. */
+    val pushDrive: Boolean = false,
 ) {
     /** Jobs by `poll2` and results with a status, an encoding and a digest. */
     val jobsV2: Boolean get() = poll2 && results2
@@ -46,6 +49,8 @@ internal class BridgeFeatures(
      * it is given the announcement it always got, and a Companion never announces a capability it cannot carry).
      */
     val announcesMaps: Boolean get() = maps && jobsV2
+    /** A phone announces `drive` in `push-enable` (contract version 4) only to a bridge whose health answer said `pushDrive`; a bridge that did not say it is given the announcement it always got. */
+    val announcesDrive: Boolean get() = pushDrive
     /** What the comma's tile client will do with this health answer. */
     val mapAdmission: MapAdmission get() = MapAdmission.of(this)
 
@@ -59,7 +64,7 @@ internal class BridgeFeatures(
             // `xz` is announced only to switch it off: the bridge's interpreter has `lzma` (measured), and a refused `xz` result is a failed job, never a wrong route.
             val rate = (value["up_kb_s"] as? StrictJson.Num)?.toDoubleOrNull()?.takeIf { it.isFinite() }
             return BridgeFeatures(maxOf(level("protocol"), level("sidecarProtocol")), flag("poll2"), flag("results2"), flag("push"), value["xz"] != false, flag("pushNav"),
-                maps = flag("maps"), wwr = flag("wwr"), upKbS = rate, upKbSInvalid = value.has("up_kb_s") && rate == null)
+                maps = flag("maps"), wwr = flag("wwr"), upKbS = rate, upKbSInvalid = value.has("up_kb_s") && rate == null, pushDrive = flag("pushDrive"))
         }
     }
 }
@@ -405,7 +410,7 @@ internal class SidecarJobs(
             val jobs = rows.map { row ->
                 val job = row as? StrictJson.Obj ?: throw IllegalArgumentException("job row")
                 val id = job["id"] as? String
-                val kind = Shape.values().firstOrNull { it.wire == job["kind"] && it != Shape.VEHICLE }
+                val kind = Shape.values().firstOrNull { it.wire == job["kind"] && it != Shape.VEHICLE && it != Shape.DRIVE }
                 val target = job["target"] as? String
                 val sequence = (job["next_sequence"] as? StrictJson.Num)?.toLongOrNull()
                 val claimed = job["claimed"] as? Boolean

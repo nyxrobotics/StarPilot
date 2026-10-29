@@ -307,12 +307,11 @@ class BleTransport(context: Context, private val key: ByteArray?, private val he
     }
 
     /** What the push receiver needs of this connection. */
-    internal val pushLink = object : PushLink {
+    internal val pushLink = object : BridgePushLink({ features }) {
         override val pushKey: ByteArray get() = key ?: throw IOException("Not paired")
         override val pushSession: String get() = session
         override fun subscribe() { lane.control(LaneClass.SMALL, 12, "subscribe") }
-        override val carriesNav: Boolean get() = features.pushNav
-        override fun pushEnable(): Int = lane.call(LaneClass.SMALL, 10, PushEnable.request(features), label = "push-enable").optInt("status")
+        override fun pushEnable(): Int = lane.call(LaneClass.SMALL, 10, enableRequest(), label = "push-enable").optInt("status")
     }
 
     internal val jobsV2: Boolean get() = features.jobsV2 && open

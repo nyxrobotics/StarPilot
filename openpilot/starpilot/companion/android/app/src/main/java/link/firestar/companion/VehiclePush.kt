@@ -12,15 +12,15 @@ import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 
-/** A push frame or packet that must not be used. The message is ours; nothing the peer sent is echoed. */
-internal class PushError(message: String) : IllegalArgumentException(message)
+/** A push frame or packet that must not be used. The message is ours; nothing the peer sent is echoed. [kind] is `drive` for a frame that opened (so it is the comma's) as a drive frame and was refused: it is counted apart from the position's. */
+internal class PushError(message: String, val kind: String? = null) : IllegalArgumentException(message)
 
 /** An opened push frame: [body] is the exact bytes of the `POST /v1/vehicle` body (vehicle only), [auth] the token for its `Authorization` header. */
 internal class PushMessage(val kind: String, val counter: Long, val tsMs: Long, val body: ByteArray?, val auth: String?)
 
 /**
  * The push frames comma sends to the phone, one way (docs/dev/bluetooth-link.md section 5.5). Plaintext of a frame, sealed with the phone's key under the direction
- * label `push`: `{"t":"vehicle"|"wake","c":counter,"s":"<session challenge>","ts":<ms>,"b":{report},"a":"<token>"}`. One frame is 1 to 8 notifications of at most
+ * label `push`: `{"t":"vehicle"|"wake"|"drive","c":counter,"s":"<session challenge>","ts":<ms>,"b":{report},"a":"<token>"}` (`drive`: contract version 4, `DrivePush.kt`). One frame is 1 to 8 notifications of at most
  * 244 bytes: `0x10 | frame_id u32 | idx u8 | count u8 | data`. Reference: `tools/btlab/contract/push.py`.
  */
 internal object PushFrames {
@@ -28,7 +28,7 @@ internal object PushFrames {
     const val HEADER = 7
     const val MAX_PACKETS = 8
     const val MAX_FRAME = 4096
-    private val AUTH = Regex("[!-~]{10,128}")
+    internal val AUTH = Regex("[!-~]{10,128}")
     private val KEYS = setOf("t", "c", "s", "ts", "b", "a")
 
     /** Reassembles notification packets. A packet out of order, a changed count, a repeated finished frame id or an oversize frame resets it and raises. */
@@ -74,20 +74,23 @@ internal object PushFrames {
     /**
      * Verifies and opens a sealed frame (with its 4-byte length prefix, as the assembler returns it). Raises [PushError] for: a wrong key or direction (the GCM
      * tag), another session, a counter that did not rise, an unknown kind, extra fields, a report outside the allow-list, a token that cannot be a header value, and a
-     * report with a `nav` object when [navAllowed] is false (the bridge did not announce `pushNav`: a bridge that never said it carries nav sends none).
+     * report with a `nav` object when [navAllowed] is false (the bridge did not announce `pushNav`: a bridge that never said it carries nav sends none). A frame of the kind `drive` is
+     * opened only when [driveAllowed] (the bridge announced `pushDrive`) and its object passes the allow-list of the shape `drive`; its refusals carry the kind `drive`.
      */
-    fun open(frame: ByteArray, key: ByteArray, session: String, lastCounter: Long, navAllowed: Boolean = false): PushMessage {
+    fun open(frame: ByteArray, key: ByteArray, session: String, lastCounter: Long, navAllowed: Boolean = false, driveAllowed: Boolean = false): PushMessage {
         if (frame.size < 5 || ByteBuffer.wrap(frame, 0, 4).int != frame.size - 4) throw PushError("frame length")
         val message = try { BleWire.decode(frame.copyOfRange(4, frame.size), key, BleWire.PUSH_DIRECTION) } catch (_: Exception) { throw PushError("frame does not open") }
         if (message.body != null) throw PushError("frame fields") // codec 2 carries a body: a push has none
         val value = try { StrictJson.parseObject(message.json, MAX_FRAME) } catch (_: StrictJson.Invalid) { throw PushError("frame does not open") }
         val kind = value["t"] as? String
-        if (!KEYS.containsAll(value.members.keys) || (kind != "vehicle" && kind != "wake")) throw PushError("frame fields")
-        if (value["s"] != session) throw PushError("frame belongs to another session")
+        val tag = if (kind == DriveFrames.KIND) kind else null // the refusals of a drive frame are counted apart from the position's
+        if (!KEYS.containsAll(value.members.keys) || (kind != "vehicle" && kind != "wake" && tag == null)) throw PushError("frame fields", tag)
+        if (value["s"] != session) throw PushError("frame belongs to another session", tag)
         val counter = (value["c"] as? StrictJson.Num)?.toLongOrNull()
-        if (counter == null || counter <= lastCounter) throw PushError("counter did not rise")
+        if (counter == null || counter <= lastCounter) throw PushError("counter did not rise", tag)
         val ts = (value["ts"] as? StrictJson.Num)?.toLongOrNull()
-        if (ts == null || ts < 0) throw PushError("timestamp")
+        if (ts == null || ts < 0) throw PushError("timestamp", tag)
+        if (tag != null) return DriveFrames.message(value, counter, ts, driveAllowed)
         if (kind == "wake") {
             if (value.has("b") || value.has("a")) throw PushError("wake frame fields")
             return PushMessage("wake", counter, ts, null, null)
@@ -236,7 +239,8 @@ internal class Forwarder<T : Any> {
  * object, and a bridge that announced `maps` is told that this phone carries the map shapes (contract version 3): the request body is `{"nav":true}`, `{"maps":true}` or
  * `{"nav":true,"maps":true}` (codec 0: the base64 `body` member), the exact bytes of `announce_body` of `tools/btlab/contract/mapjobs.py`. `maps` is announced only to a bridge that said
  * `maps`: a bridge of version 2 reads any body but `{"nav":true}` as no announcement at all and would drop the nav announcement with it. A bridge that announced neither gets the
- * request it always got, with no body.
+ * request it always got, with no body. Contract version 4 adds the key `drive` (the keys in the order nav, maps, drive, the true ones only: `announce_body` of `drive.py`), announced
+ * only to a bridge whose health answer said `pushDrive`; without `drive` the body is byte for byte what it was.
  */
 internal object PushEnable {
     const val PATH = "/_bridge/push/enable"
@@ -245,19 +249,20 @@ internal object PushEnable {
     const val NAV_MAPS_BODY = "{\"nav\":true,\"maps\":true}"
 
     /** The announcement of a phone, or null for none. */
-    fun body(announceNav: Boolean, announceMaps: Boolean): String? = when {
+    fun body(announceNav: Boolean, announceMaps: Boolean, announceDrive: Boolean = false): String? = when {
+        announceDrive -> listOf("nav" to announceNav, "maps" to announceMaps, "drive" to true).filter { it.second }.joinToString(",", "{", "}") { "\"${it.first}\":true" }
         announceNav && announceMaps -> NAV_MAPS_BODY
         announceMaps -> MAPS_BODY
         announceNav -> NAV_BODY
         else -> null
     }
 
-    /** The announcement for a bridge that gave this health answer: `nav` when it said `pushNav`, `maps` when it said `maps` (and speaks the jobs of version 2). */
-    fun request(features: BridgeFeatures) = request(features.pushNav, features.announcesMaps)
+    /** The announcement for a bridge that gave this health answer: `nav` when it said `pushNav`, `maps` when it said `maps` (and speaks the jobs of version 2), `drive` when it said `pushDrive`. */
+    fun request(features: BridgeFeatures) = request(features.pushNav, features.announcesMaps, features.announcesDrive)
 
-    fun request(announceNav: Boolean, announceMaps: Boolean = false): org.json.JSONObject {
+    fun request(announceNav: Boolean, announceMaps: Boolean = false, announceDrive: Boolean = false): org.json.JSONObject {
         val request = laneRequest("POST", PATH)
-        body(announceNav, announceMaps)?.let { request.put("body", java.util.Base64.getEncoder().encodeToString(it.toByteArray(Charsets.US_ASCII))) }
+        body(announceNav, announceMaps, announceDrive)?.let { request.put("body", java.util.Base64.getEncoder().encodeToString(it.toByteArray(Charsets.US_ASCII))) }
         return request
     }
 }
@@ -275,6 +280,19 @@ internal interface PushLink {
     fun pushEnable(): Int
     /** The bridge announced `pushNav` in its health answer: the frames may carry `nav`, and `push-enable` says that this phone takes it. Read flags only, never `protocol`. */
     val carriesNav: Boolean get() = false
+    /** The bridge announced `pushDrive` in its health answer: frames of the kind `drive` are accepted, and `push-enable` says that this phone forwards them. Read flags only, never `protocol`. */
+    val carriesDrive: Boolean get() = false
+}
+
+/**
+ * A [PushLink] whose flags and `push-enable` request come from what the bridge's health answered ([features] is read every time, so a reconnect that reads another answer changes them): the one
+ * place that decides what this phone accepts (`pushNav`, `pushDrive`) and announces. `BleTransport` supplies the rest.
+ */
+internal abstract class BridgePushLink(private val features: () -> BridgeFeatures) : PushLink {
+    override val carriesNav: Boolean get() = features().pushNav
+    override val carriesDrive: Boolean get() = features().announcesDrive
+    /** The `push-enable` request for this bridge: the announcement of [PushEnable.request]. */
+    fun enableRequest(): org.json.JSONObject = PushEnable.request(features())
 }
 
 /**
@@ -296,16 +314,20 @@ internal class VehiclePush(
     private val onWake: () -> Unit = {},
     private val warn: (String) -> Unit = { Log.w("StarPilotSidecarBLE", it) },
     private val filter: FreshnessFilter = FreshnessFilter(),
+    /** The drive status (contract version 4) goes to `POST /v1/drive` and nowhere else, through its own forwarder and its own worker: a drive POST never holds a position POST and the reverse. */
+    private val postDrive: (ByteArray, String) -> Int = LoopbackVehiclePoster(path = DriveFrames.PATH)::post,
+    private val driveWorker: Executor = Executors.newSingleThreadExecutor { task -> Thread(task, "SidecarBLE-PushDrive").apply { isDaemon = true } },
 ) : Closeable {
     private class Frame(val rx: Long, val late: Long, val body: ByteArray, val auth: String)
 
     private val assembler = PushFrames.Assembler()
     private val forwarder = Forwarder<Frame>()
+    private val driveForwarder = Forwarder<Frame>()
     @Volatile private var closed = false
     private var lastCounter = 0L
     private val counts = Array(Stat.values().size) { AtomicInteger() }
 
-    private enum class Stat { FRAMES, WAKES, FORWARDED, REFUSED_BY_X10, POST_FAILED, DROPPED_LATE, BAD }
+    private enum class Stat { FRAMES, WAKES, FORWARDED, REFUSED_BY_X10, POST_FAILED, DROPPED_LATE, BAD, DRIVE_FRAMES, DRIVE_FORWARDED, DRIVE_REFUSED_BY_X10, DRIVE_POST_FAILED, DRIVE_DROPPED_LATE, DRIVE_BAD }
 
     /** Counters for the status page and the tests. */
     val framesOpened get() = counts[Stat.FRAMES.ordinal].get()
@@ -316,6 +338,14 @@ internal class VehiclePush(
     val droppedLate get() = counts[Stat.DROPPED_LATE.ordinal].get()
     val droppedBad get() = counts[Stat.BAD.ordinal].get()
     val droppedStale get() = forwarder.droppedStale
+    /** The counters of the drive status (contract version 4): its own, so that a drive frame that is dropped or refused never touches the position's. */
+    val driveFramesOpened get() = counts[Stat.DRIVE_FRAMES.ordinal].get()
+    val driveForwarded get() = counts[Stat.DRIVE_FORWARDED.ordinal].get()
+    val driveRefusedByX10 get() = counts[Stat.DRIVE_REFUSED_BY_X10.ordinal].get()
+    val drivePostFailed get() = counts[Stat.DRIVE_POST_FAILED.ordinal].get()
+    val driveDroppedLate get() = counts[Stat.DRIVE_DROPPED_LATE.ordinal].get()
+    val driveDroppedBad get() = counts[Stat.DRIVE_BAD.ordinal].get()
+    val driveDroppedStale get() = driveForwarder.droppedStale
     @Volatile var bound = false
         private set
 
@@ -339,19 +369,26 @@ internal class VehiclePush(
         if (closed) return
         try {
             val frame = assembler.add(packet) ?: return
-            val message = PushFrames.open(frame, link.pushKey, link.pushSession, lastCounter, link.carriesNav)
+            val message = PushFrames.open(frame, link.pushKey, link.pushSession, lastCounter, link.carriesNav, link.carriesDrive)
             lastCounter = message.counter
-            counts[Stat.FRAMES.ordinal].incrementAndGet()
-            val late = filter.observe(rx, message.tsMs)
+            val drive = message.kind == DriveFrames.KIND
+            counts[(if (drive) Stat.DRIVE_FRAMES else Stat.FRAMES).ordinal].incrementAndGet()
+            val late = filter.observe(rx, message.tsMs) // one window for every kind: a drive frame is a sample of the same path
             if (message.kind == "wake") {
                 counts[Stat.WAKES.ordinal].incrementAndGet()
                 onWake()
                 return
             }
+            if (drive) {
+                val next = driveForwarder.offer(rx, Frame(rx, late, message.body!!, message.auth!!)) ?: return
+                driveWorker.execute { drainDrive(next.second) }
+                return
+            }
             val next = forwarder.offer(rx, Frame(rx, late, message.body!!, message.auth!!)) ?: return
             worker.execute { drain(next.second) }
-        } catch (_: PushError) {
-            if (counts[Stat.BAD.ordinal].incrementAndGet() == 1) warn("Push frame refused")
+        } catch (error: PushError) {
+            if (error.kind == DriveFrames.KIND) { if (counts[Stat.DRIVE_BAD.ordinal].incrementAndGet() == 1) warn("Push drive frame refused") }
+            else if (counts[Stat.BAD.ordinal].incrementAndGet() == 1) warn("Push frame refused")
         } catch (_: java.util.concurrent.RejectedExecutionException) { /* closed */ }
     }
 
@@ -373,16 +410,41 @@ internal class VehiclePush(
         counts[(if (status in 200..299) Stat.FORWARDED else Stat.REFUSED_BY_X10).ordinal].incrementAndGet()
     }
 
+    private fun drainDrive(first: Frame) {
+        var frame: Frame? = first
+        while (frame != null && !closed) {
+            try { forwardDrive(frame) } catch (error: Exception) { counts[Stat.DRIVE_POST_FAILED.ordinal].incrementAndGet() }
+            frame = driveForwarder.done()?.second
+        }
+    }
+
+    /** The same freshness rule as a position (late + dwell over 1000 ms: dropped), then only `age_ms` grows; what is posted passes the allow-list of the shape `drive` again. */
+    private fun forwardDrive(frame: Frame) {
+        val now = clock()
+        val decision = filter.decide(frame.late, frame.rx, now)
+        if (!decision.forward) { counts[Stat.DRIVE_DROPPED_LATE.ordinal].incrementAndGet(); return }
+        val body = try { DriveFrames.withAge(frame.body, decision.addMs) } catch (_: PushError) { counts[Stat.DRIVE_BAD.ordinal].incrementAndGet(); return }
+        if (Allowlist.check("POST", DriveFrames.PATH, body).shape != Shape.DRIVE) { counts[Stat.DRIVE_BAD.ordinal].incrementAndGet(); return }
+        val status = postDrive(body, frame.auth)
+        counts[(if (status in 200..299) Stat.DRIVE_FORWARDED else Stat.DRIVE_REFUSED_BY_X10).ordinal].incrementAndGet()
+    }
+
     override fun close() {
         closed = true
         (worker as? java.util.concurrent.ExecutorService)?.shutdown()
+        (driveWorker as? java.util.concurrent.ExecutorService)?.shutdown()
     }
 }
 
-/** The report goes to the X10's own route API and nowhere else: `POST /v1/vehicle` on loopback, a fresh connection, no redirect, short bounds. */
-internal class LoopbackVehiclePoster(private val port: Int = 8765) {
+/**
+ * The report goes to the X10's own route API and nowhere else: `POST /v1/vehicle` on loopback (`POST /v1/drive` for the drive status: one poster per path, no other path exists), a fresh
+ * connection, no redirect, short bounds.
+ */
+internal class LoopbackVehiclePoster(private val port: Int = 8765, private val path: String = VEHICLE_PATH) {
+    init { require(path == VEHICLE_PATH || path == DriveFrames.PATH) { "the poster has two paths" } }
+
     fun post(body: ByteArray, token: String): Int {
-        val connection = URL("http://127.0.0.1:$port/v1/vehicle").openConnection(Proxy.NO_PROXY) as HttpURLConnection
+        val connection = URL("http://127.0.0.1:$port$path").openConnection(Proxy.NO_PROXY) as HttpURLConnection
         try {
             connection.requestMethod = "POST"
             connection.doOutput = true
@@ -398,4 +460,6 @@ internal class LoopbackVehiclePoster(private val port: Int = 8765) {
             return connection.responseCode
         } finally { connection.disconnect() }
     }
+
+    companion object { const val VEHICLE_PATH = "/v1/vehicle" }
 }

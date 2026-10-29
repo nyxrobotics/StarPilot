@@ -21,11 +21,11 @@ internal class ContractError(message: String) : IllegalArgumentException(message
 /**
  * The request shapes that may cross the link from comma to the X10's route API: the four of contract version 2 and the five map shapes of version 3
  * (docs/dev/bluetooth-map-contract.md). [jobClass] is the lane class of the chunks of a job of that kind and [deadlineSeconds] the comma's deadline of the kind
- * (`KIND_CLASS` and `DEADLINE_S` of `tools/btlab/contract/mapjobs.py`; the vectors `classes` and `deadlines_s` of `lane-map.json` hold this table). A vehicle report is a POST,
- * not a job.
+ * (`KIND_CLASS` and `DEADLINE_S` of `tools/btlab/contract/mapjobs.py`; the vectors `classes` and `deadlines_s` of `lane-map.json` hold this table). A vehicle report and the drive
+ * status (contract version 4) are POSTs, not jobs: DRIVE stands before the map shapes so that [isMap] stays what it was.
  */
 internal enum class Shape(val wire: String, val jobClass: LaneClass?, val deadlineSeconds: Int) {
-    ROUTE("route", LaneClass.BULK, 90), STATUS("status", LaneClass.SMALL, 15), HEALTH("health", LaneClass.SMALL, 15), VEHICLE("vehicle", null, 0),
+    ROUTE("route", LaneClass.BULK, 90), STATUS("status", LaneClass.SMALL, 15), HEALTH("health", LaneClass.SMALL, 15), VEHICLE("vehicle", null, 0), DRIVE("drive", null, 0),
     ROADTILES("roadtiles", LaneClass.MAP, 120), STILE("stile", LaneClass.MAP, 30),
     GEOCODE("geocode", LaneClass.SMALL, 15), SUGGEST("suggest", LaneClass.SMALL, 15), RETRIEVE("retrieve", LaneClass.SMALL, 15);
 
@@ -48,6 +48,7 @@ internal enum class Shape(val wire: String, val jobClass: LaneClass?, val deadli
  *     status     GET  /status
  *     health     GET  /health
  *     vehicle    POST /v1/vehicle   (one JSON object of at most 512 bytes; since contract version 2 it may carry the beacon's `nav` object)
+ *     drive      POST /v1/drive     (contract version 4: the drive status, one flat JSON object of at most 512 bytes, `DriveContract.kt`; `drive-v4.json`)
  *     roadtiles  GET  /sidecar/v1/roadtiles?z=14&t=<x>.<y>[,<x>.<y>...]&access_token=<tok>
  *     stile      GET  /styles/v1/mapbox/{light-v11,dark-v11}/tiles/512/{z}/{x}/{y}?access_token=<tok>
  *     geocode    GET  /search/geocode/v6/forward?q=...&access_token=...
@@ -63,8 +64,8 @@ internal object Allowlist {
     const val MAX_SEGMENT_CHARS = 256
     const val MAX_VEHICLE_BODY = 512
     private const val MAX_WORD = 16
-    /** The contract version of the judge: 2 = the four shapes, 3 = also the five map shapes. */
-    const val CONTRACT_VERSION = 3
+    /** The contract version of the judge: 2 = the four shapes, 3 = also the five map shapes, 4 = also the drive status. */
+    const val CONTRACT_VERSION = 4
     const val NAV_KEY = "nav"
     private const val NAV_MAX_AGE_MS = 60_000L
     private const val NAV_MAX_DISTANCE_M = 100_000L
@@ -118,9 +119,17 @@ internal object Allowlist {
             val reason = vehicleBodyProblem(body)
             return if (reason.isNotEmpty()) refuse(reason) else Verdict(true, Shape.VEHICLE, "")
         }
+        if (path == DriveContract.PATH && version >= 4) {
+            if (method != "POST" || hasQuery) return refuse("drive is a POST without a query")
+            val reason = driveBodyProblem(body)
+            return if (reason.isNotEmpty()) refuse(reason) else Verdict(true, Shape.DRIVE, "")
+        }
         if (version >= 3) mapVerdict(method, path, query, body)?.let { return it }
         return refuse("path")
     }
+
+    /** "" for a body that the shape `drive` may carry (contract version 4), else the first reason: one flat JSON object of printable ASCII, at most 512 bytes, known keys only, typed and bounded values and pairs ([DriveContract]). */
+    fun driveBodyProblem(body: ByteArray): String = DriveContract.bodyProblem(body)
 
     /** "" for a body that the vehicle shape may carry, else the first reason: one JSON object of printable ASCII, at most 512 bytes, only contract keys, flat but for the `nav` object, finite numbers. */
     fun vehicleBodyProblem(body: ByteArray): String {

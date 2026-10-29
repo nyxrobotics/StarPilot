@@ -1,6 +1,6 @@
 # Shared test vectors of the Sidecar Bluetooth link
 
-Read by the Companion's JUnit tests (`ContractVectorsTest`, `AllowlistTest`, `VehiclePushTest`, `MapContractVectorsTest`, `SidecarMapJobsTest`). They are test data only: documentation coordinates, a placeholder token, a test key.
+Read by the Companion's JUnit tests (`ContractVectorsTest`, `AllowlistTest`, `VehiclePushTest`, `MapContractVectorsTest`, `SidecarMapJobsTest`, `DriveContractVectorsTest`, `DrivePushTest`). They are test data only: documentation coordinates, a placeholder token, a test key.
 
 | File | Content | Made by |
 | --- | --- | --- |
@@ -17,6 +17,8 @@ Read by the Companion's JUnit tests (`ContractVectorsTest`, `AllowlistTest`, `Ve
 | `bundles.json`, `bundles-differential.json` | 94 hand-written and 1,500 generated `RTB1` bundles (the Companion carries them as bytes; the comma reads them) | the Sidecar project: `tools/fixtures/btlab/contract/` (copies) |
 | `lane-map.json` | the planner (16 cases), the lane scripts (6), the classes and deadlines of the kinds, the announcement bodies (24), the health flags (26), the meter (10) | the Sidecar project: `tools/fixtures/btlab/contract/lane-map.json` (copy) |
 | `allowlist-diff-v3.json` | 2,506 generated requests for the five map shapes with the verdict of the reference allow-list (version 3 and version 2) | `tools/btcompanion/gen_allowlist_diff_v3.py` of the Sidecar project |
+| `drive-v4.json` | contract version 4: 147 drive objects with the verdict of the allow-list shape `drive` (`allow`) and the X10's reading (`read`), 26 `push-enable` bodies with what they announce, 9 aging cases | the Sidecar project: `tools/fixtures/btlab/contract/drive-v4.json` (copy) |
+| `drive-diff-v4.json` | 3,053 generated bodies for the allow-list shape `drive` (1,372 accepted) with the strict verdict of the reference `problem()` of `drive.py` (every printable character in a text, the 512-byte bound, escapes, numbers written another way, pairs without partner, bytes outside ASCII) | `tests/gen_drive_diff.py` (seeded; `python3 -I tests/gen_drive_diff.py <drive.py of the Sidecar project> <out.json>`) |
 
 The first files (those marked copy) are copies: a change of a rule is a change of the Sidecar project's vectors, reviewed there, and the copy is replaced. `ContractVectorsTest` counts the cases so that a truncated copy fails.
 The raw-body frames in `../ble/request-raw.json` are made by the app (`BleWire.sealRaw`) and opened by `tests/test_ble_wire_vectors.py` with the bridge's `open_message`.
