@@ -187,6 +187,10 @@ class DrivePushTest {
             "a text with an escaped newline" to plain(b = "{\"v\":1,\"seq\":1,\"age_ms\":1,\"al\":1,\"a1\":\"a\\nb\"}"), "a text with an escaped quote" to plain(b = "{\"v\":1,\"seq\":1,\"age_ms\":1,\"al\":1,\"a2\":\"a\\\"b\"}"),
             "a text with a letter outside ASCII" to plain(b = "{\"v\":1,\"seq\":1,\"age_ms\":1,\"al\":1,\"a1\":\"café\"}"), "an empty text" to plain(b = "{\"v\":1,\"seq\":1,\"age_ms\":1,\"al\":1,\"a1\":\"\"}"),
             "a number that is not finite" to plain(b = "{\"v\":1,\"seq\":1,\"age_ms\":1e999}"),
+            // the object is written again member by member: a key or a text that holds the syntax of JSON must not turn into more members than were sent
+            "a key that would smuggle a member" to plain(b = "{\"v\":1,\"seq\":1,\"age_ms\":1,\"st\\\":\\\"en\\\",\\\"rdy\":true}"),
+            "a text that would smuggle a member" to plain(b = "{\"v\":1,\"seq\":1,\"age_ms\":1,\"al\":1,\"a1\":\"hi\\\",\\\"crv\\\":true,\\\"a2\\\":\\\"yo\"}"),
+            "a text that would close the object" to plain(b = "{\"v\":1,\"seq\":1,\"age_ms\":1,\"al\":1,\"a1\":\"x\\\"}\"}"),
         )
         for ((name, text) in refused) {
             val error = assertThrows("$name was accepted", PushError::class.java) { PushFrames.open(sealText(text), key, session, 0, navAllowed = true, driveAllowed = true) }
